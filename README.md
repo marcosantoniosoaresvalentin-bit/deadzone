@@ -18,7 +18,7 @@ paraquedas, zona que fecha, veículos, helicópteros e modo online com amigos.
   solos misturados (grama, terra, rocha, areia) e dois heliportos. Ainda sem construções.
   O tamanho fica em `MAPH` (metade do lado) e a zona, a rota do avião e os mapas se ajustam sozinhos.
 - **Avião de lançamento**: modelo 3D de um C-130 com as quatro hélices girando.
-- **Veículos**: carros e helicópteros (modelos 3D prontos) com combustível, dano e fogo.
+- **Veículos**: buggy (rodas que giram, suspensão e capotamento) e helicóptero, com combustível, dano e fogo.
 - O código de armas e itens continua no projeto, mas nada aparece no chão do mapa por enquanto.
 - **Modos**: Clássico (100 jogadores), Gladiadores 1v1/duo, Contra Squad 4v4 e salas
   personalizadas, com convite para amigos e grupo (party).
@@ -113,7 +113,7 @@ Detalhes técnicos em [docs/ARQUITETURA.md](docs/ARQUITETURA.md).
   licença [CC-BY 4.0](http://creativecommons.org/licenses/by/4.0/) (texturas reduzidas e convertidas para WebP).
 - Paraquedas: velame e linhas do parapente "paraglider-red-ridge" da
   [SwissAirfields](https://github.com/SwissAirfields/SwissAirfieldsFS2020) (CC0).
-- Veículos (sedã, SUV, picape, buggy e helicóptero): biblioteca Microsoft Remix 3D
+- Veículos (buggy e helicóptero): biblioteca Microsoft Remix 3D
   (CC0), via [Ethereal Engine Open Asset Kit](https://github.com/ir-engine/ir-engine-assets-basic).
 - Texturas de grama, tijolo e ondas da água: exemplos do three.js.
 - Folhas, agulhas, casca, pedra, telhas e reboco: geradas por código.

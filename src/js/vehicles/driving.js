@@ -103,6 +103,7 @@ function updCars(dt,ix,iy){nearCar=null;let nd=4.2;
   if(c.heli){if(MP)continue;updHeli(c,dt,dv,ix,iy,d);if(mode==='ground'&&!c.dead&&c.y-(c.fb||0)<1.5&&d-2<nd){nd=d-2;nearCar=c}continue}
   if(c.fire&&!c.dead){c.hp-=dt*4;c.fl.visible=true;for(const f of c.fl.children)f.scale.y=.7+Math.random()*.8;if(dv)hp-=3*dt;if(c.hp<=0)boom(c)}
   if(c.dead)continue;
+  c.steer=dv?Math.max(-1,Math.min(1,ix)):0;   // direção das rodas da frente (só visual)
   if(dv||Math.abs(c.spd)>.05||c.cy==null||!(c.sleep>.5)){
    // pedais: acelerar = frente; ré = freia até quase parar e então anda para trás (a física já faz isso); freio = para
    if(dv){const cb_=window.DZPED||{},th=cb_.g?1:cb_.r?-1:cb_.b?0:-iy;let a=0;if(c.fuel>0&&c.ok!==false&&c.wn>=2)a=th*(th>0?15:9)*((th>0&&c.spd<-.3)||(th<0&&c.spd>.3)?2:1);c.spd+=a*dt;if(Math.abs(th)<.05||c.fuel<=0)c.spd-=Math.sign(c.spd)*Math.min(Math.abs(c.spd),4*dt);

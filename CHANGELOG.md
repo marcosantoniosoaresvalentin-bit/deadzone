@@ -1,5 +1,13 @@
 # Histórico de versões
 
+## 3.7.0
+- **Rodas girando**: as rodas do buggy (pneu, aro e cubo) foram separadas da carroceria e
+  giram conforme a velocidade (distância / raio); no ar continuam girando e vão perdendo giro.
+  As rodas da frente viram para o lado quando você esterça.
+- **Só o buggy**: sedã, SUV e picape removidos do jogo (modelos apagados). Todos os carros do
+  mapa e do lobby agora são buggies. O buggy aparece sempre com o modelo 3D real (sem a versão
+  simplificada de longe).
+
 ## 3.6.0 — física de verdade nos carros
 - **Física nova (corpo rígido)**: 4 rodas com suspensão (mola + amortecedor medindo a
   velocidade em relação ao chão) e 8 quinas da carroceria que batem no chão; gravidade,

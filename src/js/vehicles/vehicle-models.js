@@ -148,16 +148,14 @@
    ===================================================================== */
 (function () {
   // caminhos escritos por extenso: o build de arquivo único embute cada um
-  const URL_ = { helicopter: 'assets/models/vehicles/helicopter.glb', sedan: 'assets/models/vehicles/sedan.glb', suv: 'assets/models/vehicles/suv.glb', pickup: 'assets/models/vehicles/pickup.glb', buggy: 'assets/models/vehicles/buggy.glb' };
-  const CAR_MODELS = [['sedan', 3, 4.5], ['suv', 3, 4.6], ['pickup', 2, 5.0], ['buggy', 2, 3.7]];
+  const URL_ = { helicopter: 'assets/models/vehicles/helicopter.glb', buggy: 'assets/models/vehicles/buggy.glb' };
+  // só o buggy no jogo (sedã, SUV e picape removidos)
+  const CAR_MODELS = [['buggy', 1, 3.7]];
   const SRC = {}; let ready = false;
   // banco do motorista de cada modelo (coordenadas do veículo: +z = frente, +x = esquerda, y = altura do assento)
   // CABINE de cada modelo (medida no próprio modelo): banco do motorista (quadril), painel, largura interna,
   // assoalho e banco de trás. Coordenadas do veículo: +z = frente, +x = lado do motorista (esquerdo).
   const CAB = window.DZCAB = {
-    sedan:  { seat: [.38, .5, -.18], dashZ: .62, dashY: .84, hw: .76, floor: .3, rear: -.98, roof: 1.42 },
-    suv:    { seat: [.4, .62, -.4], dashZ: .48, dashY: .98, hw: .84, floor: .4, rear: -1.25, roof: 1.6 },
-    pickup: { seat: [.4, .68, .08], dashZ: .82, dashY: 1.02, hw: .72, floor: .46, rear: null, roof: 1.56 },
     buggy:  { seat: [.33, .5, -.32], dashZ: .22, dashY: .72, hw: .62, floor: .32, rear: null, roof: 2.2, open: 1 }
   };
   const SEAT = window.DZSEAT = { helicopter: new T.Vector3(0, 1.5, 1.25) };
@@ -245,9 +243,9 @@
       let r = Math.random() * CAR_MODELS.reduce((a, c) => a + c[1], 0), pick = CAR_MODELS[0];
       for (const c of CAR_MODELS) { r -= c[1]; if (r <= 0) { pick = c; break; } }
       if (v.kind0) pick = CAR_MODELS.find(c => c[0] === v.kind0) || pick;
-      v.kind = pick[0]; g.userData.seat = (SEAT[pick[0]] || SEAT.sedan).clone();
+      v.kind = pick[0]; g.userData.seat = (SEAT[pick[0]] || SEAT.buggy).clone();
       const sc_ = clone(pick[0]); if (!sc_) return;
-      const root = prep(sc_, pick[2]); g.add(root);
+      const root = prep(sc_, pick[2]); try { v.wheels = splitWheels(pick[0], root); } catch (e) { console.warn('rodas', e); } g.add(root);
       try { const it = interior(pick[0]); if (it) { root.add(it); g.userData.cab = it; g.userData.wheelObj = it.userData.wheel; } } catch (e) { console.warn('interior', e); }
       v.old = g.children.filter(c => c !== root);
     }
@@ -258,20 +256,81 @@
   prep = function (s, l) { const r = _prep(s, l); r.userData.dz = 1; return r; };
 
   const _v = new T.Vector3(); let burnM = null;
+  // ---------- RODAS QUE GIRAM ----------
+  // O modelo do buggy vem com as rodas grudadas na carroceria. Aqui o pneu é achado pela geometria
+  // (a malha escura com mais vértices), as 4 rodas são localizadas pelos quadrantes e todos os
+  // triângulos dentro de cada roda (pneu, aro, cubo) saem da carroceria e vão para um eixo próprio.
+  // Feito uma vez por modelo; os clones compartilham o resultado.
+  const WSPLIT = {};
+  const deq = a => { const A = a.array; return !a.normalized ? 1 : A instanceof Int16Array ? 32767 : A instanceof Uint16Array ? 65535 : A instanceof Int8Array ? 127 : A instanceof Uint8Array ? 255 : 1; };
+  function splitWheels(kind, root) {
+    let W = WSPLIT[kind];
+    root.updateMatrixWorld(true); const inv = new T.Matrix4().copy(root.matrixWorld).invert(), v = new T.Vector3();
+    const meshes = []; root.traverse(o => { if (o.isMesh && o.geometry && o.geometry.attributes.position) meshes.push(o); });
+    if (!W) {
+      // pneu = malha escura (sem textura) com mais vértices
+      let tire = null; for (const m of meshes) { const mt = m.material; if (mt && !mt.map && mt.color && mt.color.r < .12 && (!tire || m.geometry.attributes.position.count > tire.geometry.attributes.position.count)) tire = m; }
+      if (!tire) return null;
+      const P = tire.geometry.attributes.position, d = deq(P), M = new T.Matrix4().multiplyMatrices(inv, tire.matrixWorld), Q = [0, 1, 2, 3].map(() => ({ mn: new T.Vector3(1e9, 1e9, 1e9), mx: new T.Vector3(-1e9, -1e9, -1e9), n: 0 }));
+      for (let i = 0; i < P.count; i++) { v.set(P.getX(i) / d, P.getY(i) / d, P.getZ(i) / d).applyMatrix4(M); const q = Q[(v.x > 0 ? 1 : 0) + (v.z > 0 ? 2 : 0)]; q.mn.min(v); q.mx.max(v); q.n++; }
+      // segunda passada: só o que está na altura de uma roda (tira estepe/peças escuras de cima)
+      { const rs = Q.filter(q => q.n > 20).map(q => (q.mx.y - q.mn.y) / 2).sort((a, b) => a - b), rRef = rs[0] || .5, lim = Math.min(...Q.map(q => q.mn.y)) + rRef * 2.15;
+        for (const q of Q) { q.mn.set(1e9, 1e9, 1e9); q.mx.set(-1e9, -1e9, -1e9); q.n = 0; }
+        for (let i = 0; i < P.count; i++) { v.set(P.getX(i) / d, P.getY(i) / d, P.getZ(i) / d).applyMatrix4(M); if (v.y > lim) continue; const q = Q[(v.x > 0 ? 1 : 0) + (v.z > 0 ? 2 : 0)]; q.mn.min(v); q.mx.max(v); q.n++; } }
+      const wheels = Q.filter(q => q.n > 20).map(q => ({ c: q.mn.clone().add(q.mx).multiplyScalar(.5), r: (q.mx.y - q.mn.y) / 2, hw: (q.mx.x - q.mn.x) / 2 + .03, front: q.mn.z + q.mx.z > 0, parts: [] }));
+      if (wheels.length !== 4) return null;
+      // separa os triângulos de cada malha que estão dentro de uma roda
+      for (const m of meshes) {
+        const g = m.geometry, P2 = g.attributes.position, N2 = g.attributes.normal, U2 = g.attributes.uv, dp = deq(P2), dn = N2 ? deq(N2) : 1, du = U2 ? deq(U2) : 1;
+        const M2 = new T.Matrix4().multiplyMatrices(inv, m.matrixWorld), NM = new T.Matrix3().getNormalMatrix(M2);
+        const idx = g.index ? g.index.array : null, nt = (idx ? idx.length : P2.count) / 3, pos = new Float32Array(P2.count * 3);
+        for (let i = 0; i < P2.count; i++) { v.set(P2.getX(i) / dp, P2.getY(i) / dp, P2.getZ(i) / dp).applyMatrix4(M2); pos[i * 3] = v.x; pos[i * 3 + 1] = v.y; pos[i * 3 + 2] = v.z; }
+        const inW = (i, w) => { const x = pos[i * 3] - w.c.x, y = pos[i * 3 + 1] - w.c.y, z = pos[i * 3 + 2] - w.c.z; return Math.abs(x) < w.hw && y * y + z * z < (w.r * 1.04) ** 2; };
+        const keep = [], take = wheels.map(() => []);
+        for (let t = 0; t < nt; t++) { const a = idx ? idx[t * 3] : t * 3, b = idx ? idx[t * 3 + 1] : t * 3 + 1, c = idx ? idx[t * 3 + 2] : t * 3 + 2; let hit = -1;
+          for (let k = 0; k < 4; k++) if (inW(a, wheels[k]) && inW(b, wheels[k]) && inW(c, wheels[k])) { hit = k; break; }
+          if (hit < 0) keep.push(a, b, c); else take[hit].push(a, b, c); }
+        if (keep.length === nt * 3) continue;
+        // peças da roda: geometria nova em metros, centrada no eixo da roda
+        take.forEach((tri, k) => { if (!tri.length) return; const w = wheels[k], n = tri.length, pp = new Float32Array(n * 3), nn = new Float32Array(n * 3), uu = new Float32Array(n * 2);
+          tri.forEach((i, j) => { pp[j * 3] = pos[i * 3] - w.c.x; pp[j * 3 + 1] = pos[i * 3 + 1] - w.c.y; pp[j * 3 + 2] = pos[i * 3 + 2] - w.c.z;
+            if (N2) { v.set(N2.getX(i) / dn, N2.getY(i) / dn, N2.getZ(i) / dn).applyMatrix3(NM).normalize(); nn[j * 3] = v.x; nn[j * 3 + 1] = v.y; nn[j * 3 + 2] = v.z; }
+            if (U2) { uu[j * 2] = U2.getX(i) / du; uu[j * 2 + 1] = U2.getY(i) / du; } });
+          const ge = new T.BufferGeometry(); ge.setAttribute('position', new T.BufferAttribute(pp, 3)); ge.setAttribute('normal', new T.BufferAttribute(nn, 3)); if (U2) ge.setAttribute('uv', new T.BufferAttribute(uu, 2)); if (!N2) ge.computeVertexNormals(); ge.computeBoundingSphere();
+          w.parts.push({ ge, mat: m.material }); });
+        g.setIndex(keep); // a carroceria fica sem as rodas (geometria compartilhada pelos clones)
+      }
+      W = WSPLIT[kind] = wheels;
+    }
+    // monta as rodas deste carro: pivô de direção (frente) > pivô de giro > peças
+    return W.map(w => { const steer = new T.Group(); steer.position.copy(w.c); const spin = new T.Group(); steer.add(spin);
+      for (const p of w.parts) { const me = new T.Mesh(p.ge, p.mat); me.castShadow = true; me.receiveShadow = true; spin.add(me); }
+      root.add(steer); return { steer, spin, r: w.r, front: w.front }; });
+  }
+  let _wt = performance.now();
+  function spinWheels(v, c) {
+    const now = performance.now(), dt = Math.min(.05, (now - (v.wt || now)) / 1000); v.wt = now;
+    // giro = distância andada / raio; no ar a roda continua girando e vai perdendo velocidade
+    v.ws = c.wn > 0 || v.ws == null ? (c.spd || 0) : v.ws * Math.exp(-dt * .6);
+    v.wa = ((v.wa || 0) + v.ws * dt / (v.wheels[0].r || .4)) % (Math.PI * 2);
+    const st = (c.steer || 0); v.wst = (v.wst || 0) + (st - (v.wst || 0)) * Math.min(1, dt * 10);
+    for (const w of v.wheels) { w.spin.rotation.x = v.wa; if (w.front) w.steer.rotation.y = -v.wst * .5; }
+  }
   function tick() {
     requestAnimationFrame(tick);
     if (!ready || typeof cam === 'undefined') return;
     const q = (typeof CFG !== 'undefined' && CFG.q != null) ? CFG.q : 2, near = q === 0 ? 70 : q === 1 ? 110 : 160;
     for (const v of VEH) {
       if (!v.root) { dress(v); if (!v.root) continue; }
-      v.g.getWorldPosition(_v); const n = _v.distanceTo(cam.position) < near;
+      v.g.getWorldPosition(_v); const n = v.heli ? _v.distanceTo(cam.position) < near : true;   // o buggy fica sempre com o modelo real
       if (n !== v.n) { v.n = n; v.root.visible = n; for (const o of v.old) o.visible = !n; }
       if (v.heli) {
         const u = v.g.userData;
         if (v.rot && u.rot) v.rot.rotation.y = u.rot.rotation.y;
         if (v.trot && u.trot) v.trot.rotation.x = u.trot.rotation.x;
       } else if (!v.burnt) {
-        const c = typeof CARS !== 'undefined' ? CARS.find(c => c.g === v.g) : null;
+        const c = v.car || (v.car = typeof CARS !== 'undefined' ? CARS.find(c => c.g === v.g) : null);
+        if (c && v.wheels) spinWheels(v, c);
         if (c && c.dead) { v.burnt = 1; burnM = burnM || (typeof BURN !== 'undefined' ? BURN : new T.MeshStandardMaterial({ color: 0x151515 })); v.root.traverse(o => { if (o.isMesh) o.material = burnM; }); }
       }
     }
