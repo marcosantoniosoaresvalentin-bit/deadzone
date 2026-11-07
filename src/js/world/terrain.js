@@ -128,10 +128,10 @@ window.TERH=TER.terh;window.TERG=TER.terg;
  const sea=new T.Mesh(new T.PlaneGeometry(6000,6000),wm);sea.rotation.x=-Math.PI/2;sea.position.y=0;sc.add(sea)}
 
 // ---------- imagem do terreno vista de cima (minimapa e mapa grande) ----------
-const TERMAP=(()=>{const W=512,E=MAPH+30,c=document.createElement('canvas');c.width=c.height=W;const g=c.getContext('2d'),im=g.createImageData(W,W),d=im.data;
+const TERMAP=(()=>{const W=1024,E=MAPH+30,c=document.createElement('canvas');c.width=c.height=W;const g=c.getContext('2d'),im=g.createImageData(W,W),d=im.data;
  const col=[[78,118,52],[118,92,62],[128,124,116],[214,198,156]];
  for(let py=0;py<W;py++)for(let px=0;px<W;px++){const x=-E+(px+.5)/W*2*E,z=-E+(py+.5)/W*2*E,h=TERH(x,z),o=(py*W+px)*4;
-  if(h<0){const k=Math.max(0,Math.min(1,-h/8));d[o]=58-28*k;d[o+1]=128-50*k;d[o+2]=170-40*k;d[o+3]=255;continue}
+  if(h<0){const k=Math.max(0,Math.min(1,-h/3.5));d[o]=58-28*k;d[o+1]=128-50*k;d[o+2]=170-40*k;d[o+3]=255;continue}
   const i=Math.round((x-TER.O)/TER.S),j=Math.round((z-TER.O)/TER.S),q=(j*TER.N+i)*4,w=TER.SPL;
   let r=0,gg=0,b=0;for(let s=0;s<4;s++){r+=col[s][0]*w[q+s];gg+=col[s][1]*w[q+s];b+=col[s][2]*w[q+s]}
   // sombreamento do relevo (luz vinda do noroeste) e leve clareamento com a altura

@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 3.1.1
+- **Zona nova**: parede azul transparente (dá para ver através), mais forte perto do chão,
+  com faixas subindo devagar; some com a distância, sem os "pedaços cortados" de antes.
+- **Minimapa mais perto**: mostra ~140 m em volta do jogador (antes ~300 m).
+- **Mapa grande em tela cheia**, com a ilha ocupando toda a altura da tela, grade de 100 m
+  e imagem do terreno em resolução maior.
+
 ## 3.1.0 — terreno
 - **Relevo de verdade na ilha** (`src/js/world/terrain.js`): montanha rochosa a noroeste,
   morros, colinas suaves e um vale raso atravessando a ilha.

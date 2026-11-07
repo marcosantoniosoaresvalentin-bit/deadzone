@@ -2,14 +2,24 @@
  * Mapa grande com marcadores.
  */
 // mapa grande com marcadores
-const MK=[],bmap=$('bmap'),bmc=$('bmc'),bmg=bmc.getContext('2d');let bmS=null,bmT=0;
-function buildBig(S){bmS=document.createElement('canvas');bmS.width=bmS.height=S;const g=bmS.getContext('2d'),k=S/(2*MAPH+60),X=x=>(x+MAPH+30)*k;g.fillStyle='#1e5f8e';g.fillRect(0,0,S,S);g.imageSmoothingEnabled=true;g.drawImage(TERMAP,X(-TERMAP.E),X(-TERMAP.E),2*TERMAP.E*k,2*TERMAP.E*k);g.fillStyle='#3a6ea5';for(const l of LK){g.beginPath();g.arc(X(l.x),X(l.z),l.r*k,0,7);g.fill()}
- g.fillStyle='#8a8d92';for(const r of RDS)g.fillRect(X(r[0]),X(r[1]),Math.max(1.5,(r[2]-r[0])*k),Math.max(1.5,(r[3]-r[1])*k));g.fillStyle='#e6d9b4';for(const b of FP)g.fillRect(X(b.x0),X(b.z0),Math.max(1.5,(b.x1-b.x0)*k),Math.max(1.5,(b.z1-b.z0)*k));
- g.fillStyle='#fff';g.strokeStyle='#000';g.lineWidth=3;g.font='bold '+Math.max(11,S/45)+'px sans-serif';g.textAlign='center';for(const c of CITIES){if(c.blank)continue;g.strokeText(c.n,X(c.x),X(c.z)-S/36);g.fillText(c.n,X(c.x),X(c.z)-S/36)}
- for(const h of HPADS){const r=Math.max(7,S/62);g.fillStyle='#1d6fd0';g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.arc(X(h.x),X(h.z),r,0,7);g.fill();g.stroke();g.fillStyle='#fff';g.font='bold '+Math.round(r*1.3)+'px sans-serif';g.textBaseline='middle';g.fillText('H',X(h.x),X(h.z)+1)}g.textBaseline='alphabetic'}
-function drawBig(){if(bmap.style.display!=='flex')return;const S=bmc.width,k=S/(2*MAPH+60),X=x=>(x+MAPH+30)*k;bmg.drawImage(bmS,0,0);bmg.strokeStyle='#ff4040';bmg.lineWidth=3;bmg.beginPath();bmg.arc(X(zX),X(zZ),zR*k,0,7);bmg.stroke();
- MK.forEach((m,i)=>{const x=X(m.x),y=X(m.z);bmg.fillStyle='#ffd400';bmg.strokeStyle='#000';bmg.lineWidth=2;bmg.beginPath();bmg.arc(x,y-10,8,0,7);bmg.fill();bmg.stroke();bmg.beginPath();bmg.moveTo(x-5,y-5);bmg.lineTo(x,y+2);bmg.lineTo(x+5,y-5);bmg.fill();bmg.fillStyle='#000';bmg.font='bold 10px sans-serif';bmg.textAlign='center';bmg.fillText(i+1,x,y-7)});
- const pl_=mode==='plane',c=pl_?plane.position:P,hx=pl_?pD.x:Math.sin(yaw),hz=pl_?pD.z:Math.cos(yaw);bmg.save();bmg.translate(X(c.x),X(c.z));bmg.rotate(Math.atan2(hz,hx)+Math.PI/2);bmg.fillStyle='#fff';bmg.strokeStyle='#000';bmg.lineWidth=2;bmg.beginPath();bmg.moveTo(0,-11);bmg.lineTo(8,9);bmg.lineTo(0,4);bmg.lineTo(-8,9);bmg.closePath();bmg.stroke();bmg.fill();bmg.restore()}
-function openMap(){if(mode==='lobby'||mode==='dead')return;bmap.style.display='flex';const S=Math.floor(Math.min(innerWidth,innerHeight)*.86);bmc.width=bmc.height=S;bmc.style.width=bmc.style.height=S+'px';buildBig(S);drawBig()}
+const MK=[],bmap=$('bmap'),bmc=$('bmc'),bmg=bmc.getContext('2d');let bmS=null,bmT=0,BG=null;
+// mapa em TELA CHEIA: a ilha ocupa toda a altura (ou largura) da tela; o resto é mar
+function bmGeo(){const W=bmc.width,H=bmc.height,E=MAPH+14,k=Math.min(W,H)/(2*E),d=bmc.width/Math.max(1,bmc.clientWidth);return{W,H,k,d,X:x=>W/2+x*k,Y:z=>H/2+z*k}}
+function buildBig(){const G=bmGeo(),{W,H,k,d,X,Y}=G;BG=G;bmS=document.createElement('canvas');bmS.width=W;bmS.height=H;const g=bmS.getContext('2d');
+ g.fillStyle='#1e4e82';g.fillRect(0,0,W,H);g.imageSmoothingEnabled=true;g.drawImage(TERMAP,X(-TERMAP.E),Y(-TERMAP.E),2*TERMAP.E*k,2*TERMAP.E*k);
+ g.fillStyle='#3a6ea5';for(const l of LK){g.beginPath();g.arc(X(l.x),Y(l.z),l.r*k,0,7);g.fill()}
+ g.fillStyle='#8a8d92';for(const r of RDS)g.fillRect(X(r[0]),Y(r[1]),Math.max(1.5,(r[2]-r[0])*k),Math.max(1.5,(r[3]-r[1])*k));g.fillStyle='#e6d9b4';for(const b of FP)g.fillRect(X(b.x0),Y(b.z0),Math.max(1.5,(b.x1-b.x0)*k),Math.max(1.5,(b.z1-b.z0)*k));
+ // grade de referência (100 m)
+ g.strokeStyle='rgba(255,255,255,.10)';g.lineWidth=d;for(let v=-Math.floor(MAPH/100)*100;v<=MAPH;v+=100){g.beginPath();g.moveTo(X(v),Y(-MAPH));g.lineTo(X(v),Y(MAPH));g.stroke();g.beginPath();g.moveTo(X(-MAPH),Y(v));g.lineTo(X(MAPH),Y(v));g.stroke()}
+ g.fillStyle='#fff';g.strokeStyle='#000';g.lineWidth=3*d;g.font='bold '+Math.round(14*d)+'px sans-serif';g.textAlign='center';for(const c of CITIES){if(c.blank)continue;g.strokeText(c.n,X(c.x),Y(c.z)-12*d);g.fillText(c.n,X(c.x),Y(c.z)-12*d)}
+ for(const h of HPADS){const r=10*d;g.fillStyle='#1d6fd0';g.strokeStyle='#fff';g.lineWidth=2*d;g.beginPath();g.arc(X(h.x),Y(h.z),r,0,7);g.fill();g.stroke();g.fillStyle='#fff';g.font='bold '+Math.round(r*1.3)+'px sans-serif';g.textBaseline='middle';g.fillText('H',X(h.x),Y(h.z)+1)}g.textBaseline='alphabetic'}
+function drawBig(){if(bmap.style.display!=='flex'||!BG)return;const {k,d,X,Y}=BG;bmg.drawImage(bmS,0,0);
+ bmg.strokeStyle='rgba(120,190,255,.95)';bmg.lineWidth=3*d;bmg.beginPath();bmg.arc(X(zX),Y(zZ),zR*k,0,7);bmg.stroke();
+ MK.forEach((m,i)=>{const x=X(m.x),y=Y(m.z),s=d*1.3;bmg.fillStyle='#ffd400';bmg.strokeStyle='#000';bmg.lineWidth=2*d;bmg.beginPath();bmg.arc(x,y-10*s,8*s,0,7);bmg.fill();bmg.stroke();bmg.beginPath();bmg.moveTo(x-5*s,y-5*s);bmg.lineTo(x,y+2*s);bmg.lineTo(x+5*s,y-5*s);bmg.fill();bmg.fillStyle='#000';bmg.font='bold '+Math.round(10*s)+'px sans-serif';bmg.textAlign='center';bmg.fillText(i+1,x,y-7*s)});
+ const pl_=mode==='plane',c=pl_?plane.position:P,hx=pl_?pD.x:Math.sin(yaw),hz=pl_?pD.z:Math.cos(yaw),s=d*1.4;bmg.save();bmg.translate(X(c.x),Y(c.z));bmg.rotate(Math.atan2(hz,hx)+Math.PI/2);bmg.fillStyle='#fff';bmg.strokeStyle='#000';bmg.lineWidth=2*d;bmg.beginPath();bmg.moveTo(0,-11*s);bmg.lineTo(8*s,9*s);bmg.lineTo(0,4*s);bmg.lineTo(-8*s,9*s);bmg.closePath();bmg.stroke();bmg.fill();bmg.restore()}
+function openMap(){if(mode==='lobby'||mode==='dead')return;bmap.style.display='flex';const dpr=Math.min(2,devicePixelRatio||1),W=innerWidth,H=innerHeight;
+ bmc.style.width=W+'px';bmc.style.height=H+'px';bmc.width=Math.round(W*dpr);bmc.height=Math.round(H*dpr);buildBig();drawBig()}
+addEventListener('resize',()=>{if(bmap.style.display==='flex')openMap()});
 $('mm').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();openMap()});$('bmx').onclick=()=>{bmap.style.display='none'};
-bmc.addEventListener('pointerdown',e=>{e.preventDefault();const r=bmc.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*(2*MAPH+60)-(MAPH+30),z=(e.clientY-r.top)/r.height*(2*MAPH+60)-(MAPH+30),i=MK.findIndex(m=>Math.hypot(m.x-x,m.z-z)<MAPH*.04+4);if(i>=0)MK.splice(i,1);else{if(MK.length>=6)MK.shift();MK.push({x,z})}drawBig()});
+bmc.addEventListener('pointerdown',e=>{e.preventDefault();if(!BG)return;const r=bmc.getBoundingClientRect(),px=(e.clientX-r.left)*BG.d,py=(e.clientY-r.top)*BG.d,x=(px-BG.W/2)/BG.k,z=(py-BG.H/2)/BG.k;
+ if(Math.abs(x)>MAPH+14||Math.abs(z)>MAPH+14)return;const i=MK.findIndex(m=>Math.hypot(m.x-x,m.z-z)<18*BG.d/BG.k);if(i>=0)MK.splice(i,1);else{if(MK.length>=6)MK.shift();MK.push({x,z})}drawBig()});
