@@ -37,7 +37,7 @@ function mkCar(bodyMat,o){o=o||{};if(window.DZCar)try{return DZCar(bodyMat,o)}ca
 function addCar(x,z,yaw){if(CARS.some(c=>Math.hypot(c.x-x,c.z-z)<7)||inFP(x,z,3))return;
  const g=mkCar(CCOL[Math.floor(R(0,6))],{sport:Math.random()<.3}),body=g.body,cab=g.cab;
  const fl=new T.Group();fl.position.set(0,1.1,1.4);fl.visible=false;for(let i=0;i<3;i++){const f=new T.Mesh(new T.ConeGeometry(.5-i*.1,1.6,6),new T.MeshBasicMaterial({color:i?0xffd040:0xff5a10,transparent:true,opacity:.85}));f.position.set((i-1)*.5,.7,0);fl.add(f)}g.add(fl);
- g.body=body;g.cab=cab;g.position.set(x,0,z);g.rotation.y=yaw;sc.add(g);CARS.push({g,fl,x,z,yaw,spd:0,hp:100,fuel:R(25,85),fire:0,dead:0})}
+ g.body=body;g.cab=cab;g.position.set(x,TERH(x,z),z);g.rotation.y=yaw;sc.add(g);CARS.push({g,fl,x,z,yaw,spd:0,hp:100,fuel:R(25,85),fire:0,dead:0})}
 for(const C of CITIES){let n=0;for(let t=0;t<80&&n<7;t++){const k=[-2,-1,1,2][Math.floor(R(0,4))],ln=(Math.random()<.5?-1:1)*2.8,vt=Math.random()<.5,a=R(-80,80),b=k*BP+ln,m=CARS.length;
  addCar(C.x+(vt?b:a),C.z+(vt?a:b),vt?(ln>0?0:Math.PI):(ln>0?Math.PI/2:-Math.PI/2));if(CARS.length>m)n++}}
 for(const x of CX)for(const z of[-540,-355,-170,170,365,560])if(Math.random()<.6)addCar(x+(Math.random()<.5?-2.8:2.8),z+R(-25,25),Math.random()<.5?0:Math.PI);

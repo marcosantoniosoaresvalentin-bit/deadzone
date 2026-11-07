@@ -23,6 +23,7 @@ carregados (`DOMContentLoaded`).
 | 1 | `graphics/realism.js` | Realismo: personagens 3D, vegetação, relevo, janelas quebráveis, ilha e iluminação. |
 | 2 | `core/engine.js` | Renderizador, cena, câmera, luzes, céu e utilitários de geometria/colisão. |
 | 3 | `world/map.js` | Mapa em branco: ilha plana (MAPH), mar, heliportos e dados vazios do mapa (CITIES, LK...). |
+| 3b | `world/terrain.js` | Terreno: relevo, litoral, solos, mar; TERH (altura), TERG (grama), TERMAP (imagem do mapa). |
 | 6 | `vehicles/cars.js` | Modelos e posicionamento dos carros. |
 | 7 | `vehicles/helicopters.js` | Helicópteros: modelo, heliportos e física de voo. |
 | 8 | `player/character.js` | Esqueleto procedural do personagem (base das animações). |

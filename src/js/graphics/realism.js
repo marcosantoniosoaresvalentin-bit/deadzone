@@ -925,6 +925,7 @@
     for (let gx = Math.floor((cx - Rr) / cs); gx <= Math.ceil((cx + Rr) / cs) && n < 3200; gx++) for (let gz = Math.floor((cz - Rr) / cs); gz <= Math.ceil((cz + Rr) / cs) && n < 3200; gz++) {
       const h1 = hsh(gx, gz, 1), h2 = hsh(gx, gz, 2), h3 = hsh(gx, gz, 3);
       if (h3 < .2) continue;
+      if (window.TERG && TERG((gx + h1) * cs, (gz + h2) * cs) < .5) continue;
       const x = (gx + h1) * cs, z = (gz + h2) * cs, d = Math.hypot(x - P.x, z - P.z); if (d > Rr) continue;
       if (ct.some(c => Math.abs(x - c.x) < 95 && Math.abs(z - c.z) < 95)) continue;
       if (rd.some(r => x > r[0] - .6 && x < r[2] + .6 && z > r[1] - .6 && z < r[3] + .6)) continue;

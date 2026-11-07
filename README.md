@@ -14,7 +14,8 @@ paraquedas, zona que fecha, veículos, helicópteros e modo online com amigos.
 - **Personagens realistas**: soldado 3D com esqueleto, animações de captura de movimento
   (parado, andar, correr) misturadas às poses do jogo (mirar, agachar, deitar, paraquedas, morte)
   e mãos que seguram a arma com IK.
-- **Mapa em branco**: ilha plana de 500 x 500 m cercada de mar, com dois heliportos.
+- **Terreno**: ilha de 500 x 500 m com montanha, morros, vale, praia e litoral irregular,
+  solos misturados (grama, terra, rocha, areia) e dois heliportos. Ainda sem construções.
   O tamanho fica em `MAPH` (metade do lado) e a zona, a rota do avião e os mapas se ajustam sozinhos.
 - **Avião de lançamento**: modelo 3D de um C-130 com as quatro hélices girando.
 - **Veículos**: carros e helicópteros (modelos 3D prontos) com combustível, dano e fogo.
@@ -70,7 +71,7 @@ deadzone/
 │   └── js/
 │       ├── core/           motor: renderizador, cena, áudio, laço principal
 │       ├── graphics/       realismo: personagens, vegetação, relevo, vidros, ilha
-│       ├── world/          mapa em branco (map.js), avião e paraquedas
+│       ├── world/          mapa (map.js), terreno (terrain.js), avião e paraquedas
 │       ├── player/         personagem, controles, ações e animações
 │       ├── combat/         armas, tiros, loot, arremessáveis, arco, escopeta
 │       ├── vehicles/       carros, helicópteros e direção

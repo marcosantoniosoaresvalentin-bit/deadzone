@@ -18,14 +18,10 @@ if(window.DZR){VM[3]=DZR.roofMat();VM[4]=DZR.brickMat()}
 // textura de asfalto (usada pelo cenário do lobby)
 const rdT=ctex(128,256,(g,w,h)=>{g.fillStyle='#46494e';g.fillRect(0,0,w,h);for(let i=0;i<2500;i++){g.fillStyle='rgba('+(R(0,1)<.5?'0,0,0':'255,255,255')+','+R(.03,.1)+')';g.fillRect(R(0,w),R(0,h),R(1,3),R(1,3))}g.fillStyle='#ddd';g.fillRect(6,0,3,h);g.fillRect(w-9,0,3,h)},1,1);
 
-// ---- chão: grama + faixa de areia + mar em volta ----
-{const S=MAPH*2;
- const gm=window.DZR?DZR.groundMat():new T.MeshStandardMaterial({color:lin(0x5a8a3a),roughness:1});
- if(gm.map)gm.map.repeat.set(S/10,S/10);
- const gr=new T.Mesh(new T.PlaneGeometry(S,S),gm);gr.rotation.x=-Math.PI/2;gr.receiveShadow=true;gr.renderOrder=-2;sc.add(gr);
- const sand=new T.Mesh(new T.PlaneGeometry(S+60,S+60),MT(0xd8c89a,null,1));sand.rotation.x=-Math.PI/2;sand.position.y=-.06;sand.receiveShadow=true;sc.add(sand);
- const wm=new T.MeshStandardMaterial({color:lin(0x2f6f9a),metalness:.5,roughness:.12,transparent:true,opacity:.92});if(window.DZR)DZR.waterMat(wm);
- const sea=new T.Mesh(new T.PlaneGeometry(6000,6000),wm);sea.rotation.x=-Math.PI/2;sea.position.y=-.5;sc.add(sea)}
+// ---- pontos fixos do mapa ----
+// heliportos (o terreno fica plano em volta deles)
+const HPS=[['Heliponto Norte',MAPH*.45,-MAPH*.5],['Heliponto Sul',-MAPH*.45,MAPH*.5]];
+// o terreno (relevo, praia e mar) fica em world/terrain.js
 
 // ---- dados do mapa (vazios) que outros sistemas consultam ----
 const CX=[],CZ=[],BP=42,LK=[];

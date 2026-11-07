@@ -1,5 +1,16 @@
 # Histórico de versões
 
+## 3.1.0 — terreno
+- **Relevo de verdade na ilha** (`src/js/world/terrain.js`): montanha rochosa a noroeste,
+  morros, colinas suaves e um vale raso atravessando a ilha.
+- **Litoral irregular** com baías e pontas, praia de areia, areia molhada e espuma na beira,
+  água rasa na borda e mar fundo depois.
+- **Solos misturados**: grama, manchas de terra, rocha nas encostas íngremes e areia na praia.
+  A grama alta só nasce onde há grama.
+- Heliportos em áreas planas; carros e helicópteros apoiados no relevo.
+- Minimapa e mapa grande mostram o terreno de verdade (relevo sombreado, praia e mar).
+- O jogador não entra no mar fundo (só na água rasa).
+
 ## 3.0.1
 - Helicóptero: some o disco escuro em cima das hélices (efeito antigo de "hélice girando"
   que ficava como uma mancha com o modelo 3D novo).
