@@ -151,6 +151,9 @@
   const URL_ = { helicopter: 'assets/models/vehicles/helicopter.glb', sedan: 'assets/models/vehicles/sedan.glb', suv: 'assets/models/vehicles/suv.glb', pickup: 'assets/models/vehicles/pickup.glb', taxi: 'assets/models/vehicles/taxi.glb', police: 'assets/models/vehicles/police.glb', buggy: 'assets/models/vehicles/buggy.glb' };
   const CAR_MODELS = [['sedan', 3, 4.5], ['suv', 3, 4.6], ['pickup', 2, 5.0], ['taxi', 1, 4.4], ['police', 1, 4.8], ['buggy', 1, 3.7]];
   const SRC = {}; let ready = false;
+  // banco do motorista de cada modelo (coordenadas do veículo: +z = frente, +x = esquerda, y = altura do assento)
+  const SEAT = window.DZSEAT = { sedan: new T.Vector3(.38, .62, -.2), suv: new T.Vector3(.4, .82, -.05), pickup: new T.Vector3(.4, .86, .3), taxi: new T.Vector3(.38, .62, -.15),
+    police: new T.Vector3(.38, .62, -.2), buggy: new T.Vector3(.33, .52, -.25), helicopter: new T.Vector3(0, 1.35, 2.2) };
   const VEH = window.DZVEH = [];
   // registra cada carro/heli criado (inclusive os do lobby)
   const _car = window.DZCar, _heli = window.DZHeli;
@@ -180,7 +183,7 @@
     const g = v.g;
     if (v.heli) {
       const sc_ = clone('helicopter'); if (!sc_) return;
-      const root = prep(sc_, 14.2); root.position.z = -.9;
+      const root = prep(sc_, 14.2); root.position.z = -.9; g.userData.seat = SEAT.helicopter.clone();
       let mr = null, hub = null, tf = null;
       sc_.traverse(o => { if (/main_rotor/.test(o.name)) mr = mr || o; if (/rotor_hub/.test(o.name)) hub = hub || o; if (/back_fan/.test(o.name)) tf = tf || o; if (/pilot|helmet_glass/i.test(o.name)) o.visible = false; });
       g.add(root);
@@ -190,6 +193,8 @@
     } else {
       let r = Math.random() * CAR_MODELS.reduce((a, c) => a + c[1], 0), pick = CAR_MODELS[0];
       for (const c of CAR_MODELS) { r -= c[1]; if (r <= 0) { pick = c; break; } }
+      if (v.kind0) pick = CAR_MODELS.find(c => c[0] === v.kind0) || pick;
+      v.kind = pick[0]; g.userData.seat = (SEAT[pick[0]] || SEAT.sedan).clone();
       const sc_ = clone(pick[0]); if (!sc_) return;
       const root = prep(sc_, pick[2]); g.add(root);
       v.old = g.children.filter(c => c !== root);
@@ -219,9 +224,23 @@
       }
     }
   }
+  // carros SEM VIDRO (para ver quem está dentro): esconde as peças de vidro e, quando o vidro
+  // está pintado na mesma textura da lataria (picape), recorta os pixels azulados das janelas
+  function noGlass(scene) {
+    scene.traverse(o => {
+      if (!o.isMesh || !o.material) return;
+      const m = o.material;
+      if (m.transparent || m.opacity < 1) { o.visible = false; return; }
+      if (m.userData.noGlass) return; m.userData.noGlass = 1;
+      m.onBeforeCompile = s => { s.fragmentShader = s.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
+        { vec3 c_=diffuseColor.rgb; float mx_=max(max(c_.r,c_.g),c_.b),mn_=min(min(c_.r,c_.g),c_.b);
+          if(c_.b>c_.r*1.25&&c_.g>c_.r*1.12&&mx_-mn_>.035&&mx_<.75)discard; }`); };
+      m.customProgramCacheKey = () => 'noglass'; m.side = T.DoubleSide; m.needsUpdate = true;
+    });
+  }
   function load() {
     const names = ['helicopter', ...CAR_MODELS.map(c => c[0])]; let left = names.length;
-    for (const n of names) new T.GLTFLoader().load(URL_[n], g => { SRC[n] = g.scene; if (--left === 0) { ready = true; } }, undefined, e => { console.warn('veículo', n, e); if (--left === 0) ready = true; });
+    for (const n of names) new T.GLTFLoader().load(URL_[n], g => { SRC[n] = g.scene; if (n !== 'helicopter') try { noGlass(g.scene); } catch (e) { } if (--left === 0) { ready = true; } }, undefined, e => { console.warn('veículo', n, e); if (--left === 0) ready = true; });
   }
   load(); requestAnimationFrame(tick);
 

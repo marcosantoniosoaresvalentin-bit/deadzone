@@ -7,6 +7,15 @@ function exitCar(){const c=drv;if(c.heli){if(c.y-(c.fb||0)<=2.5&&Math.abs(c.spd)
   if(c.y-(c.fb||0)>=15||(c.crash&&c.y-(c.fb||0)>=6)){P.x=c.x;P.z=c.z;P.y=c.y;P.vy=-6;drv=null;pl.visible=true;yaw=c.yaw;HK.u=HK.d=0;openChute();say('🪂 Você saltou do helicóptero!',3);return}
   say('Pouse para sair · ou suba acima de 15 m para saltar de paraquedas',2.5);return}
  if(Math.abs(c.spd)>5){say('Reduza a velocidade para sair',1.5);return}P.x=c.x+Math.cos(c.yaw)*2.6;P.z=c.z-Math.sin(c.yaw)*2.6;P.y=TERH(P.x,P.z);P.vy=0;drv=null;mode='ground';mvp(0,0);pl.visible=true;yaw=c.yaw;setLabel()}
+// personagem SENTADO no banco do motorista (carro ou helicóptero)
+const _seatV=new T.Vector3(),SEAT0={car:new T.Vector3(.38,.62,-.2),heli:new T.Vector3(0,1.35,2.2)};
+function seatPose(){const c=drv;if(!c||!c.g)return;const g=c.g,s=(g.userData&&g.userData.seat)||(c.heli?SEAT0.heli:SEAT0.car);g.updateMatrixWorld();_seatV.copy(s).applyMatrix4(g.matrixWorld);
+ pl.visible=true;pl.quaternion.copy(g.quaternion);pl.position.set(_seatV.x,_seatV.y-.9,_seatV.z);
+ hips.position.y=.95;hips.rotation.set(0,0,0);tor.rotation.set(-.08,0,0);head.rotation.set(.05,0,0);body.position.y=0;
+ lg1.th.rotation.set(-1.5,0,.08);lg2.th.rotation.set(-1.5,0,-.08);lg1.kn.rotation.x=1.4;lg2.kn.rotation.x=1.4;
+ const st=c.heli?0:Math.max(-1,Math.min(1,(typeof ix!=='undefined'?ix:0)))*.25;
+ aR.sh.rotation.set(-1.05,0,.18-st);aL.sh.rotation.set(-1.05,0,-.18-st);aR.el.rotation.x=aL.el.rotation.x=-.75;
+ try{rf.visible=false}catch(e){}}
 function carBtn(){if(mode==='drive')exitCar();else if(mode==='ground'&&nearCar)enterCar(nearCar)}
 function refuel(){const c=mode==='drive'?drv:nearCar;if(!c||c.dead)return;if(!bag.fuel){say('Sem galão de gasolina',1.5);return}if(c.fuel>=100){say('Tanque cheio',1.5);return}if(mode==='drive'&&Math.abs(c.spd)>1.5){say(c.heli?'Pare o helicóptero para abastecer':'Pare o carro para abastecer',1.5);return}bag.fuel--;drawBag();c.fuel=Math.min(100,c.fuel+50);say('⛽ Abastecido',2)}
 function carVsCars(c){if(c.dead&&!c.heli)return;const hh=!!c.heli;if(hh&&c.y-(c.fb||0)>2.4)return;let hit=0;
