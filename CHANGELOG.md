@@ -1,5 +1,14 @@
 # Histórico de versões
 
+## 3.2.0 — paraquedas novo
+- **Paraquedas retangular** (velame tipo asa, com linhas de verdade) no lugar da cúpula redonda.
+  Modelo pronto: parapente da SwissAirfields (CC0), usando só o velame e as linhas.
+- **Movimento realista e flexível**: abre amassado e infla com um tranco; o tecido ondula
+  com o vento (mais no bordo de fuga); nas curvas o velame inclina e o lado de dentro abaixa
+  (freio); a inclinação e a direção seguem o jogador com mola, com leve balanço.
+- As cores seguem a skin de paraquedas escolhida na loja.
+- A câmera se afasta um pouco com o paraquedas aberto para mostrar o velame inteiro.
+
 ## 3.1.2
 - **Céu novo e mais realista**: degradê do horizonte ao azul do alto, brilho do sol e nuvens
   macias que andam devagar, com sombra embaixo e borda iluminada.

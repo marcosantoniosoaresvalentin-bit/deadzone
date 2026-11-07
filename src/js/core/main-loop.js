@@ -66,7 +66,7 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;smoke
  if(ml>0){ml=Math.max(0,ml-dt);const q_=1-ml/.35,s_=Math.sin(Math.min(1,q_)*Math.PI);if(mode==='ground'){aR.sh.rotation.set(mlK?-1.2-.6*s_:-1.3-.9*s_,mlK?-.5*s_:0,mlK?-.4+.9*s_:.1);aR.el.rotation.x=-.25-(1-s_)*.7;tor.rotation.y=-.45*s_;tor.rotation.x+=.1*s_}}
  knf.visible=ml>0&&!!mlK&&mode==='ground';
  animExtra(dt);try{const g_=mode==='ground'&&ml<=0;CH.loco={w:mode==='lobby'?1:g_?(1-cr)*(1-Math.min(1,pr*3))*(1-air):0,sp:g_?amt*(6-cr*3)*(1-.4*adk)*(cast?.5:1):0,arm:!!(rf.visible||cast||GA||TH||ml>0),fw:l>.05?(dx*Math.sin(pl.rotation.y)+dz*Math.cos(pl.rotation.y))/l:1}}catch(e){}pl.position.set(P.x,P.y,P.z);shd.visible=mode==='ground'||mode==='lobby';shd.position.x=P.x;shd.position.z=P.z;{const g_=GY(P.x,P.z,P.y);shd.position.y=g_+.03;shd.scale.setScalar(Math.max(.4,1-(P.y-g_)*.2))};
- canopy.position.set(P.x,P.y+1.6,P.z);canopy.rotation.set(.55*fw-.3*bk,yaw,sd*.3,'YXZ');
+ if(window.DZChute&&DZChute.ready)DZChute.update(dt,fw,bk,sd);else{canopy.position.set(P.x,P.y+1.6,P.z);canopy.rotation.set(.55*fw-.3*bk,yaw,sd*.3,'YXZ')}
  for(const o of loot){const vv=Math.abs(o.x-P.x)+Math.abs(o.z-P.z)<110&&!MP;o.top.visible=vv;}
  for(const b of bots){
   if(b.air){
@@ -112,7 +112,7 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;smoke
   let cx_=lp(ax,bx,adk),cy_=lp(ay,eh,adk),cz_=lp(az,bz,adk);if(insB){cx_=Math.max(insB.x0+.4,Math.min(insB.x1-.4,cx_));cz_=Math.max(insB.z0+.4,Math.min(insB.z1-.4,cz_));cy_=Math.min(cy_,gyc+2.6)}{/* câmera não atravessa paredes: puxa para perto do personagem */const hx=P.x+rx*.25,hy=gyc+1.55-.4*cr-.8*pr,hz=P.z+rz*.25;let px=hx,py=hy,pz=hz,k=1;for(let i=1;i<=8;i++){const u=i/8,nx=hx+(cx_-hx)*u,ny=hy+(cy_-hy)*u,nz=hz+(cz_-hz)*u;if(blocked(px,py,pz,nx,ny,nz)){k=Math.max(.12,u-.18);break}px=nx;py=ny;pz=nz}if(k<1){cx_=hx+(cx_-hx)*k;cy_=hy+(cy_-hy)*k;cz_=hz+(cz_-hz)*k}}cam.position.set(cx_,cy_,cz_);cam.lookAt(lp(atx,btx,adk),lp(aty,bty,adk),lp(atz,btz,adk))}
  else if(mode==='drive'&&drv.heli){const c=drv,d_=15+Math.abs(c.spd)*.14+Math.min(10,c.y*.04);yaw=c.yaw;cam.position.set(c.x-Math.sin(c.yaw)*d_,Math.max(1.5,c.y+4.6+Math.sin(pit)*7),c.z-Math.cos(c.yaw)*d_);cam.lookAt(c.x+Math.sin(c.yaw)*6,c.y+2,c.z+Math.cos(c.yaw)*6)}
  else if(mode==='drive'){const c=drv,d_=8.5+Math.abs(c.spd)*.08,cy=c.g.position.y||0;yaw=c.yaw;const cx_=c.x-Math.sin(c.yaw)*d_,cz_=c.z-Math.cos(c.yaw)*d_;cam.position.set(cx_,Math.max(cy+3.4+Math.sin(pit)*3,TERH(cx_,cz_)+1.2),cz_);cam.lookAt(c.x+Math.sin(c.yaw)*4,cy+1.2,c.z+Math.cos(c.yaw)*4)}
- else{const ty=(mode==='ground'?P.y*.6+1.6-.45*cr-pr:P.y+1),cd=mode==='ground'?6.5:8;
+ else{/* com o paraquedas aberto a câmera se afasta e mira entre o jogador e o velame, para ver o paraquedas inteiro */const ty=(mode==='ground'?P.y*.6+1.6-.45*cr-pr:P.y+1+3*ch),cd=mode==='ground'?6.5:8+6*ch;
   cam.position.set(P.x-fx*cd*Math.cos(pit),ty+.2+Math.sin(pit)*cd,P.z-fz*cd*Math.cos(pit));cam.lookAt(P.x,ty,P.z)}
  {const air=mode==='plane'||mode==='sky'||mode==='chute'||(mode==='drive'&&drv&&drv.heli&&drv.y>14);if(air!==wasAir){wasAir=air;cam.far=air?2400:380;sc.fog.near=air?500:70;sc.fog.far=air?2200:340;sky.scale.setScalar(air?3.9:.62);cam.updateProjectionMatrix()}}
  if(mode==='ground')pl.visible=adk<.85;{const sv=mode==='ground'&&adk>.85&&scp>0;sce.style.display=sv?'block':'none';if(sv)sce.className='s'+scp}

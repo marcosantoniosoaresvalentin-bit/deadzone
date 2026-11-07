@@ -34,6 +34,7 @@ carregados (`DOMContentLoaded`).
 | 13 | `ui/minimap.js` | Minimapa, luzes internas e portas. |
 | 14 | `bots/navigation.js` | Navegação dos bots e linha de visão (paredes, relevo, janelas). |
 | 15 | `world/airplane-parachute.js` | Avião de lançamento, paraquedas e traçante. |
+| — | `world/parachute.js` | Paraquedas realista (modelo .glb) com deformação no shader: abertura, vento, curva e balanço. |
 | 16 | `bots/bots.js` | Criação, animação e comportamento de saque dos bots. |
 | 17 | `combat/loot.js` | Itens no chão (armas, kits, munição, equipamentos). |
 | 18 | `game/match.js` | Início da partida e rótulos dos botões. |

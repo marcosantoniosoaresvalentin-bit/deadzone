@@ -2,7 +2,7 @@
  * Criação, animação e comportamento de saque dos bots.
  */
 function mkBot(){const R_=buildChar(1),g=R_.pl;g.rig=R_;g.tr=R_.tor;g.aR=R_.aR;g.aL=R_.aL;g.l1=R_.lg1.th;g.l2=R_.lg2.th;
- const cn=new T.Mesh(bcg,bcm);cn.position.y=3.6;cn.scale.y=.7;cn.visible=false;g.add(cn);g.cn=cn;return g}
+ const nc=window.DZChute&&DZChute.botChute&&DZChute.botChute(),cn=nc||new T.Mesh(bcg,bcm);if(nc)cn.position.y=1.55;else{cn.position.y=3.6;cn.scale.y=.7}cn.visible=false;g.add(cn);g.cn=cn;return g}
 function armBot(b,t,sl){b.w=t;b.sil=sl||((t!=='shotgun'&&Math.random()<.2)?1:0);const w=mkW(t,0,b.sil);b.g.tr.add(w);b.wg=w;b.dw=0}
 const _a=new T.Vector3();
 function animBot(b,dt,mv,dp){const r=b.g.rig,k=Math.min(1,dt*8);b.am+=((mv?1:0)-b.am)*k;b.ph+=dt*9*mv;const s_=Math.sin(b.ph),c=Math.cos(b.ph),w=b.am;
