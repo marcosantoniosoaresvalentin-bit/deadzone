@@ -4,8 +4,8 @@
 const mm=$('mm'),mx=mm.getContext('2d');let mmT=0;
 function drawMM(dt){mmT-=dt;if(mmT>0)return;mmT=.12;const S=240,R_=150,k=S/2/R_,pl_=mode==='plane',c=pl_?plane.position:P,hx=pl_?pD.x:Math.sin(yaw),hz=pl_?pD.z:Math.cos(yaw);
  mx.setTransform(1,0,0,1,0,0);mx.clearRect(0,0,S,S);mx.translate(S/2,S/2);mx.rotate(-Math.PI/2-Math.atan2(hz,hx));
- mx.fillStyle='#35572f';mx.fillRect(-S,-S,S*2,S*2);
  const X=x=>(x-c.x)*k,Z=z=>(z-c.z)*k;
+ mx.fillStyle='#2f6f9a';mx.fillRect(-S,-S,S*2,S*2);mx.fillStyle='#d8c89a';mx.fillRect(X(-MAPH-12),Z(-MAPH-12),(2*MAPH+24)*k,(2*MAPH+24)*k);mx.fillStyle='#35572f';mx.fillRect(X(-MAPH),Z(-MAPH),2*MAPH*k,2*MAPH*k);
  mx.fillStyle='#6b6e72';for(const r of RDS)if(r[2]>c.x-200&&r[0]<c.x+200&&r[3]>c.z-200&&r[1]<c.z+200)mx.fillRect(X(r[0]),Z(r[1]),(r[2]-r[0])*k,(r[3]-r[1])*k);
  mx.fillStyle='#3a6ea5';for(const l of LK){mx.beginPath();mx.arc(X(l.x),Z(l.z),l.r*k,0,7);mx.fill()}mx.fillStyle='#e6d9b4';const L_=R_*1.5;for(const b of FP){if(b.x1<c.x-L_||b.x0>c.x+L_||b.z1<c.z-L_||b.z0>c.z+L_)continue;mx.fillRect(X(b.x0),Z(b.z0),(b.x1-b.x0)*k,(b.z1-b.z0)*k)}
  mx.strokeStyle='#ff4040';mx.lineWidth=2;mx.beginPath();mx.arc(X(zX),Z(zZ),zR*k,0,7);mx.stroke();const ra_=Math.PI/2+Math.atan2(hz,hx);for(const h of HPADS)if(Math.abs(h.x-c.x)<R_*1.4&&Math.abs(h.z-c.z)<R_*1.4){mx.save();mx.translate(X(h.x),Z(h.z));mx.rotate(ra_);mx.fillStyle='#1d6fd0';mx.strokeStyle='#fff';mx.lineWidth=1.5;mx.beginPath();mx.arc(0,0,8,0,7);mx.fill();mx.stroke();mx.fillStyle='#fff';mx.font='bold 11px sans-serif';mx.textAlign='center';mx.textBaseline='middle';mx.fillText('H',0,1);mx.restore()}

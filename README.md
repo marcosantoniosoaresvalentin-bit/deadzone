@@ -1,7 +1,11 @@
 # Deadzone 3D
 
 Battle royale 3D para celular e PC, feito com **Three.js**: 100 jogadores, salto de avião,
-paraquedas, zona que fecha, veículos, helicópteros, ilha flutuante e modo online com amigos.
+paraquedas, zona que fecha, veículos, helicópteros e modo online com amigos.
+
+> **Fase atual (3.0): mapa em branco.** O mapa antigo (cidades, casas, estradas, árvores,
+> ilha flutuante e loot) foi removido. O jogo agora usa uma ilha pequena e plana de
+> 500 x 500 m (`src/js/world/map.js`), para o mapa ser construído do zero, peça por peça.
 
 ![Antes e depois](docs/antes-depois.jpg)
 
@@ -10,13 +14,11 @@ paraquedas, zona que fecha, veículos, helicópteros, ilha flutuante e modo onli
 - **Personagens realistas**: soldado 3D com esqueleto, animações de captura de movimento
   (parado, andar, correr) misturadas às poses do jogo (mirar, agachar, deitar, paraquedas, morte)
   e mãos que seguram a arma com IK.
-- **Mapa com relevo**: morros e montanhas, cinco cidades, lagos, estradas e heliportos.
-- **Construções detalhadas** com interiores, telhas, tijolos, varandas, venezianas e
-  **janelas quebráveis** (tiro e explosão estilhaçam o vidro).
-- **Ilha flutuante** de rocha com árvore gigante, cachoeiras e loot premium.
-- **Armas**: M4A1, escopeta, pistola, sniper e arco, com lunetas, silenciador, recarga e recuo.
-- **Itens**: coletes, capacetes, mochilas, kits médicos, granadas, fumaça e gel de gelo.
-- **Veículos**: carros e helicópteros com combustível, dano e fogo.
+- **Mapa em branco**: ilha plana de 500 x 500 m cercada de mar, com dois heliportos.
+  O tamanho fica em `MAPH` (metade do lado) e a zona, a rota do avião e os mapas se ajustam sozinhos.
+- **Avião de lançamento**: modelo 3D de um C-130 com as quatro hélices girando.
+- **Veículos**: carros e helicópteros (modelos 3D prontos) com combustível, dano e fogo.
+- O código de armas e itens continua no projeto, mas nada aparece no chão do mapa por enquanto.
 - **Modos**: Clássico (100 jogadores), Gladiadores 1v1/duo, Contra Squad 4v4 e salas
   personalizadas, com convite para amigos e grupo (party).
 - **Lobby** com skins de roupa, paraquedas e veículo, conquistas, ranking, missões e loja.
@@ -68,7 +70,7 @@ deadzone/
 │   └── js/
 │       ├── core/           motor: renderizador, cena, áudio, laço principal
 │       ├── graphics/       realismo: personagens, vegetação, relevo, vidros, ilha
-│       ├── world/          mapa: estradas, construções, relevo, avião, arquipélago
+│       ├── world/          mapa em branco (map.js), avião e paraquedas
 │       ├── player/         personagem, controles, ações e animações
 │       ├── combat/         armas, tiros, loot, arremessáveis, arco, escopeta
 │       ├── vehicles/       carros, helicópteros e direção
@@ -105,6 +107,9 @@ Detalhes técnicos em [docs/ARQUITETURA.md](docs/ARQUITETURA.md).
 - Online: [MQTT.js](https://github.com/mqttjs/MQTT.js) (licença MIT) com broker público EMQX.
 - Personagem: avatar `readyplayer.me.glb` dos exemplos do three.js (Ready Player Me).
 - Animações de captura de movimento: `Soldier.glb` dos exemplos do three.js (Mixamo).
+- Avião C-130: "YC-130 (Prototype of C-130)" por [KOG_THORNS](https://sketchfab.com/ioai25312),
+  [Sketchfab](https://sketchfab.com/3d-models/yc-130prototype-of-c-130-11d237757851434ab5cb853db80376bb),
+  licença [CC-BY 4.0](http://creativecommons.org/licenses/by/4.0/) (texturas reduzidas e convertidas para WebP).
 - Veículos (sedã, SUV, picape, táxi, viatura, buggy e helicóptero): biblioteca Microsoft Remix 3D
   (CC0), via [Ethereal Engine Open Asset Kit](https://github.com/ir-engine/ir-engine-assets-basic).
 - Texturas de grama, tijolo e ondas da água: exemplos do three.js.

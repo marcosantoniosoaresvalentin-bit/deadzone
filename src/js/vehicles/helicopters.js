@@ -91,11 +91,10 @@ const hpT=ctex(256,256,(g,w,h)=>{g.clearRect(0,0,w,h);g.fillStyle='#3a3e44';g.be
  g.fillStyle='#f4f4f0';g.fillRect(78,68,22,120);g.fillRect(156,68,22,120);g.fillRect(78,115,100,26)},1,1);
 {const pm=new T.MeshStandardMaterial({map:hpT,alphaTest:.5,roughness:.95,depthTest:false,depthWrite:false}),pg=new T.PlaneGeometry(15,15),
  poleM=hmat(0xd8d8d8,.6,.2),flagM=hmat(0xff6a1a,.7,0),lampM=new T.MeshBasicMaterial({color:0xffd24a});
- const spots=[['Porto Real',118,-122],['Vila Pinheiro',-640,-612],['Distrito Industrial',648,-600],['Praia Dourada',-640,632],['Cidade Alta',640,642],
-  ['Lago Norte',-380,-262],['Base Leste',1010,10],['Base Oeste',-1010,70],['Posto Norte',70,-1010],['Posto Sul',-90,1020]];
+ const spots=[['Heliponto Norte',MAPH*.45,-MAPH*.5],['Heliponto Sul',-MAPH*.45,MAPH*.5]];
  const hitB=(x,z)=>{for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)for(const b of near(x+i*32,z+j*32))if(b.x1>x-13&&b.x0<x+13&&b.z1>z-13&&b.z0<z+13)return 1;return 0};
  const free=(x,z)=>!onRoad(x,z)&&!inFP(x,z,16)&&!LK.some(l=>Math.hypot(x-l.x,z-l.z)<l.r+16)&&!CARS.some(c=>Math.hypot(c.x-x,c.z-z)<16)&&!HPADS.some(h=>Math.hypot(h.x-x,h.z-z)<60)&&!hitB(x,z);
- for(const[n,sx,sz]of spots){let x=sx,z=sz,ok=0;for(let t=0;t<120&&!ok;t++){x=sx+(t?R(-1,1)*Math.min(70,6+t*1.2):0);z=sz+(t?R(-1,1)*Math.min(70,6+t*1.2):0);x=Math.max(-1150,Math.min(1150,x));z=Math.max(-1150,Math.min(1150,z));ok=free(x,z)}
+ for(const[n,sx,sz]of spots){let x=sx,z=sz,ok=0;for(let t=0;t<120&&!ok;t++){x=sx+(t?R(-1,1)*Math.min(70,6+t*1.2):0);z=sz+(t?R(-1,1)*Math.min(70,6+t*1.2):0);x=Math.max(-(MAPH-20),Math.min(MAPH-20,x));z=Math.max(-(MAPH-20),Math.min(MAPH-20,z));ok=free(x,z)}
   if(!ok)continue;
   const m=new T.Mesh(pg,pm);m.rotation.x=-Math.PI/2;m.position.set(x,.075,z);m.renderOrder=-.2;sc.add(m);
   const pg2=new T.Group();pg2.position.set(x,0,z);
@@ -115,7 +114,7 @@ function collideHeli(c){let hit=0;const rr=2.7;
   const qx=Math.max(b.x0,Math.min(c.x,b.x1)),qz=Math.max(b.z0,Math.min(c.z,b.z1)),ex=c.x-qx,ez=c.z-qz,d=Math.hypot(ex,ez);
   if(d<rr){if(d>0){c.x+=ex/d*(rr-d);c.z+=ez/d*(rr-d)}else c.x+=b.x0-c.x-rr;hit=1}}
  if(hit){const sp=Math.abs(c.spd);if(sp>8){hitCar(c,(sp-8)*1.6);if(drv===c&&sp>11)hp-=(sp-11)*1.1}c.spd*=-.3;sfx(400,Math.min(.6,sp/25),.15,0)}
- c.x=Math.max(-1190,Math.min(1190,c.x));c.z=Math.max(-1190,Math.min(1190,c.z))}
+ c.x=Math.max(-(MAPH-5),Math.min(MAPH-5,c.x));c.z=Math.max(-(MAPH-5),Math.min(MAPH-5,c.z))}
 function updHeli(c,dt,dv,ix,iy,d){
  const u=c.g.userData;c.fb=GY(c.x,c.z,c.y+.5);
  if(c.dead){if(c.g.visible){c.g.position.set(c.x,TERH(c.x,c.z),c.z)}return}

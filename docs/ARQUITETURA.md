@@ -10,7 +10,7 @@ depois. Por isso **a ordem no `index.html` importa**.
 ```
 three.js → GLTFLoader → SkeletonUtils → graphics/realism.js → mqtt.js
 → núcleo do jogo (core → world → vehicles → player → combat → … → player/animations)
-→ sistemas do lobby e telas (features/*, world/archipelago.js)
+→ sistemas do lobby e telas (features/*)
 ```
 
 O laço principal (`core/main-loop.js`) só começa depois que todos os arquivos foram
@@ -22,9 +22,7 @@ carregados (`DOMContentLoaded`).
 |---|---|---|
 | 1 | `graphics/realism.js` | Realismo: personagens 3D, vegetação, relevo, janelas quebráveis, ilha e iluminação. |
 | 2 | `core/engine.js` | Renderizador, cena, câmera, luzes, céu e utilitários de geometria/colisão. |
-| 3 | `world/roads.js` | Chão, estradas e cidades. |
-| 4 | `world/buildings.js` | Gerador de construções (fachadas, janelas, interiores) e quarteirões. |
-| 5 | `world/terrain-vegetation.js` | Relevo do terreno, árvores, pinheiros, pedras, arbustos e grama. |
+| 3 | `world/map.js` | Mapa em branco: ilha plana (MAPH), mar, heliportos e dados vazios do mapa (CITIES, LK...). |
 | 6 | `vehicles/cars.js` | Modelos e posicionamento dos carros. |
 | 7 | `vehicles/helicopters.js` | Helicópteros: modelo, heliportos e física de voo. |
 | 8 | `player/character.js` | Esqueleto procedural do personagem (base das animações). |
@@ -78,7 +76,6 @@ carregados (`DOMContentLoaded`).
 | 56 | `features/party-queue.js` | Fila de pareamento do grupo. |
 | 57 | `features/loading-screen.js` | Tela de carregamento. |
 | 58 | `features/victory-screen.js` | Tela de vitória. |
-| 59 | `world/archipelago.js` | Arquipélago / ilha flutuante. |
 | 60 | `features/party.js` | Grupo (party) no lobby. |
 | 61 | `features/lobby-split.js` | Divisão do painel social. |
 

@@ -1,5 +1,15 @@
 # Histórico de versões
 
+## 3.0.0 — mapa em branco
+- Parte da 2.1.2 (a 2.2.0 foi descartada).
+- **Mapa original removido**: cidades, casas, estradas, relevo, árvores, lagos e a ilha flutuante.
+- **Mapa novo, pequeno e vazio**: ilha plana de 500 x 500 m cercada de mar (`src/js/world/map.js`),
+  base para construir tudo do zero.
+- Nada de armas ou itens no chão (o código de armas continua no projeto).
+- Carros e helicópteros mantidos (dois heliportos na ilha).
+- **Avião de lançamento novo**: modelo 3D pronto de um C-130 (CC-BY 4.0), com hélices girando.
+- Zona, rota do avião, minimapa e mapa grande ajustados ao tamanho novo.
+
 ## 2.1.2
 - APK **release** (não é mais de depuração) assinado com os esquemas v1 + v2 + v3:
   corrige o erro "pacote inválido" em celulares Xiaomi.

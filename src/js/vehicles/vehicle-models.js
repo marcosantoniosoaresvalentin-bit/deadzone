@@ -224,4 +224,22 @@
     for (const n of names) new T.GLTFLoader().load(URL_[n], g => { SRC[n] = g.scene; if (--left === 0) { ready = true; } }, undefined, e => { console.warn('veículo', n, e); if (--left === 0) ready = true; });
   }
   load(); requestAnimationFrame(tick);
+
+  /* ---------- avião de lançamento: C-130 (YC-130 por KOG_THORNS, CC-BY 4.0) ---------- */
+  new T.GLTFLoader().load('assets/models/vehicles/plane.glb', gl => {
+    const go = () => {
+      if (typeof plane === 'undefined' || typeof props === 'undefined') { setTimeout(go, 200); return; }
+      const s = gl.scene; s.updateMatrixWorld(true);
+      const b = new T.Box3().setFromObject(s), holder = new T.Group();
+      // fuselagem no centro do grupo; o modelo vem com o nariz para -Z, então gira 180°
+      s.position.set(-(b.min.x + b.max.x) / 2, -2.8, -3.3); holder.add(s); holder.rotation.y = Math.PI;
+      s.traverse(o => { if (o.isMesh) { o.castShadow = false; o.receiveShadow = false; if (o.material) o.material.envMapIntensity = 1.2; } });
+      for (const c of plane.children) c.visible = false;
+      plane.add(holder); holder.updateMatrixWorld(true);
+      // as 4 hélices viram grupos com pivô no centro para girar
+      const pr = []; s.traverse(o => { if (o.isMesh && /^Wings00[1-4]$/.test(o.parent && o.parent.name)) pr.push(o); });
+      props.length = 0; for (const o of pr) { const p = pivotOut(holder, o); if (p) props.push(p); }
+    };
+    go();
+  }, undefined, e => console.warn('avião', e));
 })();

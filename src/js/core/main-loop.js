@@ -33,7 +33,7 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;smoke
  }else if(mode==='sky'||mode==='chute'){
   const ch_=mode==='chute',f_=-iy;fw+=((f_>0?f_:0)-fw)*k;bk+=((f_<0?-f_:0)-bk)*k;sd+=(ix-sd)*k;
   const fc=fw+.6*bk,sp=(ch_?12:26)*(1+.5*fw);
-  P.x=Math.max(-1190,Math.min(1190,P.x+(fx*fc-fz*sd)*sp*dt));P.z=Math.max(-1190,Math.min(1190,P.z+(fz*fc+fx*sd)*sp*dt));
+  P.x=Math.max(-(MAPH-5),Math.min(MAPH-5,P.x+(fx*fc-fz*sd)*sp*dt));P.z=Math.max(-(MAPH-5),Math.min(MAPH-5,P.z+(fz*fc+fx*sd)*sp*dt));
   const tv=ch_?-(5+9*fw-2.2*bk):-(40+25*fw-10*bk);P.vy+=(tv-P.vy)*Math.min(1,dt*(ch_?2.5:3));
   P.y+=P.vy*dt;if(mode==='sky'&&P.y<GY(P.x,P.z,1e9)+130)openChute();if(P.y<=GY(P.x,P.z,P.y))land();
   pl.rotation.y=yaw;amt+=(0-amt)*k;
@@ -70,7 +70,7 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;smoke
   if(b.air){
    if(b.waitForPlayer){
     if(mode==='plane'){
-     b.x=pS.x+pD.x*55*gt+(b.waitOffsetX||0);b.z=pS.z+pD.z*55*gt+(b.waitOffsetZ||0);b.y=450;
+     b.x=pS.x+pD.x*PLV*gt+(b.waitOffsetX||0);b.z=pS.z+pD.z*PLV*gt+(b.waitOffsetZ||0);b.y=450;
      b.g.position.set(b.x,b.y,b.z);b.g.visible=true;continue;
     }
     b.waitForPlayer=false;b.tx=P.x+(b.waitOffsetX||0)*2;b.tz=P.z+(b.waitOffsetZ||0)*2;
@@ -98,7 +98,7 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;smoke
   b.g.position.set(b.x,TERH(b.x,b.z),b.z);{const t_=b.g.rotation.y;if(b.sy==null)b.sy=t_;b.sy+=(((t_-b.sy+Math.PI*3)%(Math.PI*2))-Math.PI)*Math.min(1,dt*9);b.g.rotation.y=b.sy}if(b.g.visible)animBot(b,dt,mv,dp)}
  if(hp<=0&&mode!=='dead'&&!MP)die();
  if(trt>0){trt-=dt;if(trt<=0)trl.visible=false}
- if(plane.visible){for(const p of props)p.rotation.z+=dt*45;plane.position.set(pS.x+pD.x*55*gt,450,pS.z+pD.z*55*gt);if(gt>=44&&mode==='plane')jumpOut();if(gt>52)plane.visible=false}
+ if(plane.visible){for(const p of props)p.rotation.z+=dt*45;plane.position.set(pS.x+pD.x*PLV*gt,450,pS.z+pD.z*PLV*gt);if(gt>=PLT&&mode==='plane')jumpOut();if(gt>PLT+8)plane.visible=false}
  $('hpi').style.width=Math.max(0,hp)+'%';updArm();$('wpt').textContent=mode==='drive'?carTxt():wp?WS[wp].n+(scp?' · '+(scp===3?8:scp)+'x':'')+(silP?' · SIL':'')+' · '+slots[cur].mag+'/'+slots[cur].res+(rlOn?' · recarregando':''):(mode==='ground'?'Sem arma':'');$('alive').textContent='Vivos: '+alive;$('kl').textContent='Abates: '+kills;
  cross.style.display=(mode==='ground'&&wp&&adk<.3)?'block':'none';refreshLoot();
  insB=null;if(mode==='ground')for(const b of FP)if(P.x>b.x0&&P.x<b.x1&&P.z>b.z0&&P.z<b.z1){insB=b;break}insK+=((insB?1:0)-insK)*Math.min(1,dt*4);

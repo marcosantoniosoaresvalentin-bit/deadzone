@@ -920,7 +920,7 @@
     const fp = FP.filter(b => b.x1 > cx - Rr - 2 && b.x0 < cx + Rr + 2 && b.z1 > cz - Rr - 2 && b.z0 < cz + Rr + 2);
     const rd = RDS.filter(r => r[2] > cx - Rr - 8 && r[0] < cx + Rr + 8 && r[3] > cz - Rr - 8 && r[1] < cz + Rr + 8);
     const hp = (typeof HPADS !== 'undefined' ? HPADS : []).filter(h => Math.hypot(h.x - cx, h.z - cz) < Rr + 12);
-    const lk = LK.filter(l => Math.hypot(l.x - cx, l.z - cz) < l.r + Rr + 9), ct = CITIES.filter(c => Math.abs(c.x - cx) < 95 + Rr && Math.abs(c.z - cz) < 95 + Rr);
+    const lk = LK.filter(l => Math.hypot(l.x - cx, l.z - cz) < l.r + Rr + 9), ct = CITIES.filter(c => !c.blank && Math.abs(c.x - cx) < 95 + Rr && Math.abs(c.z - cz) < 95 + Rr);
     const cs = 1.45; let n = 0;
     for (let gx = Math.floor((cx - Rr) / cs); gx <= Math.ceil((cx + Rr) / cs) && n < 3200; gx++) for (let gz = Math.floor((cz - Rr) / cs); gz <= Math.ceil((cz + Rr) / cs) && n < 3200; gz++) {
       const h1 = hsh(gx, gz, 1), h2 = hsh(gx, gz, 2), h3 = hsh(gx, gz, 3);

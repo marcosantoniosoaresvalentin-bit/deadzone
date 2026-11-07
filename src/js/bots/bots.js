@@ -25,7 +25,7 @@ function botLoot(b,dt){b.lt-=dt;b.sd+=dt;
  b.wt-=dt;if(b.wt<=0||Math.hypot(b.tx-b.x,b.tz-b.z)<1.8){const C=nearestCity(b.x,b.z);b.tx=C.x+R(-95,95);b.tz=C.z+R(-95,95);b.wt=R(8,13)}
  botNavigate(b,b.tx,b.tz,2.8,dt);return 1
 }
-function spawnBot(q){const g=mkBot(),x0=pS.x+pD.x*55*gt,z0=pS.z+pD.z*55*gt;g.position.set(x0,450,z0);sc.add(g);
+function spawnBot(q){const g=mkBot(),x0=pS.x+pD.x*PLV*gt,z0=pS.z+pD.z*PLV*gt;g.position.set(x0,450,z0);sc.add(g);
  const b={g,x:x0,z:z0,y:450,vy:-2,air:1,ch:0,op:R(110,180),cn:g.cn,hp:100,tx:q.x,tz:q.z,wt:0,cd:R(1,2),dead:0,dt:0,w:null,sil:0,tgt:null,lt:R(0,1),st:0,sd:0,skip:null,tb:null,tg:null,ft:R(0,.65),am:0,ph:R(0,6),cr:0,dw:1,wg:null,team:0};
  // Bots caem desarmados e procuram armas no chão (botLoot), como os jogadores.
  bots.push(b);return b}

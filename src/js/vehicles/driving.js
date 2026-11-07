@@ -19,7 +19,7 @@ function collideCar(c){const sx=Math.sin(c.yaw),cz=Math.cos(c.yaw);let hit=0;
   for(const b of near(px,pz)){if(b.off)continue;const qx=Math.max(b.x0,Math.min(px,b.x1)),qz=Math.max(b.z0,Math.min(pz,b.z1)),ex=px-qx,ez=pz-qz,d=Math.hypot(ex,ez);if(d<1.15){if(d>0){ax+=ex/d*(1.15-d);az+=ez/d*(1.15-d)}else ax+=b.x0-px-1.15;hit=1}}
   c.x+=ax;c.z+=az}
  if(hit){const s=Math.abs(c.spd);if(s>5)hitCar(c,(s-5)*2.4);if(drv===c&&s>12)hp-=(s-12)*1.2;c.spd*=-.25;sfx(400,Math.min(.6,s/30),.15,0)}
- carVsCars(c);c.x=Math.max(-1190,Math.min(1190,c.x));c.z=Math.max(-1190,Math.min(1190,c.z))}
+ carVsCars(c);c.x=Math.max(-(MAPH-5),Math.min(MAPH-5,c.x));c.z=Math.max(-(MAPH-5),Math.min(MAPH-5,c.z))}
 function updCars(dt,ix,iy){nearCar=null;let nd=4.2;
  for(const c of CARS){const dv=drv===c&&mode==='drive',d=Math.hypot(c.x-P.x,c.z-P.z);c.g.visible=d<(c.heli?520:400)&&!MP;
   if(c.heli){if(MP)continue;updHeli(c,dt,dv,ix,iy,d);if(mode==='ground'&&!c.dead&&c.y-(c.fb||0)<1.5&&d-2<nd){nd=d-2;nearCar=c}continue}
