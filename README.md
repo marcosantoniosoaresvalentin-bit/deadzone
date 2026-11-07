@@ -79,7 +79,7 @@ deadzone/
 │       ├── fx/             partículas e efeitos
 │       └── features/       sistemas do lobby: conta, equipe, party, menus, telas
 ├── assets/
-│   ├── models/             human.glb (personagem) e animations.glb (captura de movimento)
+│   ├── models/             human.glb (personagem), animations.glb (captura de movimento), vehicles/ (veículos)
 │   ├── textures/           grama, tijolo, água
 │   ├── images/             telas de carregamento, vitória e fim de partida
 │   └── icons/              ícones do app
@@ -105,6 +105,8 @@ Detalhes técnicos em [docs/ARQUITETURA.md](docs/ARQUITETURA.md).
 - Online: [MQTT.js](https://github.com/mqttjs/MQTT.js) (licença MIT) com broker público EMQX.
 - Personagem: avatar `readyplayer.me.glb` dos exemplos do three.js (Ready Player Me).
 - Animações de captura de movimento: `Soldier.glb` dos exemplos do three.js (Mixamo).
+- Veículos (sedã, SUV, picape, táxi, viatura, buggy e helicóptero): biblioteca Microsoft Remix 3D
+  (CC0), via [Ethereal Engine Open Asset Kit](https://github.com/ir-engine/ir-engine-assets-basic).
 - Texturas de grama, tijolo e ondas da água: exemplos do three.js.
 - Folhas, agulhas, casca, pedra, telhas e reboco: geradas por código.
 

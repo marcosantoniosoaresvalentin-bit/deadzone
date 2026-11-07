@@ -140,3 +140,88 @@
     for (const s of [-1, 1]) for (let i = 0; i < 9; i++) { const w = new T.Mesh(new T.BoxGeometry(.06, .32, .38), wm); w.position.set(s * 2.06, .9, -7 + i * 1.5); plane.add(w); }
   };
 })();
+
+/* =====================================================================
+   MODELOS 3D REALISTAS (Microsoft Remix 3D, CC0)
+   Carregados depois que o mapa existe; cada veículo troca o visual quando
+   está perto da câmera (longe, fica o modelo leve para não pesar no celular).
+   ===================================================================== */
+(function () {
+  // caminhos escritos por extenso: o build de arquivo único embute cada um
+  const URL_ = { helicopter: 'assets/models/vehicles/helicopter.glb', sedan: 'assets/models/vehicles/sedan.glb', suv: 'assets/models/vehicles/suv.glb', pickup: 'assets/models/vehicles/pickup.glb', taxi: 'assets/models/vehicles/taxi.glb', police: 'assets/models/vehicles/police.glb', buggy: 'assets/models/vehicles/buggy.glb' };
+  const CAR_MODELS = [['sedan', 3, 4.5], ['suv', 3, 4.6], ['pickup', 2, 5.0], ['taxi', 1, 4.4], ['police', 1, 4.8], ['buggy', 1, 3.7]];
+  const SRC = {}; let ready = false;
+  const VEH = window.DZVEH = [];
+  // registra cada carro/heli criado (inclusive os do lobby)
+  const _car = window.DZCar, _heli = window.DZHeli;
+  window.DZCar = function (m, o) { const g = _car(m, o); VEH.push({ g, heli: 0 }); return g; };
+  window.DZHeli = function (o) { const g = _heli(o); VEH.push({ g, heli: 1 }); return g; };
+
+  let prep = function (scene, len) {
+    // centraliza, apoia no chão e ajusta o comprimento (eixo Z = frente)
+    const root = new T.Group(), holder = new T.Group(); holder.add(scene); root.add(holder);
+    scene.updateMatrixWorld(true);
+    const b = new T.Box3().setFromObject(scene), s = b.getSize(new T.Vector3()), k = len / Math.max(.001, s.z);
+    holder.scale.setScalar(k); holder.position.set(-(b.min.x + b.max.x) / 2 * k, -b.min.y * k, -(b.min.z + b.max.z) / 2 * k);
+    scene.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; if (o.material) { o.material.envMapIntensity = 1.1; } } });
+    return root;
+  };
+  function pivotOut(root, node) {
+    // coloca uma peça (rotor) num grupo com pivô no centro dela, para poder girar
+    if (!node) return null; root.updateMatrixWorld(true);
+    const b = new T.Box3().setFromObject(node), c = b.getCenter(new T.Vector3()), piv = new T.Group();
+    piv.position.copy(root.worldToLocal(c.clone())); root.add(piv);
+    piv.updateMatrixWorld(true); piv.attach(node); return piv;
+  }
+  function clone(name) { return SRC[name] ? T.SkeletonUtils.clone(SRC[name]) : null; }
+
+  function dress(v) {
+    if (v.m || !ready) return;
+    const g = v.g;
+    if (v.heli) {
+      const sc_ = clone('helicopter'); if (!sc_) return;
+      const root = prep(sc_, 14.2); root.position.z = -.9;
+      let mr = null, hub = null, tf = null;
+      sc_.traverse(o => { if (/main_rotor/.test(o.name)) mr = mr || o; if (/rotor_hub/.test(o.name)) hub = hub || o; if (/back_fan/.test(o.name)) tf = tf || o; if (/pilot|helmet_glass/i.test(o.name)) o.visible = false; });
+      g.add(root);
+      v.rot = pivotOut(root, mr); v.trot = pivotOut(root, tf);
+      // esconde o modelo antigo (mantém luzes, discos dos rotores e fogo)
+      const u = g.userData; v.old = [u.stat, u.gl, ...(u.rot ? u.rot.children : []), ...(u.trot ? u.trot.children : [])].filter(Boolean);
+    } else {
+      let r = Math.random() * CAR_MODELS.reduce((a, c) => a + c[1], 0), pick = CAR_MODELS[0];
+      for (const c of CAR_MODELS) { r -= c[1]; if (r <= 0) { pick = c; break; } }
+      const sc_ = clone(pick[0]); if (!sc_) return;
+      const root = prep(sc_, pick[2]); g.add(root);
+      v.old = g.children.filter(c => c !== root);
+    }
+    v.root = g.children.find(c => c.userData && c.userData.dz) || null;
+  }
+  // marca a raiz do modelo novo para achar depois
+  const _prep = prep;
+  prep = function (s, l) { const r = _prep(s, l); r.userData.dz = 1; return r; };
+
+  const _v = new T.Vector3(); let burnM = null;
+  function tick() {
+    requestAnimationFrame(tick);
+    if (!ready || typeof cam === 'undefined') return;
+    const q = (typeof CFG !== 'undefined' && CFG.q != null) ? CFG.q : 2, near = q === 0 ? 70 : q === 1 ? 110 : 160;
+    for (const v of VEH) {
+      if (!v.root) { dress(v); if (!v.root) continue; }
+      v.g.getWorldPosition(_v); const n = _v.distanceTo(cam.position) < near;
+      if (n !== v.n) { v.n = n; v.root.visible = n; for (const o of v.old) o.visible = !n; }
+      if (v.heli) {
+        const u = v.g.userData;
+        if (v.rot && u.rot) v.rot.rotation.y = u.rot.rotation.y;
+        if (v.trot && u.trot) v.trot.rotation.x = u.trot.rotation.x;
+      } else if (!v.burnt) {
+        const c = typeof CARS !== 'undefined' ? CARS.find(c => c.g === v.g) : null;
+        if (c && c.dead) { v.burnt = 1; burnM = burnM || (typeof BURN !== 'undefined' ? BURN : new T.MeshStandardMaterial({ color: 0x151515 })); v.root.traverse(o => { if (o.isMesh) o.material = burnM; }); }
+      }
+    }
+  }
+  function load() {
+    const names = ['helicopter', ...CAR_MODELS.map(c => c[0])]; let left = names.length;
+    for (const n of names) new T.GLTFLoader().load(URL_[n], g => { SRC[n] = g.scene; if (--left === 0) { ready = true; } }, undefined, e => { console.warn('veículo', n, e); if (--left === 0) ready = true; });
+  }
+  load(); requestAnimationFrame(tick);
+})();

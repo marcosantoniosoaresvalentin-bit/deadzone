@@ -1,5 +1,13 @@
 # Histórico de versões
 
+## 2.1.0
+- **Veículos com modelos 3D realistas** (não mais feitos por código): sedã, SUV, picape,
+  táxi, viatura de polícia e buggy off-road, sorteados pelo mapa; helicóptero de ataque
+  com rotor principal e de cauda girando. Modelos otimizados (4 MB no total) e trocados
+  pelo modelo leve quando estão longe da câmera.
+- O avião de lançamento continua o modelo próprio (não há modelo de avião de transporte
+  com licença livre disponível).
+
 ## 2.0.0
 - **Personagem humano realista** (rosto, barba, cabelo, pele) no lugar do soldado de armadura,
   com animações de captura de movimento traduzidas para o novo esqueleto.
