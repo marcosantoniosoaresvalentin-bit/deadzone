@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 3.7.1
+- **Rodas do buggy certas**: antes giravam pedaços do chassi. Agora o modelo é dividido em
+  peças soltas e as rodas são achadas pela forma (pneus redondos encostando no chão); pneu, aro
+  e cubo giram juntos no eixo de verdade, e as rodas da frente viram quando você esterça.
+- **Analógico só esterça**: acelerar, frear e ré são só pelos pedais (no PC: W/S ou setas e espaço).
+- Física com as medidas reais do buggy (bitola mais larga e entre-eixos certo).
+
 ## 3.7.0
 - **Rodas girando**: as rodas do buggy (pneu, aro e cubo) foram separadas da carroceria e
   giram conforme a velocidade (distância / raio); no ar continuam girando e vão perdendo giro.

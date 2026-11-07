@@ -268,41 +268,53 @@
     root.updateMatrixWorld(true); const inv = new T.Matrix4().copy(root.matrixWorld).invert(), v = new T.Vector3();
     const meshes = []; root.traverse(o => { if (o.isMesh && o.geometry && o.geometry.attributes.position) meshes.push(o); });
     if (!W) {
-      // pneu = malha escura (sem textura) com mais vértices
-      let tire = null; for (const m of meshes) { const mt = m.material; if (mt && !mt.map && mt.color && mt.color.r < .12 && (!tire || m.geometry.attributes.position.count > tire.geometry.attributes.position.count)) tire = m; }
-      if (!tire) return null;
-      const P = tire.geometry.attributes.position, d = deq(P), M = new T.Matrix4().multiplyMatrices(inv, tire.matrixWorld), Q = [0, 1, 2, 3].map(() => ({ mn: new T.Vector3(1e9, 1e9, 1e9), mx: new T.Vector3(-1e9, -1e9, -1e9), n: 0 }));
-      for (let i = 0; i < P.count; i++) { v.set(P.getX(i) / d, P.getY(i) / d, P.getZ(i) / d).applyMatrix4(M); const q = Q[(v.x > 0 ? 1 : 0) + (v.z > 0 ? 2 : 0)]; q.mn.min(v); q.mx.max(v); q.n++; }
-      // segunda passada: só o que está na altura de uma roda (tira estepe/peças escuras de cima)
-      { const rs = Q.filter(q => q.n > 20).map(q => (q.mx.y - q.mn.y) / 2).sort((a, b) => a - b), rRef = rs[0] || .5, lim = Math.min(...Q.map(q => q.mn.y)) + rRef * 2.15;
-        for (const q of Q) { q.mn.set(1e9, 1e9, 1e9); q.mx.set(-1e9, -1e9, -1e9); q.n = 0; }
-        for (let i = 0; i < P.count; i++) { v.set(P.getX(i) / d, P.getY(i) / d, P.getZ(i) / d).applyMatrix4(M); if (v.y > lim) continue; const q = Q[(v.x > 0 ? 1 : 0) + (v.z > 0 ? 2 : 0)]; q.mn.min(v); q.mx.max(v); q.n++; } }
-      const wheels = Q.filter(q => q.n > 20).map(q => ({ c: q.mn.clone().add(q.mx).multiplyScalar(.5), r: (q.mx.y - q.mn.y) / 2, hw: (q.mx.x - q.mn.x) / 2 + .03, front: q.mn.z + q.mx.z > 0, parts: [] }));
-      if (wheels.length !== 4) return null;
-      // separa os triângulos de cada malha que estão dentro de uma roda
+      // 1) cada malha é dividida em PEÇAS SOLTAS (componentes conectados); posições em metros no carro
+      const comps = [];
       for (const m of meshes) {
-        const g = m.geometry, P2 = g.attributes.position, N2 = g.attributes.normal, U2 = g.attributes.uv, dp = deq(P2), dn = N2 ? deq(N2) : 1, du = U2 ? deq(U2) : 1;
-        const M2 = new T.Matrix4().multiplyMatrices(inv, m.matrixWorld), NM = new T.Matrix3().getNormalMatrix(M2);
-        const idx = g.index ? g.index.array : null, nt = (idx ? idx.length : P2.count) / 3, pos = new Float32Array(P2.count * 3);
-        for (let i = 0; i < P2.count; i++) { v.set(P2.getX(i) / dp, P2.getY(i) / dp, P2.getZ(i) / dp).applyMatrix4(M2); pos[i * 3] = v.x; pos[i * 3 + 1] = v.y; pos[i * 3 + 2] = v.z; }
-        const inW = (i, w) => { const x = pos[i * 3] - w.c.x, y = pos[i * 3 + 1] - w.c.y, z = pos[i * 3 + 2] - w.c.z; return Math.abs(x) < w.hw && y * y + z * z < (w.r * 1.04) ** 2; };
-        const keep = [], take = wheels.map(() => []);
-        for (let t = 0; t < nt; t++) { const a = idx ? idx[t * 3] : t * 3, b = idx ? idx[t * 3 + 1] : t * 3 + 1, c = idx ? idx[t * 3 + 2] : t * 3 + 2; let hit = -1;
-          for (let k = 0; k < 4; k++) if (inW(a, wheels[k]) && inW(b, wheels[k]) && inW(c, wheels[k])) { hit = k; break; }
-          if (hit < 0) keep.push(a, b, c); else take[hit].push(a, b, c); }
-        if (keep.length === nt * 3) continue;
-        // peças da roda: geometria nova em metros, centrada no eixo da roda
-        take.forEach((tri, k) => { if (!tri.length) return; const w = wheels[k], n = tri.length, pp = new Float32Array(n * 3), nn = new Float32Array(n * 3), uu = new Float32Array(n * 2);
+        const g = m.geometry, P = g.attributes.position, dp = deq(P), M = new T.Matrix4().multiplyMatrices(inv, m.matrixWorld), n = P.count, pos = new Float32Array(n * 3);
+        for (let i = 0; i < n; i++) { v.set(P.getX(i) / dp, P.getY(i) / dp, P.getZ(i) / dp).applyMatrix4(M); pos[i * 3] = v.x; pos[i * 3 + 1] = v.y; pos[i * 3 + 2] = v.z; }
+        const par = new Int32Array(n); for (let i = 0; i < n; i++) par[i] = i;
+        const f = i => { while (par[i] !== i) { par[i] = par[par[i]]; i = par[i]; } return i; }, u = (a, b) => { a = f(a); b = f(b); if (a !== b) par[a] = b; };
+        const key = new Map(); for (let i = 0; i < n; i++) { const k = Math.round(pos[i * 3] * 2000) + ',' + Math.round(pos[i * 3 + 1] * 2000) + ',' + Math.round(pos[i * 3 + 2] * 2000); const o = key.get(k); if (o != null) u(i, o); else key.set(k, i); }
+        const idx = g.index ? g.index.array : null, nt = (idx ? idx.length : n) / 3, tri = [];
+        for (let t = 0; t < nt; t++) { const a = idx ? idx[t * 3] : t * 3, b = idx ? idx[t * 3 + 1] : t * 3 + 1, c = idx ? idx[t * 3 + 2] : t * 3 + 2; u(a, b); u(b, c); tri.push(a, b, c); }
+        const C = new Map();
+        for (let t = 0; t < tri.length; t += 3) { const r = f(tri[t]); let c = C.get(r); if (!c) C.set(r, c = { m, pos, tri: [], mn: new T.Vector3(1e9, 1e9, 1e9), mx: new T.Vector3(-1e9, -1e9, -1e9) }); for (let q = 0; q < 3; q++) { const i = tri[t + q]; c.tri.push(i); v.set(pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2]); c.mn.min(v); c.mx.max(v); } }
+        for (const c of C.values()) comps.push(c);
+      }
+      // 2) pneus = peças redondas de lado (altura ~ comprimento), grandes e encostando no chão
+      let minY = 1e9; for (const c of comps) minY = Math.min(minY, c.mn.y);
+      const tires = comps.filter(c => { const sy = c.mx.y - c.mn.y, sz = c.mx.z - c.mn.z; return sy > .45 && Math.abs(sy - sz) < .15 * sy && c.mn.y < minY + .12; })
+        .sort((a, b) => (b.mx.y - b.mn.y) - (a.mx.y - a.mn.y));
+      // um pneu por quadrante (o maior)
+      const quad = {}; for (const c of tires) { const k = (c.mn.x + c.mx.x > 0 ? 1 : 0) + (c.mn.z + c.mx.z > 0 ? 2 : 0); if (!quad[k]) quad[k] = c; }
+      if (Object.keys(quad).length !== 4) { console.warn('rodas: pneus não encontrados'); return null; }
+      const wheels = Object.values(quad).map(c => ({ c: c.mn.clone().add(c.mx).multiplyScalar(.5), r: Math.max(c.mx.y - c.mn.y, c.mx.z - c.mn.z) / 2, hw: (c.mx.x - c.mn.x) / 2, front: c.mn.z + c.mx.z > 0, parts: [], comps: [] }));
+      // 3) peça vai para a roda se estiver INTEIRA dentro do cilindro da roda (pneu, aro, cubo, parafusos)
+      for (const c of comps) for (const w of wheels) {
+        const ok = Math.max(Math.abs(c.mn.x - w.c.x), Math.abs(c.mx.x - w.c.x)) < w.hw + .1 && [[c.mn.y, c.mn.z], [c.mn.y, c.mx.z], [c.mx.y, c.mn.z], [c.mx.y, c.mx.z]].every(([y, z]) => (y - w.c.y) ** 2 + (z - w.c.z) ** 2 < (w.r * 1.06) ** 2 * 1.42);
+        if (ok && (c.mx.y - c.mn.y) < w.r * 2.15) { w.comps.push(c); c.wheel = w; break; }
+      }
+      // 4) monta a geometria de cada roda (centrada no eixo) e tira essas peças da carroceria
+      const byMesh = new Map(); for (const c of comps) { let e = byMesh.get(c.m); if (!e) byMesh.set(c.m, e = { keep: [], wh: new Map() }); if (c.wheel) { let a = e.wh.get(c.wheel); if (!a) e.wh.set(c.wheel, a = []); a.push(...c.tri); } else e.keep.push(...c.tri); }
+      for (const [m, e] of byMesh) {
+        if (!e.wh.size) continue;
+        const g = m.geometry, N2 = g.attributes.normal, U2 = g.attributes.uv, dn = N2 ? deq(N2) : 1, du = U2 ? deq(U2) : 1, M2 = new T.Matrix4().multiplyMatrices(inv, m.matrixWorld), NM = new T.Matrix3().getNormalMatrix(M2), pos = comps.find(c => c.m === m).pos;
+        for (const [w, tri] of e.wh) {
+          const n = tri.length, pp = new Float32Array(n * 3), nn = new Float32Array(n * 3), uu = new Float32Array(n * 2);
           tri.forEach((i, j) => { pp[j * 3] = pos[i * 3] - w.c.x; pp[j * 3 + 1] = pos[i * 3 + 1] - w.c.y; pp[j * 3 + 2] = pos[i * 3 + 2] - w.c.z;
             if (N2) { v.set(N2.getX(i) / dn, N2.getY(i) / dn, N2.getZ(i) / dn).applyMatrix3(NM).normalize(); nn[j * 3] = v.x; nn[j * 3 + 1] = v.y; nn[j * 3 + 2] = v.z; }
             if (U2) { uu[j * 2] = U2.getX(i) / du; uu[j * 2 + 1] = U2.getY(i) / du; } });
           const ge = new T.BufferGeometry(); ge.setAttribute('position', new T.BufferAttribute(pp, 3)); ge.setAttribute('normal', new T.BufferAttribute(nn, 3)); if (U2) ge.setAttribute('uv', new T.BufferAttribute(uu, 2)); if (!N2) ge.computeVertexNormals(); ge.computeBoundingSphere();
-          w.parts.push({ ge, mat: m.material }); });
-        g.setIndex(keep); // a carroceria fica sem as rodas (geometria compartilhada pelos clones)
+          w.parts.push({ ge, mat: m.material });
+        }
+        g.setIndex(e.keep);   // carroceria sem as rodas (geometria compartilhada pelos clones)
       }
+      for (const w of wheels) delete w.comps;
       W = WSPLIT[kind] = wheels;
+      window.DZWHEELS = window.DZWHEELS || {}; DZWHEELS[kind] = wheels.map(w => [w.c.x, w.c.y - w.r, w.c.z, w.r]);
     }
-    // monta as rodas deste carro: pivô de direção (frente) > pivô de giro > peças
+    // rodas deste carro: pivô de direção (frente) > pivô de giro > peças
     return W.map(w => { const steer = new T.Group(); steer.position.copy(w.c); const spin = new T.Group(); steer.add(spin);
       for (const p of w.parts) { const me = new T.Mesh(p.ge, p.mat); me.castShadow = true; me.receiveShadow = true; spin.add(me); }
       root.add(steer); return { steer, spin, r: w.r, front: w.front }; });

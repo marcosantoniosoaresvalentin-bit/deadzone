@@ -44,8 +44,9 @@ function collideCar(c){const sx=Math.sin(c.yaw),cz=Math.cos(c.yaw);let hit=0;
 // Nada "puxa" o carro de volta para ficar em pé: se passar do ponto de equilíbrio, ele tomba.
 // Estado: c.cy (altura do centro de massa), c.vy, c.p (arfagem), c.r (rolagem), c.pv, c.rv.
 const CPH={g:24,cm:.62,ix:2.8,iz:1.15,
- wheels:[[.86,.02,1.38],[-.86,.02,1.38],[.86,.02,-1.38],[-.86,.02,-1.38]],
- body:[[.95,.32,2.2],[-.95,.32,2.2],[.95,.32,-2.2],[-.95,.32,-2.2],[.92,1.5,1.1],[-.92,1.5,1.1],[.92,1.5,-1.2],[-.92,1.5,-1.2]],
+ // medidas do buggy: rodas em x ±1,12, eixo dianteiro z +1,38 e traseiro z -1,1
+ wheels:[[1.12,.02,1.38],[-1.12,.02,1.38],[1.12,.02,-1.1],[-1.12,.02,-1.1]],
+ body:[[1.0,.3,1.85],[-1.0,.3,1.85],[1.0,.3,-1.85],[-1.0,.3,-1.85],[.85,1.45,.6],[-.85,1.45,.6],[.85,1.45,-1.2],[-.85,1.45,-1.2]],
  kw:150,dw:18,kb:700,db:45,fw:70,fb:260};
 const wrapA=a=>((a+Math.PI*3)%(Math.PI*2))-Math.PI;
 const _cE=new T.Euler(),_cQ=new T.Quaternion(),_cV=new T.Vector3(),_cO=new T.Vector3(),_cU=new T.Vector3();
@@ -106,7 +107,7 @@ function updCars(dt,ix,iy){nearCar=null;let nd=4.2;
   c.steer=dv?Math.max(-1,Math.min(1,ix)):0;   // direção das rodas da frente (só visual)
   if(dv||Math.abs(c.spd)>.05||c.cy==null||!(c.sleep>.5)){
    // pedais: acelerar = frente; ré = freia até quase parar e então anda para trás (a física já faz isso); freio = para
-   if(dv){const cb_=window.DZPED||{},th=cb_.g?1:cb_.r?-1:cb_.b?0:-iy;let a=0;if(c.fuel>0&&c.ok!==false&&c.wn>=2)a=th*(th>0?15:9)*((th>0&&c.spd<-.3)||(th<0&&c.spd>.3)?2:1);c.spd+=a*dt;if(Math.abs(th)<.05||c.fuel<=0)c.spd-=Math.sign(c.spd)*Math.min(Math.abs(c.spd),4*dt);
+   if(dv){const cb_=window.DZPED||{},th=cb_.g?1:cb_.r?-1:cb_.b?0:(keys.w||keys.arrowup?1:keys.s||keys.arrowdown?-1:0);let a=0;if(c.fuel>0&&c.ok!==false&&c.wn>=2)a=th*(th>0?15:9)*((th>0&&c.spd<-.3)||(th<0&&c.spd>.3)?2:1);c.spd+=a*dt;if(Math.abs(th)<.05||c.fuel<=0)c.spd-=Math.sign(c.spd)*Math.min(Math.abs(c.spd),4*dt);
     c.yaw-=ix*dt*1.9*Math.max(-1,Math.min(1,c.spd/7))*(c.wn>=2&&c.ok!==false?1:0);if(c.fuel>0)c.fuel=Math.max(0,c.fuel-dt*(.08+.35*Math.abs(th)+.008*Math.abs(c.spd)));
     for(const b of bots){if(b.dead||b.air||b.team===1||Math.abs(c.spd)<6)continue;if(Math.hypot(b.x-c.x,b.z-c.z)<2.2&&tt-(b.ro||0)>.4){b.ro=tt;b.hp-=Math.abs(c.spd)*6;if(b.hp<=0&&!b.dead)killBot(b,1)}}}
    else if(c.wn>=2)c.spd-=Math.sign(c.spd)*Math.min(Math.abs(c.spd),5*dt);
