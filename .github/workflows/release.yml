@@ -12,6 +12,9 @@ on:
         required: true
         default: 'v1.0.0'
 
+env:
+  DZ_KS_PASS: dz-${{ github.repository_id }}-key
+
 permissions:
   contents: write
 
@@ -28,21 +31,29 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Reaproveita a chave de assinatura (mesma assinatura em todas as versões)
+      - name: Chave de assinatura (guardada no cache do GitHub, fora do código)
         uses: actions/cache@v4
         with:
-          path: ~/.android/debug.keystore
-          key: deadzone-debug-keystore-v1
+          path: .signing/deadzone.jks
+          key: deadzone-signing-key-v1
+      - name: Cria a chave na primeira vez
+        run: |
+          mkdir -p .signing
+          if [ ! -f .signing/deadzone.jks ]; then
+            keytool -genkeypair -keystore .signing/deadzone.jks -storepass "$DZ_KS_PASS" -keypass "$DZ_KS_PASS" \
+              -alias deadzone -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Deadzone, O=Deadzone, C=BR"
+          fi
+          echo "DZ_KEYSTORE=$PWD/.signing/deadzone.jks" >> "$GITHUB_ENV"
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10.2'
-      - run: gradle -p android assembleDebug
+      - run: gradle -p android assembleRelease
       - name: Renomeia arquivos
         env:
           VERSION: ${{ inputs.version || github.ref_name }}
         run: |
-          cp android/app/build/outputs/apk/debug/app-debug.apk "Deadzone-${VERSION}.apk"
-          cp android/app/build/outputs/apk/debug/app-debug.apk "Deadzone.apk"
+          cp android/app/build/outputs/apk/release/app-release.apk "Deadzone-${VERSION}.apk"
+          cp android/app/build/outputs/apk/release/app-release.apk "Deadzone.apk"
           cp dist/Deadzone.html "Deadzone-${VERSION}.html"
       - uses: softprops/action-gh-release@v2
         with:

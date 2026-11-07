@@ -6,6 +6,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+env:
+  DZ_KS_PASS: dz-${{ github.repository_id }}-key
+
 permissions:
   contents: read
 
@@ -40,19 +43,27 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Reaproveita a chave de assinatura (mesma assinatura em todas as versões)
+      - name: Chave de assinatura (guardada no cache do GitHub, fora do código)
         uses: actions/cache@v4
         with:
-          path: ~/.android/debug.keystore
-          key: deadzone-debug-keystore-v1
+          path: .signing/deadzone.jks
+          key: deadzone-signing-key-v1
+      - name: Cria a chave na primeira vez
+        run: |
+          mkdir -p .signing
+          if [ ! -f .signing/deadzone.jks ]; then
+            keytool -genkeypair -keystore .signing/deadzone.jks -storepass "$DZ_KS_PASS" -keypass "$DZ_KS_PASS" \
+              -alias deadzone -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Deadzone, O=Deadzone, C=BR"
+          fi
+          echo "DZ_KEYSTORE=$PWD/.signing/deadzone.jks" >> "$GITHUB_ENV"
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10.2'
       - name: Compila o APK
-        run: gradle -p android assembleDebug
+        run: gradle -p android assembleRelease
       - name: Verifica o APK (assinatura, manifesto e conteúdo)
         run: |
-          APK=android/app/build/outputs/apk/debug/app-debug.apk
+          APK=android/app/build/outputs/apk/release/app-release.apk
           BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
           echo "== apksigner"; "$BT/apksigner" verify --verbose --print-certs "$APK" || true
           echo "== badging"; "$BT/aapt2" dump badging "$APK" | head -40 || true
@@ -63,6 +74,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: Deadzone-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 14

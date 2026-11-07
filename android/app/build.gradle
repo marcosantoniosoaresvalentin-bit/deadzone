@@ -10,13 +10,38 @@ android {
         applicationId 'com.deadzone.game'
         minSdk 24
         targetSdk 35
-        versionCode 5
-        versionName '2.1.1'
+        versionCode 6
+        versionName '2.1.2'
+    }
+
+    // Assinatura: no GitHub Actions a chave vem do cache (variáveis DZ_KEYSTORE/DZ_KS_PASS);
+    // no computador, sem essas variáveis, usa a chave de depuração padrão.
+    signingConfigs {
+        deadzone {
+            def ks = System.getenv('DZ_KEYSTORE')
+            if (ks) {
+                storeFile file(ks)
+                storePassword System.getenv('DZ_KS_PASS')
+                keyAlias 'deadzone'
+                keyPassword System.getenv('DZ_KS_PASS')
+            } else {
+                storeFile file("${System.getProperty('user.home')}/.android/debug.keystore")
+                storePassword 'android'
+                keyAlias 'androiddebugkey'
+                keyPassword 'android'
+            }
+            // v1 + v2 + v3: alguns celulares (ex.: Xiaomi) recusam APK só com v2
+            enableV1Signing true
+            enableV2Signing true
+            enableV3Signing true
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
+            debuggable false
+            signingConfig signingConfigs.deadzone
         }
     }
 

@@ -16,3 +16,4 @@ android/local.properties
 Thumbs.db
 .idea/
 .vscode/
+.signing/

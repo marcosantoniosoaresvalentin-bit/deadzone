@@ -1,5 +1,10 @@
 # Histórico de versões
 
+## 2.1.2
+- APK **release** (não é mais de depuração) assinado com os esquemas v1 + v2 + v3:
+  corrige o erro "pacote inválido" em celulares Xiaomi.
+- Chave de assinatura fixa, criada e guardada no cache do GitHub (fora do código).
+
 ## 2.1.1
 - O GitHub Actions reaproveita a mesma chave de assinatura entre as compilações:
   as próximas versões do APK instalam por cima (evita o erro "pacote inválido").
