@@ -1,5 +1,11 @@
 # Histórico de versões
 
+## 3.7.3
+- **Rodas da frente retas e girando certo**: no modelo do buggy as rodas dianteiras vinham
+  esterçadas e inclinadas. Agora o eixo real de cada pneu é calculado pela forma dele e a roda
+  é endireitada; ela gira em volta do próprio eixo, sem balançar.
+- Só giram as peças redondas (pneu, aro, cubo); a manga/suspensão acompanha a direção sem girar.
+
 ## 3.7.2
 - **Pneu gira e vira junto com a roda** (antes só o aro de dentro girava/virava; o pneu ficava
   preso na carroceria).
