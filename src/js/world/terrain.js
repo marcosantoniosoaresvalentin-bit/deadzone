@@ -42,8 +42,7 @@ const TER=(()=>{
  }
  function rawH(x,z){
   const t=coastDist(x,z);
-  if(t<=0){const sea=Math.max(-14,.35+t*.09-Math.max(0,-t-30)*.05),e=Math.max(Math.abs(x),Math.abs(z));
-   return Math.max(sea,-1.1-ss(MAPH-4,MAPH+30,e)*13)}                      // fundo do mar (raso até a borda jogável)
+  if(t<=0)return Math.max(-14,.35+t*.09-Math.max(0,-t-30)*.05);           // fundo do mar (segue o litoral)
   const beach=.35+Math.min(t,22)*.085;                                    // praia sobe devagar
   const k=ss(12,48,t);return beach+Math.max(0,landH(x,z)-beach)*k;
  }
@@ -128,7 +127,7 @@ window.TERH=TER.terh;window.TERG=TER.terg;
  const wm=new T.MeshStandardMaterial({color:lin(0x2f6f9a),metalness:.5,roughness:.12,transparent:true,opacity:.86});if(window.DZR)DZR.waterMat(wm);wm.opacity=.82;
  const sea=new T.Mesh(new T.PlaneGeometry(6000,6000),wm);sea.rotation.x=-Math.PI/2;sea.position.y=0;sc.add(sea);
  // fundo do mar escuro além do terreno (senão aparece um "quadrado" claro em volta da ilha, visto do alto)
- const deep=new T.Mesh(new T.PlaneGeometry(6000,6000),new T.MeshBasicMaterial({color:lin(0x0d3550)}));deep.rotation.x=-Math.PI/2;deep.position.y=-14.6;deep.renderOrder=-3;sc.add(deep)}
+ const deep=new T.Mesh(new T.PlaneGeometry(6000,6000),new T.MeshStandardMaterial({color:lin(0x0d3550),roughness:.97,metalness:0}));deep.rotation.x=-Math.PI/2;deep.position.y=-14.05;deep.renderOrder=-3;sc.add(deep)}
 
 // ---------- imagem do terreno vista de cima (minimapa e mapa grande) ----------
 const TERMAP=(()=>{const W=1024,E=MAPH+30,c=document.createElement('canvas');c.width=c.height=W;const g=c.getContext('2d'),im=g.createImageData(W,W),d=im.data;

@@ -4,6 +4,14 @@
 let last=0;
 // Proteção: um erro em um quadro não pode congelar a tela.
 function loop(t){requestAnimationFrame(loop);try{loopBody(t)}catch(e){dzErr(e);try{ren.render(sc,cam)}catch(_){}}}
+// CÂMERA LIVRE 360° nos veículos: arrastar a tela gira a câmera em volta do carro/helicóptero.
+// Sem tocar por 2,5 s e andando, ela volta devagar para trás do veículo.
+let dcY=0,dcLast=null,dcT=0,dcCar=null;
+function dcam(c,dt){if(dcCar!==c){dcCar=c;dcY=0;dcLast=null}
+ if(dcLast!=null){const d=((yaw-dcLast+Math.PI*3)%(Math.PI*2))-Math.PI;if(Math.abs(d)>1e-4){dcY+=d;dcT=tt}}
+ dcY=((dcY+Math.PI*3)%(Math.PI*2))-Math.PI;
+ if(tt-dcT>2.5&&Math.abs(c.spd)>4)dcY*=Math.exp(-dt*1.4);
+ const a=c.yaw+dcY;yaw=a;dcLast=a;return a}
 function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;smokeTick(dt);if(spec)specTick();
  
  if(mode!=='lobby'&&mode!=='dead'){gt+=dt;while(si<sched.length&&sched[si].lt<=gt)spawnBot(sched[si++])}
@@ -51,11 +59,11 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;smoke
   const G=[tb-sA*.85*w+.1*cR,kb+Math.max(0,cA)*w+.32*cR,tb+sA*.85*w+.1*cL,kb+Math.max(0,-cA)*w+.32*cL,aRx,aRz,aRe,aLx,aLz,aLe,.1*amt+.35*kn,sA*.12*w+.14*cs*cm,-p2*1.2-.3*kn,.95-.33*kn,p2*Math.PI/2,p2*.2,-p2*.85];
   const pR=Math.max(0,sd),pL=Math.max(0,-sd),sw2=Math.sin(tt*1.5)*.08;
   const S=[.3+.2*bk,.6,.3+.2*bk,.6,-.2,1.3,-.3,-.2,-1.3,-.3,-.25,0,-1,.95,1.35+.35*fw-.25*bk,.5,-.85];
-  const C=[-.25+sw2-1.25*bk,.4-.25*bk,-.25-sw2-1.25*bk,.4-.25*bk,Math.PI*1.08+.9*pR,.3,-.2-1.2*pR,Math.PI*1.08+.9*pL,-.3,-.2-1.2*pL,-.05-.15*bk,0,-.2,.95,.5*fw-.4*bk,0,0];
+  const C=[-.25+sw2-1.25*bk,.4-.25*bk,-.25-sw2-1.25*bk,.4-.25*bk,Math.PI*1.08+1.45*pR,.3+.25*pR,-.25-1.75*pR,Math.PI*1.08+1.45*pL,-.3-.25*pL,-.25-1.75*pL,-.05-.15*bk,0,-.2,.95,.18*fw-.3*bk,0,0];
   const F=G.map((v,i)=>v*(1-sk-ch)+S[i]*sk+C[i]*ch);
   lg1.th.rotation.x=F[0];lg1.kn.rotation.x=F[1];lg2.th.rotation.x=F[2];lg2.kn.rotation.x=F[3];
   aR.sh.rotation.set(F[4],0,F[5]);aR.el.rotation.x=F[6];aL.sh.rotation.set(F[7],0,F[8]);aL.el.rotation.x=F[9];
-  tor.rotation.x=F[10]+(pit-.25)*.3*(1-p2)*ar;tor.rotation.y=F[11];head.rotation.x=F[12];hips.position.y=F[13];body.rotation.x=F[14];body.position.set(0,F[15],F[16]);body.rotation.z=.06*cs*cm;hips.rotation.y=.1*cs*cm;tor.rotation.z=-.05*cs*cm;lg1.th.rotation.z=-.12*p2-.06*cL;lg2.th.rotation.z=.12*p2+.06*cR;
+  tor.rotation.x=F[10]+(pit-.25)*.3*(1-p2)*ar;tor.rotation.y=F[11];head.rotation.x=F[12];hips.position.y=F[13];body.rotation.x=F[14];body.position.set(0,F[15],F[16]);body.rotation.z=.06*cs*cm;hips.rotation.y=.1*cs*cm;tor.rotation.z=-.05*cs*cm-.2*sd*ch;lg1.th.rotation.z=-.12*p2-.06*cL;lg2.th.rotation.z=.12*p2+.06*cR;
   rf.visible=!!ar;rf.rotation.x=-p2*Math.PI/2-.3*g2+(pit-.25)*.4*(1-p2);rf.position.set(.1,.27+.5*p2,.22*(1-p2));rf.rotation.z=0;if(dw<1){const e=dw*dw*(3-2*dw);rf.position.x=lp(0,rf.position.x,e);rf.position.y=lp(.32,rf.position.y,e);rf.position.z=lp(-.4,rf.position.z,e);rf.rotation.x=lp(-1.35,rf.rotation.x,e);rf.rotation.z=.3*(1-e)}rf.position.z-=.05*kk;rf.rotation.x-=.09*kk;if(wp==='bow'){const bq=BC>0?BC/.45:0;rf.position.z+=.14*BD-.07*bq;rf.position.y+=.04*BD;rf.rotation.x+=.06*BD}rf.position.y+=Math.abs(Math.sin(cw))*.012*w;
   if(ar){rf.updateMatrix();const hh=HG[wp],hv=q=>new T.Vector3(q[0],q[1],q[2]).applyMatrix4(rf.matrix),r_=hv(hh[0]),l_=hv(hh[1]);
    if(gm>.01)l_.lerp(hv(MG[wp]),gm*(1-p2));
@@ -110,8 +118,8 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;smoke
   const ax=P.x-fx*cd*c2+rx*so,az=P.z-fz*cd*c2+rz*so,ay=Math.max(gyc+.35,ty+.2+Math.sin(pit)*cd),atx=ax+fx*30*cl,aty=ay-Math.sin(lk)*30,atz=az+fz*30*cl;
   const eh=P.y+Math.max(.35,1.55-.5*cr-1.2*pr),bx=P.x+fx*.3,bz=P.z+fz*.3,l2=pit-.25,c3=Math.cos(l2),btx=bx+fx*30*c3,bty=eh-Math.sin(l2)*30,btz=bz+fz*30*c3;
   let cx_=lp(ax,bx,adk),cy_=lp(ay,eh,adk),cz_=lp(az,bz,adk);if(insB){cx_=Math.max(insB.x0+.4,Math.min(insB.x1-.4,cx_));cz_=Math.max(insB.z0+.4,Math.min(insB.z1-.4,cz_));cy_=Math.min(cy_,gyc+2.6)}{/* câmera não atravessa paredes: puxa para perto do personagem */const hx=P.x+rx*.25,hy=gyc+1.55-.4*cr-.8*pr,hz=P.z+rz*.25;let px=hx,py=hy,pz=hz,k=1;for(let i=1;i<=8;i++){const u=i/8,nx=hx+(cx_-hx)*u,ny=hy+(cy_-hy)*u,nz=hz+(cz_-hz)*u;if(blocked(px,py,pz,nx,ny,nz)){k=Math.max(.12,u-.18);break}px=nx;py=ny;pz=nz}if(k<1){cx_=hx+(cx_-hx)*k;cy_=hy+(cy_-hy)*k;cz_=hz+(cz_-hz)*k}}cam.position.set(cx_,cy_,cz_);cam.lookAt(lp(atx,btx,adk),lp(aty,bty,adk),lp(atz,btz,adk))}
- else if(mode==='drive'&&drv.heli){const c=drv,d_=15+Math.abs(c.spd)*.14+Math.min(10,c.y*.04);yaw=c.yaw;cam.position.set(c.x-Math.sin(c.yaw)*d_,Math.max(1.5,c.y+4.6+Math.sin(pit)*7),c.z-Math.cos(c.yaw)*d_);cam.lookAt(c.x+Math.sin(c.yaw)*6,c.y+2,c.z+Math.cos(c.yaw)*6)}
- else if(mode==='drive'){const c=drv,d_=8.5+Math.abs(c.spd)*.08,cy=c.g.position.y||0;yaw=c.yaw;const cx_=c.x-Math.sin(c.yaw)*d_,cz_=c.z-Math.cos(c.yaw)*d_;cam.position.set(cx_,Math.max(cy+3.4+Math.sin(pit)*3,TERH(cx_,cz_)+1.2),cz_);cam.lookAt(c.x+Math.sin(c.yaw)*4,cy+1.2,c.z+Math.cos(c.yaw)*4)}
+ else if(mode==='drive'&&drv.heli){const c=drv,d_=15+Math.abs(c.spd)*.14+Math.min(10,c.y*.04),cy=dcam(c,dt);cam.position.set(c.x-Math.sin(cy)*d_*Math.cos(pit*.6),Math.max(1.5,c.y+4.6+Math.sin(pit)*9),c.z-Math.cos(cy)*d_*Math.cos(pit*.6));cam.lookAt(c.x+Math.sin(cy)*6,c.y+2,c.z+Math.cos(cy)*6)}
+ else if(mode==='drive'){const c=drv,d_=8.5+Math.abs(c.spd)*.08,cy=c.g.position.y||0,ya=dcam(c,dt);const cx_=c.x-Math.sin(ya)*d_*Math.cos(pit*.5),cz_=c.z-Math.cos(ya)*d_*Math.cos(pit*.5);cam.position.set(cx_,Math.max(cy+3.4+Math.sin(pit)*5,TERH(cx_,cz_)+1.2),cz_);cam.lookAt(c.x+Math.sin(ya)*4,cy+1.2,c.z+Math.cos(ya)*4)}
  else{/* com o paraquedas aberto a câmera se afasta e mira entre o jogador e o velame, para ver o paraquedas inteiro */const ty=(mode==='ground'?P.y*.6+1.6-.45*cr-pr:P.y+1+3*ch),cd=mode==='ground'?6.5:8+6*ch;
   cam.position.set(P.x-fx*cd*Math.cos(pit),ty+.2+Math.sin(pit)*cd,P.z-fz*cd*Math.cos(pit));cam.lookAt(P.x,ty,P.z)}
  {const air=mode==='plane'||mode==='sky'||mode==='chute'||(mode==='drive'&&drv&&drv.heli&&drv.y>14);if(air!==wasAir){wasAir=air;cam.far=air?2400:380;sc.fog.near=air?500:70;sc.fog.far=air?2200:340;sky.scale.setScalar(air?3.9:.62);cam.updateProjectionMatrix()}

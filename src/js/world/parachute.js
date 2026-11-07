@@ -25,7 +25,7 @@
     transformed.y+=(sin(uT*3.1+transformed.x*.9)*.05+sin(uT*7.7+transformed.x*2.3+transformed.z*3.)*.028*ch)*w;
     transformed.z+=sin(uT*5.3+transformed.x*1.7)*.045*ch*w;
     float br=max(0.,uTurn*sx);transformed.y-=br*ch*1.1*w;transformed.z+=br*ch*.35*w;
-    transformed.y-=uDive*.35*(1.-ch)*w;
+    transformed.y-=uDive*.12*(1.-ch)*w;
     transformed.x*=mix(.16,1.,clamp(o,0.,1.15));
     transformed.y=mix(transformed.y*.5+2.2*w,transformed.y,clamp(o,0.,1.));
     transformed+=vec3(sin(transformed.y*3.1+uT*21.),sin(transformed.x*2.3+uT*17.)*.6,cos(transformed.x*3.7+uT*23.))*.42*(1.-clamp(o,0.,1.))*w;`;
@@ -81,7 +81,7 @@
     // abertura com "tranco": 0 -> passa um pouco de 1 -> assenta
     const t = ST.t; ST.open = t < 1.6 ? 1 - Math.exp(-t * 3.2) * Math.cos(t * 7.5) : 1; U.uOpen.value = Math.max(0, ST.open);
     // molas: inclinação lateral (curva), arfagem (mergulho/planar) e direção com atraso
-    const tr = sd * .5, tp = .38 * fw - .22 * bk;
+    const tr = sd * .5, tp = .14 * fw - .18 * bk;
     ST.rv += ((tr - ST.roll) * 22 - ST.rv * 5.5) * dt; ST.roll += ST.rv * dt;
     ST.pv += ((tp - ST.pitch) * 18 - ST.pv * 5) * dt; ST.pitch += ST.pv * dt;
     if (ST.yaw == null) ST.yaw = yaw; ST.yaw += (((yaw - ST.yaw + Math.PI * 3) % (Math.PI * 2)) - Math.PI) * Math.min(1, dt * 3.5);

@@ -1,0 +1,37 @@
+/* Deadzone · css/buttons.css
+ * Botões de jogo SÓ COM ÍCONE, sem cor: vidro escuro, borda clara fina e um anel interno
+ * com quatro marcas (a "mira" do Deadzone). Carregado por último para valer sobre o resto.
+ */
+.bt.ibt{
+  background:radial-gradient(circle at 50% 38%,rgba(40,44,48,.55),rgba(8,10,12,.55) 70%)!important;
+  border:1.6px solid rgba(235,240,245,.62)!important;
+  box-shadow:0 2px 10px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.12)!important;
+  color:rgba(245,248,250,.94)!important;
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+  font-size:0!important;line-height:0;padding:0!important;
+  transition:transform .08s ease,background .12s ease,border-color .12s ease;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent
+}
+/* anel interno com 4 marcas (identidade Deadzone) */
+.bt.ibt::before{content:"";position:absolute;inset:5px;border-radius:50%;pointer-events:none;
+  border:1px solid rgba(255,255,255,.13);
+  -webkit-mask:conic-gradient(#000 0 40deg,transparent 40deg 50deg,#000 50deg 130deg,transparent 130deg 140deg,#000 140deg 220deg,transparent 220deg 230deg,#000 230deg 310deg,transparent 310deg 320deg,#000 320deg);
+  mask:conic-gradient(#000 0 40deg,transparent 40deg 50deg,#000 50deg 130deg,transparent 130deg 140deg,#000 140deg 220deg,transparent 220deg 230deg,#000 230deg 310deg,transparent 310deg 320deg,#000 320deg)}
+.bt.ibt:active,.bt.ibt.on{transform:scale(.93);background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.28),rgba(255,255,255,.10) 70%)!important;border-color:#fff!important}
+.bt.ibt .ico{width:46%;height:46%;pointer-events:none;filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.55))}
+.bt.ibt .ico-n{position:absolute;right:6px;bottom:5px;font:700 10px/1 system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.55);border-radius:6px;padding:2px 4px;pointer-events:none}
+/* tiro principal um pouco maior */
+#bf.ibt{width:70px!important;height:70px!important}
+#bf.ibt .ico{width:50%;height:50%}
+/* botões dos carros: acelerar (grande), frear e ré */
+#bga,#bbk,#brv{display:none;z-index:5}
+#bga{right:calc(env(safe-area-inset-right,0px) + 26px);bottom:calc(env(safe-area-inset-bottom,0px) + 34px);width:86px!important;height:86px!important}
+#bbk{right:calc(env(safe-area-inset-right,0px) + 124px);bottom:calc(env(safe-area-inset-bottom,0px) + 30px);width:70px!important;height:70px!important}
+#brv{right:calc(env(safe-area-inset-right,0px) + 132px);bottom:calc(env(safe-area-inset-bottom,0px) + 116px);width:58px!important;height:58px!important}
+#bga .ico{width:42%;height:42%}
+/* sair do carro fica acima dos pedais */
+body #bv.ibt{width:58px!important;height:58px!important}
+/* barra de armas: silhueta apagada quando vazio */
+.slot-empty{display:flex;align-items:center;justify-content:center;opacity:.5;pointer-events:none}
+.slot-empty .ico{width:40px;height:22px}
+#sl div.on{border-color:#fff!important;background:rgba(255,255,255,.18)!important}

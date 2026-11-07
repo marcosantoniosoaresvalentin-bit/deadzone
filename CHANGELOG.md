@@ -1,5 +1,23 @@
 # Histórico de versões
 
+## 3.5.0
+- **Botões novos, só com ícone** (sem texto e sem cor): vidro escuro, borda clara e anel com
+  quatro marcas (identidade Deadzone). Todos os botões do personagem trocados por ícones
+  (atirar/socar/lançar, mirar, recarregar, pular, agachar, deitar, mochila, granada, gel,
+  fumaça, porta, entrar/sair do carro, abastecer, saltar do avião, abrir paraquedas, subir/descer).
+  Armas vazias na barra viram silhuetas de fuzil e pistola.
+- **Pedais do carro**: acelerar, frear e ré. Andando para frente, a ré freia até quase parar e
+  então começa a andar para trás. No PC, espaço = freio.
+- **Câmera livre 360°** nos veículos: arrastar a tela gira a câmera em volta do carro/helicóptero;
+  sem tocar por 2,5 s e andando, ela volta devagar para trás do veículo.
+- **Física de capotar**: o carro é uma caixa que tomba de verdade (fica de lado ou de teto) e
+  inclina nas curvas rápidas. Capotado e parado por 3 s, ele se desvira sozinho.
+  Sem tração de lado/de teto.
+- **Pousar em pé depois de um salto não dá mais dano** (só pancada forte de lado ou de teto).
+- **Mar em volta da ilha sem o "quadrado"** visto do avião (fundo do mar segue o litoral).
+- **Paraquedas inclina bem menos** ao mergulhar, e o personagem **puxa as cordas** do lado
+  da curva (braço desce, tronco inclina).
+
 ## 3.4.1
 - **Dá para ver a ilha de dentro do avião**: a neblina do chão (que voltava ao sair do lobby)
   escondia tudo lá de cima; agora no ar a neblina fica sempre longe. A parede da zona também
