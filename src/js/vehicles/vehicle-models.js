@@ -291,10 +291,13 @@
       if (Object.keys(quad).length !== 4) { console.warn('rodas: pneus não encontrados'); return null; }
       const wheels = Object.values(quad).map(c => ({ c: c.mn.clone().add(c.mx).multiplyScalar(.5), r: Math.max(c.mx.y - c.mn.y, c.mx.z - c.mn.z) / 2, hw: (c.mx.x - c.mn.x) / 2, front: c.mn.z + c.mx.z > 0, parts: [], comps: [] }));
       // 3) peça vai para a roda se estiver INTEIRA dentro do cilindro da roda (pneu, aro, cubo, parafusos)
-      for (const c of comps) for (const w of wheels) {
-        const ok = Math.max(Math.abs(c.mn.x - w.c.x), Math.abs(c.mx.x - w.c.x)) < w.hw + .1 && [[c.mn.y, c.mn.z], [c.mn.y, c.mx.z], [c.mx.y, c.mn.z], [c.mx.y, c.mx.z]].every(([y, z]) => (y - w.c.y) ** 2 + (z - w.c.z) ** 2 < (w.r * 1.06) ** 2 * 1.42);
-        if (ok && (c.mx.y - c.mn.y) < w.r * 2.15) { w.comps.push(c); c.wheel = w; break; }
-      }
+      // o próprio pneu sempre entra; as outras peças entram se couberem no "tambor" da roda
+      // (caixa da peça dentro do quadrado de lado 2r em volta do eixo, e na largura do pneu)
+      Object.values(quad).forEach((c, k) => { c.wheel = wheels[k]; wheels[k].comps.push(c); });
+      for (const c of comps) { if (c.wheel) continue; for (const w of wheels) {
+        const R = w.r * 1.05, ok = Math.max(Math.abs(c.mn.x - w.c.x), Math.abs(c.mx.x - w.c.x)) < w.hw + .1 &&
+          c.mn.y > w.c.y - R && c.mx.y < w.c.y + R && c.mn.z > w.c.z - R && c.mx.z < w.c.z + R;
+        if (ok) { w.comps.push(c); c.wheel = w; break; } } }
       // 4) monta a geometria de cada roda (centrada no eixo) e tira essas peças da carroceria
       const byMesh = new Map(); for (const c of comps) { let e = byMesh.get(c.m); if (!e) byMesh.set(c.m, e = { keep: [], wh: new Map() }); if (c.wheel) { let a = e.wh.get(c.wheel); if (!a) e.wh.set(c.wheel, a = []); a.push(...c.tri); } else e.keep.push(...c.tri); }
       for (const [m, e] of byMesh) {

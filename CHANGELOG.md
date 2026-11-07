@@ -1,5 +1,11 @@
 # Histórico de versões
 
+## 3.7.2
+- **Pneu gira e vira junto com a roda** (antes só o aro de dentro girava/virava; o pneu ficava
+  preso na carroceria).
+- **Corrigido o erro "Cannot read properties of undefined (reading 'n')"** ao entrar numa
+  partida: o online sorteava uma entre 5 cidades, mas o mapa novo tem só um ponto de referência.
+
 ## 3.7.1
 - **Rodas do buggy certas**: antes giravam pedaços do chassi. Agora o modelo é dividido em
   peças soltas e as rodas são achadas pela forma (pneus redondos encostando no chão); pneu, aro

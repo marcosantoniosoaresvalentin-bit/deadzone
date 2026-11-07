@@ -22,7 +22,7 @@ function queue(m,need,done){m=m+'_'+need;const QO=$('qo');let on=1,t0=Date.now()
   $('qt').textContent='Pareando jogadores... '+Math.max(0,Math.ceil(10-el))+'s';
   $('qc').innerHTML='Jogadores reais encontrados: <b>'+n+'</b> / '+need+'<br><small>Jogadores têm prioridade · '+(need-n)+' vaga(s) serão completadas por bots</small>';
   if(el<10)return;
-  if(!GO&&!go2){const ids=[mpId,...fr].sort().slice(0,need);if(ids[0]===mpId||el>=17){const chosen=ids[0]===mpId?ids:[mpId];const names={};names[mpId]=(()=>{try{const u=JSON.parse(localStorage.getItem('deadzone_current_user')||'null');return String(localStorage.getItem('deadzone_player_name')||u?.name||'Jogador').slice(0,22)}catch(_){return 'Jogador'}})();for(const id of chosen)if(U[id]?.name)names[id]=U[id].name;GO={mid:Math.random().toString(36).slice(2,8),ids:chosen,seed:Math.random()*4e9>>>0,city:CITIES[Math.random()*5|0].n,names};go2=1;
+  if(!GO&&!go2){const ids=[mpId,...fr].sort().slice(0,need);if(ids[0]===mpId||el>=17){const chosen=ids[0]===mpId?ids:[mpId];const names={};names[mpId]=(()=>{try{const u=JSON.parse(localStorage.getItem('deadzone_current_user')||'null');return String(localStorage.getItem('deadzone_player_name')||u?.name||'Jogador').slice(0,22)}catch(_){return 'Jogador'}})();for(const id of chosen)if(U[id]?.name)names[id]=U[id].name;GO={mid:Math.random().toString(36).slice(2,8),ids:chosen,seed:Math.random()*4e9>>>0,city:CITIES[Math.random()*CITIES.length|0].n,names};go2=1;
     if(GO.ids.length>1&&mq&&mq.connected){let k=0;const pv=setInterval(()=>{mq.publish(gt_,JSON.stringify(GO),{qos:1});if(++k>5)clearInterval(pv)},400)}}}
   if(GO){stop();done(GO.ids,GO.mid,GO.seed,GO.city,GO.names||{})}},500)}
 

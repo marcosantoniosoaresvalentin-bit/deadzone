@@ -22,7 +22,7 @@ function sqRound(){const S=SQ;RB.r=S.r;
  if(S.meDead||!slots.some(q=>q)){slots[0]=slots[1]=null;slots[2]={t:'pistol',mag:12,res:48,sc:0,sil:0};cur=2;dw=0;drawSlots()}
  const m_=S.pad[S.mt],o_=S.pad[1-S.mt];PD[0].position.set(m_[0],0,m_[1]);PD[1].position.set(o_[0],0,o_[1]);PD[0].visible=PD[1].visible=true;
  S.meDead=0;S.lk=null;S.st='buy';RB.state='pick';$('sqb').style.display='block';say('Fase de compras: use a loja 🛒',4)}
-function sqStart(ids,mid,seed,city){const C=CITIES.find(c=>c.n===city)||CITIES[Math.random()*5|0],cx=C.x,cz=C.z;
+function sqStart(ids,mid,seed,city){const C=CITIES.find(c=>c.n===city)||CITIES[Math.random()*CITIES.length|0],cx=C.x,cz=C.z;
  const matchSize=localStorage.getItem('dzMatchSize')||'4v4';const teamCap=matchSize==='1v1'?1:matchSize==='2v2'?2:matchSize==='3v3'?3:4;
  if(ids.length>1)netOpen(mid,ids,'squad');MP=1;mpWho='a';opId='';AR={cx,cz,x0:cx-110,x1:cx+110,z0:cz-110,z1:cz+110};RB={r:1,state:'pick',sp:null};
  let sd=seed>>>0;const rnd=()=>{sd=(sd*1664525+1013904223)>>>0;return sd/4294967296},pb=sqPads(cx,cz,rnd),tm={};ids.forEach((id,i)=>tm[id]=(i+1)%2);
