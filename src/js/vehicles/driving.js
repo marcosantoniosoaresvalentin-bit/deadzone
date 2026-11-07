@@ -18,10 +18,13 @@ function seatPose(dt_,ix_){const c=drv;if(!c||!c.g)return;const g=c.g,s=(g.userD
  lg1.th.rotation.set(-1.42,0,.1);lg2.th.rotation.set(-1.42,0,-.1);lg1.kn.rotation.x=1.25;lg2.kn.rotation.x=1.25;
  if(c.heli){ // helicóptero: mão direita no manche, esquerda no coletivo
   const k=Math.sin(tt*1.3)*.015;ik(aR,1,.12+steerA*.05,.12+k,.36);ik(aL,-1,-.24,.06,.2);
- }else{ // volante à frente do peito; as mãos ficam em "10 e 2" e giram junto com o volante
-  const R=.19,cx=0,cy=.3,cz=.4,tl=.45,rot=-steerA*1.25;
-  const hand=(th,side)=>{const sx_=Math.sin(th)*R,uy=Math.cos(th)*R;ik(side>0?aR:aL,side,cx+sx_,cy+uy*Math.cos(tl),cz-uy*Math.sin(tl))};
-  hand(Math.PI/3+rot,1);hand(-Math.PI/3+rot,-1)}
+ }else{ // mãos em "10 e 2" NO ARO DO VOLANTE de verdade; o volante gira e as mãos vão junto
+  const w=g.userData.wheelObj,rot=-steerA*1.6;
+  if(w){w.rotation.z=rot;w.updateMatrixWorld(true);pl.updateMatrixWorld(true);const R=(g.userData.cab&&g.userData.cab.userData.wheelR)||.17;
+   // os dois pontos do aro ("10 e 2"), levados para o espaço do tronco; cada braço pega o ponto do SEU lado
+   const pA=new T.Vector3(R*.87,R*.5,0),pB=new T.Vector3(-R*.87,R*.5,0);w.localToWorld(pA);w.localToWorld(pB);tor.worldToLocal(pA);tor.worldToLocal(pB);
+   const pp=pA.x>pB.x?[pA,pB]:[pB,pA];ik(aR,1,pp[0].x,pp[0].y,pp[0].z);ik(aL,-1,pp[1].x,pp[1].y,pp[1].z)}
+  else{const R=.19,cy=.3,cz=.4,tl=.45;const hand=(th,side)=>{const sx_=Math.sin(th)*R,uy=Math.cos(th)*R;ik(side>0?aR:aL,side,sx_,cy+uy*Math.cos(tl),cz-uy*Math.sin(tl))};hand(Math.PI/3+rot,1);hand(-Math.PI/3+rot,-1)}}
  try{rf.visible=false}catch(e){}}
 function carBtn(){if(mode==='drive')exitCar();else if(mode==='ground'&&nearCar)enterCar(nearCar)}
 function refuel(){const c=mode==='drive'?drv:nearCar;if(!c||c.dead)return;if(!bag.fuel){say('Sem galão de gasolina',1.5);return}if(c.fuel>=100){say('Tanque cheio',1.5);return}if(mode==='drive'&&Math.abs(c.spd)>1.5){say(c.heli?'Pare o helicóptero para abastecer':'Pare o carro para abastecer',1.5);return}bag.fuel--;drawBag();c.fuel=Math.min(100,c.fuel+50);say('⛽ Abastecido',2)}

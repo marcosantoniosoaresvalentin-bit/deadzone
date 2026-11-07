@@ -152,8 +152,37 @@
   const CAR_MODELS = [['sedan', 3, 4.5], ['suv', 3, 4.6], ['pickup', 2, 5.0], ['buggy', 2, 3.7]];
   const SRC = {}; let ready = false;
   // banco do motorista de cada modelo (coordenadas do veículo: +z = frente, +x = esquerda, y = altura do assento)
-  const SEAT = window.DZSEAT = { sedan: new T.Vector3(.38, .62, -.2), suv: new T.Vector3(.4, .7, -.38), pickup: new T.Vector3(.4, .72, .12), 
-    buggy: new T.Vector3(.33, .52, -.25), helicopter: new T.Vector3(0, 1.5, 1.25) };
+  // CABINE de cada modelo (medida no próprio modelo): banco do motorista (quadril), painel, largura interna,
+  // assoalho e banco de trás. Coordenadas do veículo: +z = frente, +x = lado do motorista (esquerdo).
+  const CAB = window.DZCAB = {
+    sedan:  { seat: [.38, .5, -.18], dashZ: .62, dashY: .84, hw: .76, floor: .3, rear: -.98, roof: 1.42 },
+    suv:    { seat: [.4, .62, -.4], dashZ: .48, dashY: .98, hw: .84, floor: .4, rear: -1.25, roof: 1.6 },
+    pickup: { seat: [.4, .68, .08], dashZ: .82, dashY: 1.02, hw: .72, floor: .46, rear: null, roof: 1.56 },
+    buggy:  { seat: [.33, .5, -.32], dashZ: .22, dashY: .72, hw: .62, floor: .32, rear: null, roof: 2.2, open: 1 }
+  };
+  const SEAT = window.DZSEAT = { helicopter: new T.Vector3(0, 1.5, 1.25) };
+  for (const k in CAB) SEAT[k] = new T.Vector3(...CAB[k].seat);
+  // interior simples e leve: bancos com encosto e apoio de cabeça, painel, volante, console e assoalho
+  const IM = {};
+  const imat = (k, c, r) => IM[k] || (IM[k] = new T.MeshStandardMaterial({ color: lin(c), roughness: r, metalness: 0 }));
+  function interior(kind) {
+    const C = CAB[kind]; if (!C) return null;
+    const g = new T.Group(), fab = imat('fab', 0x26282b, .95), pla = imat('pla', 0x15171a, .7), car = imat('car', 0x1b1c1e, 1);
+    const box = (m, w, h, d, x, y, z, rx) => { const o = new T.Mesh(new T.BoxGeometry(w, h, d), m); o.position.set(x, y, z); if (rx) o.rotation.x = rx; o.castShadow = false; o.receiveShadow = true; g.add(o); return o; };
+    const [sx, sy, sz] = C.seat;
+    const seat = (x, z, w) => { box(fab, w, .12, .5, x, sy - .08, z + .05); box(fab, w, .62, .12, x, sy + .26, z - .24, -.22); box(fab, w * .55, .18, .1, x, sy + .66, z - .32, -.22); };
+    seat(sx, sz, .5); seat(-sx, sz, .5);
+    if (C.rear != null) { box(fab, C.hw * 2 - .2, .12, .5, 0, sy - .1, C.rear + .05); box(fab, C.hw * 2 - .2, .58, .12, 0, sy + .22, C.rear - .25, -.2); }
+    if (!C.open) box(car, C.hw * 2, .04, Math.abs(C.dashZ - (C.rear != null ? C.rear : sz) + .7), 0, C.floor, (C.dashZ + (C.rear != null ? C.rear : sz) - .5) / 2);
+    box(pla, C.hw * 2 - .04, .22, .34, 0, C.dashY, C.dashZ + .08, -.25);   // painel
+    box(pla, .2, .3, .7, 0, sy - .02, sz + .18);                           // console
+    // volante (anel + raios) em um pivô que gira com a direção
+    const wp = new T.Group(); wp.position.set(sx, sy + .44, sz + .5); wp.rotation.x = -.42; g.add(wp);
+    const ring = new T.Mesh(new T.TorusGeometry(.17, .022, 8, 24), pla); wp.add(ring);
+    for (let k = 0; k < 3; k++) { const a = k * 2.094 + Math.PI / 2, sp = new T.Mesh(new T.BoxGeometry(.03, .16, .02), pla); sp.position.set(Math.cos(a) * .085, Math.sin(a) * .085, 0); sp.rotation.z = a - Math.PI / 2; wp.add(sp); }
+    const col = new T.Mesh(new T.CylinderGeometry(.03, .04, .3, 8), pla); col.rotation.x = Math.PI / 2 - .42; col.position.set(sx, sy + .38, sz + .66); g.add(col);
+    g.userData.wheel = wp; g.userData.wheelR = .17; return g;
+  }
   const VEH = window.DZVEH = [];
   // registra cada carro/heli criado (inclusive os do lobby)
   const _car = window.DZCar, _heli = window.DZHeli;
@@ -219,6 +248,7 @@
       v.kind = pick[0]; g.userData.seat = (SEAT[pick[0]] || SEAT.sedan).clone();
       const sc_ = clone(pick[0]); if (!sc_) return;
       const root = prep(sc_, pick[2]); g.add(root);
+      try { const it = interior(pick[0]); if (it) { root.add(it); g.userData.cab = it; g.userData.wheelObj = it.userData.wheel; } } catch (e) { console.warn('interior', e); }
       v.old = g.children.filter(c => c !== root);
     }
     v.root = g.children.find(c => c.userData && c.userData.dz) || null;
@@ -257,6 +287,7 @@
       if (!o.isMesh || !o.material) return;
       const m = o.material;
       if (m.transparent || m.opacity < 1) { o.material = CGLASS(); o.renderOrder = 2; return; }
+      m.side = T.DoubleSide;   // lado de dentro da lataria (portas, teto) visível pelo vidro
       if (!painted || m.userData.gl) return; m.userData.gl = 1;
       m.onBeforeCompile = s => { s.fragmentShader = s.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\n{' + GL_TEST + 'if(isG)discard;}'); };
       m.customProgramCacheKey = () => 'cutglass'; m.needsUpdate = true;

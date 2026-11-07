@@ -1,5 +1,19 @@
 # Histórico de versões
 
+## 3.6.0 — física de verdade nos carros
+- **Física nova (corpo rígido)**: 4 rodas com suspensão (mola + amortecedor medindo a
+  velocidade em relação ao chão) e 8 quinas da carroceria que batem no chão; gravidade,
+  inércia e força da curva. Nada puxa o carro de volta: passou do ponto, ele tomba.
+  - Não quica mais nos morrinhos (a 60 km/h não sai do chão).
+  - Não "salta" mais ao entrar no carro (nasce apoiado no relevo).
+  - Salta de verdade no topo dos morros, voa com o bico acompanhando a queda e aterrissa nas rodas.
+  - Capota de lado/de teto; capotado e parado por 3 s, desvira sozinho.
+  - Pousar nas rodas não dá dano; só a carroceria batendo forte.
+- **Interior nos carros**: bancos com encosto e apoio de cabeça, banco de trás, painel, console,
+  assoalho e volante. O lado de dentro da lataria agora aparece pelo vidro.
+- **Personagem sentado no lugar certo** (banco medido em cada modelo) e **mãos presas no aro
+  do volante**, que gira de verdade nas curvas.
+
 ## 3.5.0
 - **Botões novos, só com ícone** (sem texto e sem cor): vidro escuro, borda clara e anel com
   quatro marcas (identidade Deadzone). Todos os botões do personagem trocados por ícones
