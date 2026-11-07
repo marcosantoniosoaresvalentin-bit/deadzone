@@ -1,5 +1,13 @@
 # Histórico de versões
 
+## 3.3.0 — personagem dentro dos veículos
+- **O personagem aparece dentro do veículo**, sentado no banco do motorista, com as mãos
+  no volante (que gira um pouco nas curvas). Banco ajustado em cada modelo: sedã, SUV, picape,
+  táxi, viatura, buggy e helicóptero.
+- **Carros sem vidro**, para ver quem está dentro (inclusive a picape, cujo vidro era pintado
+  na textura).
+- **Helicóptero com vidro da cabine claro e transparente**, para ver o piloto.
+
 ## 3.2.0 — paraquedas novo
 - **Paraquedas retangular** (velame tipo asa, com linhas de verdade) no lugar da cúpula redonda.
   Modelo pronto: parapente da SwissAirfields (CC0), usando só o velame e as linhas.

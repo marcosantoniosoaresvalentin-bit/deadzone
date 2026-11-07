@@ -153,7 +153,7 @@
   const SRC = {}; let ready = false;
   // banco do motorista de cada modelo (coordenadas do veículo: +z = frente, +x = esquerda, y = altura do assento)
   const SEAT = window.DZSEAT = { sedan: new T.Vector3(.38, .62, -.2), suv: new T.Vector3(.4, .7, -.38), pickup: new T.Vector3(.4, .72, .12), taxi: new T.Vector3(.38, .62, -.15),
-    police: new T.Vector3(.38, .62, -.2), buggy: new T.Vector3(.33, .52, -.25), helicopter: new T.Vector3(0, 1.35, 2.2) };
+    police: new T.Vector3(.38, .62, -.2), buggy: new T.Vector3(.33, .52, -.25), helicopter: new T.Vector3(0, 1.5, 1.25) };
   const VEH = window.DZVEH = [];
   // registra cada carro/heli criado (inclusive os do lobby)
   const _car = window.DZCar, _heli = window.DZHeli;
@@ -176,6 +176,8 @@
     piv.position.copy(root.worldToLocal(c.clone())); root.add(piv);
     piv.updateMatrixWorld(true); piv.attach(node); return piv;
   }
+  // vidro da cabine do helicóptero: claro e transparente para ver o piloto
+  let _hg = null; const HGLASS = () => _hg || (_hg = new T.MeshStandardMaterial({ color: lin(0xbfd8e6), transparent: true, opacity: .2, roughness: .05, metalness: .2, depthWrite: false, side: T.DoubleSide }));
   function clone(name) { return SRC[name] ? T.SkeletonUtils.clone(SRC[name]) : null; }
 
   function dress(v) {
@@ -185,7 +187,7 @@
       const sc_ = clone('helicopter'); if (!sc_) return;
       const root = prep(sc_, 14.2); root.position.z = -.9; g.userData.seat = SEAT.helicopter.clone();
       let mr = null, hub = null, tf = null;
-      sc_.traverse(o => { if (/main_rotor/.test(o.name)) mr = mr || o; if (/rotor_hub/.test(o.name)) hub = hub || o; if (/back_fan/.test(o.name)) tf = tf || o; if (/pilot|helmet_glass/i.test(o.name)) o.visible = false; });
+      sc_.traverse(o => { if (/main_rotor/.test(o.name)) mr = mr || o; if (/rotor_hub/.test(o.name)) hub = hub || o; if (/back_fan/.test(o.name)) tf = tf || o; if (/pilot|helmet_glass/i.test(o.name)) o.visible = false; if (/^glass/i.test(o.name) && o.isMesh) o.material = HGLASS(); });
       g.add(root);
       v.rot = pivotOut(root, mr); v.trot = pivotOut(root, tf);
       // esconde o modelo antigo, inclusive os discos escuros dos rotores (as pás de verdade já giram); mantém luzes e fogo
