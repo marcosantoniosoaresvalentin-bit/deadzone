@@ -1,0 +1,10 @@
+#teamPanel #teamModes,#teamPanel p:has(+ #teamModes){display:none!important}
+#lobbyInviteBtn{display:block!important;margin-top:7px;padding:6px 11px;border:1px solid #2ee6c8;border-radius:9px;background:#112a31;color:#eafffb;font-weight:800;font-size:12px}
+#lobbyFriendsBtn{position:absolute;right:12px;top:12px;z-index:8;padding:9px 12px;border:1px solid #2ee6c8;border-radius:10px;background:#10232ceF;color:#effffb;font-weight:800;box-shadow:0 4px 18px #0008}
+#lobbyFriendPanel{display:none;position:fixed;z-index:40;right:12px;top:65px;width:min(340px,92vw);max-height:75vh;overflow:auto;padding:14px;border:1px solid #2ee6c8;border-radius:16px;background:#08151df5;color:#effffb;box-shadow:0 12px 45px #000b;font-family:system-ui,sans-serif}
+#lobbyFriendPanel h3{margin:0;color:#2ee6c8}#lobbyFriendPanel input{box-sizing:border-box;width:100%;padding:10px;margin:6px 0;border-radius:8px;background:#07131c;color:white;border:1px solid #34515c}
+#lobbyFriendPanel button{padding:8px 10px;margin:3px;border-radius:8px;border:1px solid #41616b;background:#203540;color:white;font-weight:700}
+#lobbyFriendPanel .friendrow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 2px;border-bottom:1px solid #29434d;font-size:13px}
+#lobbyFriendPanel .friendrow small{display:block;color:#9eb8bd}
+#lobbyFriendPanel .online{color:#6dffac}#lobbyFriendPanel .offline{color:#b5b5b5}
+#mpn #dzPartyModes{display:flex;gap:7px;flex-wrap:wrap;margin:6px 0 14px}#mpn #dzPartyModes button{padding:11px 16px;border-radius:10px;border:1px solid #53644d;background:#293a2b;color:white;font-weight:800}#mpn #dzPartyModes button.sel{background:#f5ad2f;color:#23180a;border-color:#f5ad2f}

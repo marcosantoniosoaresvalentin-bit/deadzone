@@ -1,0 +1,18 @@
+# build
+dist/
+node_modules/
+
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/app/src/main/assets/www/
+android/local.properties
+*.keystore
+*.jks
+
+# sistema
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

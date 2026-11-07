@@ -1,0 +1,9 @@
+#teamPanel{position:fixed;inset:0;z-index:29;display:none;flex-direction:column;align-items:center;justify-content:flex-start;overflow:auto;padding:16px;background:radial-gradient(ellipse at top,#142b37f7,#050b12fa);color:#effffb;font-family:system-ui,sans-serif}
+#teamPanel .tp{width:min(620px,96vw);margin:auto;padding:18px;border:1px solid #2ee6c888;border-radius:18px;background:linear-gradient(145deg,#132531,#08131d);box-shadow:0 18px 60px #0009}
+#teamPanel h2{margin:0 0 6px;color:#2ee6c8;letter-spacing:2px}#teamPanel p{color:#b9d0d4;font-size:13px;margin:6px 0 12px}
+#teamPanel button{border:1px solid #41616b;border-radius:9px;padding:10px;background:#203540;color:#effffb;font-weight:750;margin:3px;cursor:pointer}
+#teamPanel button.sel{background:linear-gradient(135deg,#2ee6c8,#17b8ff);color:#04141a;border-color:#2ee6c8}
+#teamPanel input{box-sizing:border-box;width:100%;padding:12px;margin:5px 0;border-radius:9px;border:1px solid #34515c;background:#07131c;color:white;font-size:15px}
+#teamPanel .line{display:flex;gap:6px;flex-wrap:wrap;align-items:center}#teamPanel .line>*{flex:1}#teamPanel .idbox{padding:12px;background:#07131c;border:1px dashed #2ee6c8;border-radius:9px;font-weight:800;letter-spacing:1px;overflow-wrap:anywhere}
+#teamPanel .slot{display:flex;justify-content:space-between;gap:8px;padding:9px;margin:5px 0;background:#0b1a23;border:1px solid #29434d;border-radius:9px;font-size:13px}
+#teamPanel .note{font-size:11px;opacity:.8}#teamPanel .status{min-height:20px;color:#8fffe5;font-size:13px;margin-top:8px}

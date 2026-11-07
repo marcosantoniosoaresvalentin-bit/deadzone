@@ -1,0 +1,15 @@
+{
+  "name": "deadzone",
+  "version": "1.0.0",
+  "description": "Deadzone 3D — battle royale em Three.js com personagens realistas, relevo, veículos e modo online.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node tools/serve.mjs",
+    "build": "node tools/build.mjs",
+    "build:android": "node tools/build.mjs --android"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

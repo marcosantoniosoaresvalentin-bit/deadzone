@@ -1,0 +1,13 @@
+#auth{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:18px;background:radial-gradient(ellipse at center,#142a36f5,#050b12f7);color:#effffb;font-family:system-ui,sans-serif}
+#auth .panel{width:min(420px,94vw);max-height:92vh;overflow:auto;padding:24px;border:1px solid #2ee6c888;border-radius:20px;background:linear-gradient(145deg,#132531,#08131d);box-shadow:0 18px 60px #0009}
+#auth h2{margin:0 0 5px;font-size:28px;letter-spacing:3px;color:#2ee6c8}#auth p{margin:4px 0 16px;color:#b9d0d4;font-size:14px}
+#auth label{display:block;text-align:left;font-size:12px;color:#b9d0d4;margin:10px 0 5px}
+#auth input{box-sizing:border-box;width:100%;padding:12px;border-radius:9px;border:1px solid #34515c;background:#07131c;color:white;font-size:16px;outline:none}
+#auth input:focus{border-color:#2ee6c8}
+#auth .ab{width:100%;padding:12px;border:0;border-radius:10px;font-size:15px;font-weight:800;margin-top:10px;cursor:pointer}
+#auth .primary{background:linear-gradient(135deg,#2ee6c8,#17b8ff);color:#04141a}
+#auth .google{background:#fff;color:#202124}
+#auth .plain{background:#203540;color:#effffb;border:1px solid #46606a}
+#auth .switch{background:none;border:0;color:#2ee6c8;text-decoration:underline;padding:12px;cursor:pointer}
+#auth .err{min-height:18px;color:#ff9d91;font-size:13px;margin-top:8px}
+#auth .brand{font-size:11px;letter-spacing:4px;color:#88a7b0;margin-bottom:15px}

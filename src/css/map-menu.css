@@ -1,0 +1,23 @@
+#mpn{background:linear-gradient(145deg,rgba(4,13,30,.98),rgba(7,27,51,.98))!important;border:1px solid #2c79c9;box-sizing:border-box;padding:clamp(12px,2.2vw,26px)!important;gap:10px!important}
+#mpn .ih{flex-shrink:0;border-bottom:1px solid #2870b6;padding:0 0 10px;font-size:clamp(20px,3vw,28px)!important}
+#mpn .ih b{font-style:italic}
+#mpn p{font-weight:800;letter-spacing:.2px;margin-top:5px!important;color:#eaf5ff;opacity:1!important}
+#mpn #mpm{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:0!important}
+#mpn #mpm button{min-height:clamp(62px,10vh,100px);margin:0!important;padding:12px 9px!important;border:1px solid #416fa5!important;border-radius:12px!important;background:linear-gradient(145deg,#193a68,#0c1c37)!important;box-shadow:inset 0 1px #ffffff16;color:#fff!important;font-size:clamp(15px,2.2vw,21px)!important;text-align:center}
+#mpn #mpm button.sel{border:2px solid #ffca35!important;background:linear-gradient(145deg,#9d6b12,#4a350f)!important;box-shadow:0 0 13px #ffb90088,inset 0 0 0 1px #fff5!important;color:#fff!important}
+#mpn #dz31-team-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+#mpn #dz31-team-row button{margin:0!important;padding:10px 3px!important;min-height:48px;border:1px solid #426fa4!important;background:#142c4d!important;color:#fff!important}
+#mpn #dz31-team-row button.sel{background:#f6b62f!important;color:#201707!important;border-color:#ffe17a!important;box-shadow:0 0 9px #ffb90077}
+#mpn #mpc{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#mpn #mpc button{margin:0!important;min-height:58px;border:1px solid #416fa5!important;background:linear-gradient(145deg,#18375f,#0b1a32)!important;color:#fff!important}
+#mpn #mpc button.sel{border:2px solid #ffca35!important;background:linear-gradient(145deg,#76500c,#30240c)!important;box-shadow:0 0 10px #ffb90066}
+#mpn #roomOpts{display:none!important}
+#mpn #dz31-room-config{display:none;flex-direction:column;gap:9px;padding:10px;border:1px solid #315f91;border-radius:12px;background:#06152acc}
+#mpn #dz31-room-config.visible{display:flex}
+#mpn #dz31-room-config .dz31-roomtypes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#mpn #dz31-room-config button{margin:0!important;background:#142d4e!important;border:1px solid #456f9e!important;color:#fff!important}
+#mpn #dz31-room-config button.sel{background:#f4b52f!important;color:#211705!important;border-color:#ffdf7c!important}
+#mpn #dz31-confirm{width:min(100%,430px);align-self:center;min-height:48px;margin-top:5px!important;background:linear-gradient(#ffdf36,#f4a900)!important;color:#17120a!important;border:1px solid #ffe98a!important;border-radius:11px!important;font-size:18px!important;box-shadow:0 4px 14px #0006}
+#mpn #mpx{background:#18304d!important;border:1px solid #396b9d!important}
+@media(min-width:700px){#mpn #mpm{grid-template-columns:repeat(4,minmax(0,1fr))}#mpn #mpc{grid-template-columns:repeat(3,minmax(0,1fr))}#mpn #dz31-room-config .dz31-roomtypes{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-height:460px){#mpn{gap:5px!important;padding:8px 14px!important}#mpn #mpm button{min-height:48px;padding:7px!important}#mpn #mpc button{min-height:40px}#mpn #dz31-team-row button{min-height:36px;padding:6px 2px!important}#mpn p{margin:2px 0!important}}

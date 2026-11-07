@@ -1,0 +1,33 @@
+html #mpn{--u:min(calc(100vh/841),calc(100vw/1870));background:radial-gradient(ellipse at 70% 0%,#2d86e8aa,transparent 55%),linear-gradient(180deg,#0b4aa0 0%,#12559f 30%,#0d3c70 62%,#06182f 100%)!important;border:0!important;padding:calc(20*var(--u)) calc(60*var(--u)) calc(20*var(--u)) calc(42*var(--u))!important;gap:calc(10*var(--u))!important;overflow:auto}
+@supports(height:100dvh){html #mpn{--u:min(calc(100dvh/841),calc(100vw/1870))}}
+html #mpn .ih{justify-content:flex-start!important;gap:calc(20*var(--u));border:0!important;padding:0!important;margin-bottom:calc(6*var(--u));font-size:calc(40*var(--u))!important}
+html #mpn #mpx{order:-1;height:calc(60*var(--u));padding:0 calc(26*var(--u))!important;font:800 italic calc(26*var(--u)) system-ui!important;text-transform:uppercase;border-radius:calc(8*var(--u))!important;background:#0a2346cc!important;border:1px solid #3d8fd4!important}
+html #mpn #mpx::before{content:"← ";font-size:1.3em}
+html #mpn .ih b{font:900 italic calc(40*var(--u)) system-ui;text-transform:uppercase;color:#fff;text-shadow:0 0 calc(12*var(--u)) #2aa9ffaa}
+html #mpn .ih b::before{content:"🎯 ";font-style:normal}
+html #mpn>p{margin:calc(4*var(--u)) 0 0 calc(10*var(--u))!important;width:max-content;padding:calc(8*var(--u)) calc(70*var(--u)) calc(8*var(--u)) calc(24*var(--u));background:linear-gradient(90deg,#0c3a7ccc,#0a2a58aa 80%,transparent);border-left:calc(4*var(--u)) solid #3fb4ff;font:900 italic calc(34*var(--u)) system-ui;text-transform:uppercase}
+html #mpn>p:nth-of-type(1)::before{content:"🎮 "}html #mpn>p:nth-of-type(2)::before{content:"👥 "}html #mpn>p:nth-of-type(3)::before{content:"📍 "}html #mpn>p:nth-of-type(4){display:none!important}
+html #mpn #mpm{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:calc(22*var(--u))!important;margin:0 0 0 calc(58*var(--u))!important;max-width:calc(1700*var(--u))}
+html #mpn #mpm button{height:calc(143*var(--u));min-height:0!important;border-radius:calc(14*var(--u))!important;border:max(1px,calc(2*var(--u))) solid #3f8fe0aa!important;background:linear-gradient(135deg,#1b4a86,#0b1f3d 80%)!important;font:900 calc(34*var(--u))/1.15 system-ui!important;padding:0 calc(10*var(--u))!important}
+html #mpn #dz31-team-row{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:calc(22*var(--u))!important;margin:0 0 0 calc(58*var(--u));max-width:calc(1640*var(--u))}
+html #mpn #dz31-team-row button{height:calc(77*var(--u));min-height:0!important;border-radius:calc(14*var(--u))!important;background:linear-gradient(#10264a,#0a1a34)!important;border:max(1px,calc(2*var(--u))) solid #3f8fe0aa!important;font:800 calc(34*var(--u)) system-ui!important}
+html #mpn #mpm button.sel,html #mpn #dz31-team-row button.sel{background:linear-gradient(135deg,#ffc21f,#a86a00)!important;color:#fff!important;border:max(2px,calc(4*var(--u))) solid #ffd44a!important;box-shadow:0 0 calc(22*var(--u)) #ffb400cc}
+html #mpn #dz31-team-row button.sel{background:linear-gradient(#ffc61f,#e89a00)!important;color:#17110a!important}
+html #mpn #mpc{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:calc(22*var(--u))!important;margin:0 0 0 calc(58*var(--u))!important;max-width:calc(1060*var(--u))}
+html #mpn #mpc button{position:relative;overflow:hidden;height:calc(185*var(--u));min-height:0!important;border-radius:calc(14*var(--u))!important;border:max(1px,calc(2*var(--u))) solid #3f8fe0aa!important;color:#fff!important;font:900 calc(40*var(--u)) system-ui!important;display:flex;align-items:flex-end;justify-content:center;padding:0 0 calc(10*var(--u))!important;text-shadow:0 2px 6px #000}
+html #mpn #mpc button[data-map="Zona Morta"]{background:linear-gradient(180deg,#6fb4ee 0,#cfe6f7 38%,#7d8f78 40%,#2f7a3a 62%,#174a2a 100%)!important}
+html #mpn #mpc button[data-map="Aleatório"]{background:linear-gradient(180deg,#7fa9d8 0,#d9c9a0 40%,#b88a52 42%,#8a5f34 100%)!important}
+html #mpn #mpc button.sel{border:max(2px,calc(4*var(--u))) solid #ffd44a!important;box-shadow:0 0 calc(22*var(--u)) #ffb400cc}
+html #mpn #mpc button.sel::after{content:"✓";position:absolute;right:0;top:0;width:calc(80*var(--u));height:calc(70*var(--u));background:#ffc21f;clip-path:polygon(0 0,100% 0,100% 100%);color:#111;font-size:calc(38*var(--u));text-align:right;padding:calc(2*var(--u)) calc(8*var(--u)) 0 0;box-sizing:border-box;text-shadow:none}
+html #mpn #dz31-confirm{position:fixed;right:calc(30*var(--u));bottom:calc(30*var(--u));width:calc(520*var(--u))!important;height:calc(135*var(--u));min-height:0!important;margin:0!important;border:0!important;border-radius:0!important;clip-path:polygon(4% 0,100% 0,96% 100%,0 100%);background:linear-gradient(#ffe14a,#f2a900)!important;color:#15110a!important;font:900 italic calc(60*var(--u)) system-ui!important;text-transform:uppercase;box-shadow:none!important;filter:drop-shadow(0 0 calc(14*var(--u)) #ffc400aa);z-index:3}
+html #mpn #dz31-confirm::after{content:" ›";font-size:1.1em}
+html #mpn #dz31-room-config{position:fixed;right:calc(40*var(--u));bottom:calc(180*var(--u));width:calc(600*var(--u));gap:calc(8*var(--u));padding:calc(10*var(--u));background:#07162bd9!important;border:1px solid #3f8fe0aa!important;border-radius:calc(12*var(--u));font-size:calc(24*var(--u));z-index:3}
+html #mpn #dz31-room-config>b,html #mpn #dz31-room-config #dz31-size-label{display:none}
+html #mpn #dz31-room-config button{height:calc(50*var(--u));padding:0 calc(8*var(--u))!important;font-size:calc(22*var(--u))!important;border-radius:calc(8*var(--u))!important}
+html #mpn>*:not(.ih):not(p):not(#mpm):not(#dz31-team-row):not(#mpc):not(#dz31-room-config):not(#dz31-confirm):not(#dz44-auto){display:none!important}
+html #mpn #dz44-auto{position:fixed;right:calc(40*var(--u));bottom:calc(175*var(--u));width:calc(600*var(--u));height:calc(52*var(--u));display:flex!important;align-items:center;gap:calc(14*var(--u));padding:0 calc(16*var(--u));box-sizing:border-box;background:#07162bd9;border:1px solid #3f8fe0aa;border-radius:calc(10*var(--u));font:700 calc(24*var(--u)) system-ui;z-index:3}
+html #mpn #dz44-auto input{width:calc(34*var(--u));height:calc(34*var(--u));accent-color:#ffc21f;margin:0}
+html #mpn #dz31-room-config label{display:none!important}
+html #mpn #dz31-room-config{bottom:calc(240*var(--u))!important}
+html #mpn #dz31-room-config:not(.visible){display:none!important}
+html #mpn #dz31-room-config.visible{display:flex!important}

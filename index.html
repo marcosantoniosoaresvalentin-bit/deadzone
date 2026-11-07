@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head><meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" name="viewport"/>
+<title>Deadzone 3D</title>
+<meta name="theme-color" content="#0a0e12">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="assets/icons/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+<link rel="stylesheet" href="src/css/base.css"><link rel="stylesheet" href="src/css/lobby-layout.css"></head><body>
+<canvas id="c"></canvas><div id="vg" style="position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 58%,rgba(0,0,0,.38) 100%)"></div>
+<div id="h"><b>DEADZONE 3D</b> · etapa 1<br/>Esquerda anda, direita gira a câmera.<br/>PC: WASD, arrastar, espaço, C, Z.</div>
+<div id="jb"></div><div id="jk"></div>
+<div class="bt" id="bo">Abrir</div><div class="bt" id="bj">Pular</div><div class="bt" id="bc">Agachar</div><div class="bt" id="bp">Deitar</div>
+<div class="bt" id="bf">Atirar</div><div class="bt" id="bi">Mochila</div><div class="bt" id="bg">Granada</div><div class="bt" id="bgl">Gel</div><div class="bt" id="bgs">Fumaça</div><div class="bt" id="bv">Entrar</div><div class="bt" id="bu">Abastecer</div><div class="bt" id="bhu">▲</div><div class="bt" id="bhd">▼</div><div class="bt" id="bm">Mirar</div><div id="sl"></div><div id="bag"></div><div id="lpd">▼</div><div id="sc"></div><div class="bt" id="br">Recarregar</div><div id="lp"><div class="hd"><span>Itens aqui</span><span id="lpx">▲</span></div><div id="lpg"></div></div>
+<div id="lb"><div id="lbt"><h1>DEADZONE</h1><span id="pn">Jogador · Nv. 1</span></div><div id="lbl"><button id="mapb">🗺 Mapa</button><button id="go">Iniciar</button></div><div id="lbr"><button id="onb" aria-label="Convites" title="Convites">✉️</button><button id="cfgb" aria-label="Configurações" title="Configurações">⚙️</button><button id="invb" aria-label="Inventário" title="Inventário">🎒</button></div></div>
+<div id="inv"><div class="ih"><b>Inventário</b><button id="invx">Voltar</button></div><div id="tabs"><button class="on" id="tO">Roupas</button><button id="tP">Paraquedas</button><button id="tC">Veículo</button></div><div id="ig"></div></div>
+<div id="cfg"><div class="ih"><b>Configurações</b><button id="cfgx">Voltar</button></div>
+<div class="row"><span>Mirar automaticamente ao atirar</span><button id="cAuto">Desligado</button></div>
+<div class="row"><span>Abrir portas automaticamente</span><button id="cDoor">Desligado</button></div>
+<div class="row"><span>Qualidade gráfica</span><button id="cQ">Alta</button></div>
+<div class="row"><span>Sensibilidade da câmera</span><input id="cSens" max="200" min="40" type="range" value="100"/></div>
+<div class="row"><span>Posição e tamanho dos botões</span><button id="cEdit">Editar</button></div>
+<p class="sm">Ligado: o botão grande de atirar abre a mira ao ser segurado. O botão pequeno (embaixo do mapa) sempre atira sem mirar. Desligado: os dois só atiram. Segure o botão e arraste o dedo para mover a mira enquanto atira.</p></div>
+<div id="edt"><div id="edc"></div><div id="edb"><span id="edn">Arraste os botões</span><input id="edS" max="180" min="60" type="range" value="100"/><button id="edR">Resetar</button><button id="edV">Salvar</button><button id="edX">Cancelar</button></div></div>
+<div id="hud"><span id="alive">Vivos: 100</span> · <span id="kl">Abates: 0</span></div><div id="msg"></div><div id="zn"></div><div id="pk"><div class="ih"><b>Mochila <span id="pkc"></span></b><button id="pkx">Fechar</button></div><div id="pkbar"><i id="pkbi"></i></div><div id="pkb"><div id="pkw"></div><div id="pki"></div></div></div><div id="cross">+</div><div id="wpt"></div><div id="hpb"><i id="hpi"></i></div>
+<canvas height="240" id="mm" width="240"></canvas><div id="mkd"></div><div class="bt" id="bf2">Atirar</div><div id="bmap"><canvas id="bmc"></canvas><button id="bmx">✕</button><div id="bmh">Toque no mapa para marcar · toque no marcador para remover</div></div><div id="ind"></div>
+<div id="on"><div class="ih"><b>🌐 Jogar online · Gladiador 1v1</b><button id="onx">Voltar</button></div><div id="onst"></div>
+<div id="onMenu"><button id="onNew">Criar sala</button><button id="onJoin">Entrar em uma sala</button></div>
+<div id="onCreate"><input id="onn" maxlength="20" placeholder="Nome da sala"/><p>Mapa selecionado para a partida:</p><div id="onct"></div><button id="oncr">Criar sala</button></div>
+<div id="onWait"><div class="spin"></div><p id="onwt">Aguardando jogadores...</p><button id="onwx">Cancelar</button></div>
+<div id="onList"><button id="onr">⟳ Atualizar</button><div id="onl"></div></div></div>
+<div id="mpn"><div class="ih"><b>Mapa e modo de jogo</b><button id="mpx">Voltar</button></div><p>Modo de jogo</p><div id="mpm"></div><p>Mapa</p><div id="mpc"></div><p>Configuração da sala</p><div id="roomOpts"><label>Tipo de partida <select id="roomType"><option value="normal">Partida normal</option><option value="room">Criar sala</option><option value="gladiator">Gladiadores</option><option value="counter">Contra Squad</option></select></label><label id="teamSizeWrap">Equipe <select id="teamSize"><option value="1">Solo</option><option value="2">Duo</option><option value="3">Trio</option><option value="4" selected>Squad</option></select></label><label id="matchSizeWrap">Jogadores <select id="matchSize"><option value="1v1">1 contra 1</option><option value="2v2">2 contra 2</option><option value="3v3">3 contra 3</option><option value="4v4" selected>4 contra 4</option></select></label><label class="autowrap"><input id="autoPair" type="checkbox" checked> Autopareamento para completar a equipe</label><button id="createRoomFromMap">Criar sala</button></div></div><div id="wsel"><p id="wst"></p><div id="wsb"></div></div><div id="mres"></div>
+<div id="rot">Gire o celular para o modo deitado para jogar o Deadzone.</div>
+<script src="vendor/three.min.js"></script>
+<script src="vendor/GLTFLoader.js"></script>
+<script src="vendor/SkeletonUtils.js"></script>
+<script src="src/js/graphics/realism.js"></script>
+<script src="vendor/mqtt.min.js"></script>
+<script src="src/js/core/engine.js"></script>
+<script src="src/js/world/roads.js"></script>
+<script src="src/js/world/buildings.js"></script>
+<script src="src/js/world/terrain-vegetation.js"></script>
+<script src="src/js/vehicles/cars.js"></script>
+<script src="src/js/vehicles/helicopters.js"></script>
+<script src="src/js/player/character.js"></script>
+<script src="src/js/combat/weapons.js"></script>
+<script src="src/js/player/input.js"></script>
+<script src="src/js/ui/hud.js"></script>
+<script src="src/js/core/audio.js"></script>
+<script src="src/js/ui/minimap.js"></script>
+<script src="src/js/bots/navigation.js"></script>
+<script src="src/js/world/airplane-parachute.js"></script>
+<script src="src/js/bots/bots.js"></script>
+<script src="src/js/combat/loot.js"></script>
+<script src="src/js/game/match.js"></script>
+<script src="src/js/ui/settings.js"></script>
+<script src="src/js/ui/world-map.js"></script>
+<script src="src/js/ui/skins.js"></script>
+<script src="src/js/player/actions.js"></script>
+<script src="src/js/combat/shooting.js"></script>
+<script src="src/js/vehicles/driving.js"></script>
+<script src="src/js/ui/backpack.js"></script>
+<script src="src/js/game/zone.js"></script>
+<script src="src/js/combat/throwables.js"></script>
+<script src="src/js/network/rooms.js"></script>
+<script src="src/js/ui/mode-select.js"></script>
+<script src="src/js/network/gladiator.js"></script>
+<script src="src/js/core/main-loop.js"></script>
+<script src="src/js/network/matchmaking.js"></script>
+<script src="src/js/combat/bow.js"></script>
+<script src="src/js/game/modes.js"></script>
+<script src="src/js/game/progression.js"></script>
+<script src="src/js/game/killfeed-spectator.js"></script>
+<script src="src/js/ui/lobby-scene.js"></script>
+<script src="src/js/combat/shotgun.js"></script>
+<script src="src/js/fx/effects.js"></script>
+<script src="src/js/player/animations.js"></script><link rel="stylesheet" href="src/css/game-ui.css">
+<link rel="stylesheet" href="src/css/account.css">
+<div aria-label="Conta Deadzone" aria-modal="true" id="auth" role="dialog">
+<div class="panel">
+<div class="brand">DEADZONE • PLAYER ACCOUNT</div>
+<h2 id="authTitle">CRIAR CONTA</h2>
+<p id="authDesc">Crie seu perfil para entrar no jogo neste dispositivo.</p>
+<form id="authForm">
+<div id="nameWrap"><label for="playerName">NOME DO PLAYER</label><input autocomplete="nickname" id="playerName" maxlength="18" placeholder="Como você aparecerá no jogo" required=""/></div>
+<label for="playerEmail">E-MAIL</label><input autocomplete="email" id="playerEmail" placeholder="voce@email.com" required="" type="email"/>
+<label for="playerPassword">SENHA</label><input autocomplete="new-password" id="playerPassword" minlength="6" placeholder="Mínimo de 6 caracteres" required="" type="password"/>
+<button class="ab primary" id="authSubmit" type="submit">CRIAR CONTA</button>
+</form>
+<button class="ab google" id="googleAuth" type="button">G  Continuar com Google</button>
+<button class="switch" id="authSwitch" type="button">Já tem conta? Entrar</button>
+<div class="err" id="authError" role="status"></div>
+<p style="font-size:11px;margin:10px 0 0">Protótipo local: contas ficam salvas apenas neste navegador/dispositivo. O login Google real precisa ser configurado com Firebase ou outro serviço de autenticação.</p>
+</div>
+</div>
+<script src="src/js/features/account.js"></script>
+<link rel="stylesheet" href="src/css/team.css">
+<div aria-label="Equipe e convites" aria-modal="true" id="teamPanel" role="dialog"><div class="tp">
+<div class="line"><h2 style="flex:1">👥 EQUIPE &amp; CONVITES</h2><button id="teamClose">✕ Fechar</button></div>
+<p>Seu ID de jogador — compartilhe para receber convites.</p><div class="idbox" id="myPlayerId">DZ-000000</div><button id="copyPlayerId">Copiar meu ID</button>
+<p>Escolha o modo da partida</p><div class="line" id="teamModes"><button data-mode="solo">SOLO · 1</button><button data-mode="duo">DUO · 2</button><button data-mode="trio">TRIO · 3</button><button class="sel" data-mode="squad">SQUAD · 4</button></div>
+<p>Convidar jogador pelo nome ou ID</p><div class="line"><input id="inviteTarget" maxlength="40" placeholder="Nome do player ou ID (DZ-123456)"/><button id="sendInvite">Gerar convite</button></div>
+<div class="line"><button id="copyInvite">Copiar mensagem de convite</button><button id="addDemoFriend">Adicionar teste local</button></div>
+<p>Equipe atual</p><div id="teamSlots"></div>
+<div class="line"><button id="teamFill">Completar equipe</button><button id="teamBots">Preencher vagas com bots</button></div>
+<div class="line"><button class="sel" id="teamAuto">Autopareamento: LIGADO</button><button class="sel" id="teamStart">Confirmar equipe e jogar</button></div>
+<div class="status" id="teamStatus" role="status"></div><p class="note">Bots aliados usam IA local: saltam do avião, abrem paraquedas, procuram armas e enfrentam adversários. IDs e equipe ficam neste navegador; convites reais, autopareamento e sincronização de bots entre aparelhos exigem um servidor de partidas.</p>
+</div></div>
+<script src="src/js/features/team.js"></script>
+<link rel="stylesheet" href="src/css/lobby-social.css">
+<script src="src/js/features/lobby-social.js"></script>
+<link rel="stylesheet" href="src/css/lobby-invite.css"><script src="src/js/features/lobby-invite.js"></script>
+<script src="src/js/features/lobby-layout.js"></script><link rel="stylesheet" href="src/css/map-menu.css">
+<script src="src/js/features/map-menu.js"></script>
+
+<script src="src/js/features/mode-fix.js"></script>
+
+<script src="src/js/features/matchmaking-fixes.js"></script>
+
+
+<script src="src/js/features/lobby-team-confirm.js"></script>
+
+
+<script src="src/js/features/gladiators-duo-nametags.js"></script>
+
+<link rel="stylesheet" href="src/css/lobby-menus.css">
+<div id="dz43">
+<div class="logo p" style="background:none;border:0;box-shadow:none;backdrop-filter:none;pointer-events:none"><em>👑</em><b>DEAD</b><i>ZONE</i></div>
+<div class="p prof"><div class="av">👤</div><div><b id="d43n">Jogador - Nv. 1</b><small id="d43id" title="Copiar ID">ID: DZ-000000 ⧉</small></div></div>
+
+<div class="tr"><button id="d43i" aria-label="Inventário">🎒</button><button id="d43g" aria-label="Presente">🎁<s id="d43gb">1</s></button><button id="d43f" aria-label="Amigos">👥</button><button id="d43e" aria-label="Mensagens">✉️</button><button id="d43c" aria-label="Configurações">⚙️</button></div>
+<div class="p promo" id="d43p"><div class="h">🪖</div><div class="t" id="d43pt"></div><div class="dots"><i class="on"></i><i></i><i></i></div></div>
+<div class="p bp" id="d43b"><div class="hx">⬢</div><div style="flex:1"><b>PASSE DE BATALHA</b><div class="n" id="d43bl">Nível 1</div><div class="bar"><i id="d43bi" style="width:0"></i></div></div><div style="text-align:right;font-size:calc(24*var(--u))"><div id="d43bx">0/100</div></div></div>
+<div class="menu"><button data-m="ach"><span>🏆</span>Conquistas</button><button data-m="rank"><span>📊</span>Ranking</button><button data-m="mis"><span>✅</span>Missões</button><button data-m="shop"><span>🏪</span>Loja</button></div>
+<div class="p mode" id="d43mo"><div class="im"></div><div><b id="d43mn">Zona Morta</b><small id="d43ms">👥 Contra Squad 4v4</small></div><em>›</em></div>
+</div>
+<div id="dz43m"><div><h3><span id="d43mt"></span><button id="d43mx">✕</button></h3><div id="d43mb"></div></div></div>
+<script src="src/js/features/lobby-menus.js"></script>
+<link rel="stylesheet" href="src/css/autopair.css">
+<script src="src/js/features/autopair.js"></script>
+<link rel="stylesheet" href="src/css/inventory-info.css">
+<script src="src/js/features/inventory-info.js"></script>
+<link rel="stylesheet" href="src/css/outfit-slots.css">
+<script src="src/js/features/outfit-slots.js"></script>
+
+<link rel="stylesheet" href="src/css/end-screen.css">
+
+<script src="src/js/features/end-screen.js"></script>
+
+<script src="src/js/features/party-queue.js"></script>
+<link rel="stylesheet" href="src/css/loading-screen.css">
+<script src="src/js/features/loading-screen.js"></script>
+<script src="src/js/features/victory-screen.js"></script>
+<script src="src/js/world/archipelago.js"></script>
+
+<script src="src/js/features/party.js"></script>
+<script src="src/js/features/lobby-split.js"></script>
+</body></html>
