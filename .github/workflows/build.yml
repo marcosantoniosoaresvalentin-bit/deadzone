@@ -50,6 +50,16 @@ jobs:
           gradle-version: '8.10.2'
       - name: Compila o APK
         run: gradle -p android assembleDebug
+      - name: Verifica o APK (assinatura, manifesto e conteúdo)
+        run: |
+          APK=android/app/build/outputs/apk/debug/app-debug.apk
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          echo "== apksigner"; "$BT/apksigner" verify --verbose --print-certs "$APK" || true
+          echo "== badging"; "$BT/aapt2" dump badging "$APK" | head -40 || true
+          echo "== manifesto"; "$BT/aapt2" dump xmltree --file AndroidManifest.xml "$APK" | head -80 || true
+          echo "== arquivos"; unzip -l "$APK" | awk '{print $4}' | grep -v '^assets/www/src/js' | head -80
+          echo "== total"; unzip -l "$APK" | tail -1
+          echo "== zipalign"; "$BT/zipalign" -c -P 16 -v 4 "$APK" | tail -5 || true
       - uses: actions/upload-artifact@v4
         with:
           name: Deadzone-APK
