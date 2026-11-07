@@ -185,8 +185,8 @@
       sc_.traverse(o => { if (/main_rotor/.test(o.name)) mr = mr || o; if (/rotor_hub/.test(o.name)) hub = hub || o; if (/back_fan/.test(o.name)) tf = tf || o; if (/pilot|helmet_glass/i.test(o.name)) o.visible = false; });
       g.add(root);
       v.rot = pivotOut(root, mr); v.trot = pivotOut(root, tf);
-      // esconde o modelo antigo (mantém luzes, discos dos rotores e fogo)
-      const u = g.userData; v.old = [u.stat, u.gl, ...(u.rot ? u.rot.children : []), ...(u.trot ? u.trot.children : [])].filter(Boolean);
+      // esconde o modelo antigo, inclusive os discos escuros dos rotores (as pás de verdade já giram); mantém luzes e fogo
+      const u = g.userData; v.old = [u.stat, u.gl, u.disc, u.tdisc, ...(u.rot ? u.rot.children : []), ...(u.trot ? u.trot.children : [])].filter(Boolean);
     } else {
       let r = Math.random() * CAR_MODELS.reduce((a, c) => a + c[1], 0), pick = CAR_MODELS[0];
       for (const c of CAR_MODELS) { r -= c[1]; if (r <= 0) { pick = c; break; } }

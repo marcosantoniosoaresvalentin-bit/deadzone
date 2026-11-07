@@ -1,5 +1,9 @@
 # Histórico de versões
 
+## 3.0.1
+- Helicóptero: some o disco escuro em cima das hélices (efeito antigo de "hélice girando"
+  que ficava como uma mancha com o modelo 3D novo).
+
 ## 3.0.0 — mapa em branco
 - Parte da 2.1.2 (a 2.2.0 foi descartada).
 - **Mapa original removido**: cidades, casas, estradas, relevo, árvores, lagos e a ilha flutuante.
