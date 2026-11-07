@@ -1,5 +1,9 @@
 # Histórico de versões
 
+## 2.1.1
+- O GitHub Actions reaproveita a mesma chave de assinatura entre as compilações:
+  as próximas versões do APK instalam por cima (evita o erro "pacote inválido").
+
 ## 2.1.0
 - **Veículos com modelos 3D realistas** (não mais feitos por código): sedã, SUV, picape,
   táxi, viatura de polícia e buggy off-road, sorteados pelo mapa; helicóptero de ataque

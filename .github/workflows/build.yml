@@ -40,6 +40,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - name: Reaproveita a chave de assinatura (mesma assinatura em todas as versões)
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: deadzone-debug-keystore-v1
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10.2'
