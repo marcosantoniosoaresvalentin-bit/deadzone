@@ -2,7 +2,7 @@
  * Renderizador, cena, câmera, luzes, céu e utilitários de geometria/colisão.
  */
 const T=THREE,cv=document.getElementById('c');
-const ren=new T.WebGLRenderer({canvas:cv,antialias:false,powerPreference:'high-performance'});ren.setPixelRatio(Math.min(devicePixelRatio,1.25));ren.outputEncoding=T.sRGBEncoding;ren.toneMapping=T.ACESFilmicToneMapping;ren.toneMappingExposure=1.1;ren.shadowMap.enabled=true;ren.shadowMap.type=T.PCFShadowMap;
+const ren=new T.WebGLRenderer({canvas:cv,antialias:(()=>{try{const q=JSON.parse(localStorage.getItem('dzCfg')||'{}').q;return q==null||q>=1}catch(e){return true}})(),powerPreference:'high-performance'});ren.setPixelRatio(Math.min(devicePixelRatio,1.25));ren.outputEncoding=T.sRGBEncoding;ren.toneMapping=T.ACESFilmicToneMapping;ren.toneMappingExposure=1.1;ren.shadowMap.enabled=true;ren.shadowMap.type=T.PCFShadowMap;
 const sc=new T.Scene();sc.background=new T.Color(0xcce0f2);sc.fog=new T.Fog(new T.Color(0xcce0f2).convertSRGBToLinear(),80,400);
 const cam=new T.PerspectiveCamera(65,1,.1,600);sc.add(cam);const rt=new T.WebGLRenderTarget(512,512),cam2=new T.PerspectiveCamera(16,1,.1,600),vmH=new T.Group();vmH.rotation.y=Math.PI;vmH.visible=false;cam.add(vmH);
 sc.add(new T.HemisphereLight(0xbfd9ff,0x56633f,.75));

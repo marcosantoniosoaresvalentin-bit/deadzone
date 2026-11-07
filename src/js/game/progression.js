@@ -45,7 +45,7 @@ function recoil(){const rc=({rifle:.011,shotgun:.045,pistol:.018,sniper:.05})[wp
 
 // --- som direcional dos bots ---
 function panOf(x,z){const dx=x-P.x,dz=z-P.z,fx=Math.sin(yaw),fz=Math.cos(yaw);return Math.sin(Math.atan2(-dx*fz+dz*fx,dx*fx+dz*fz))}
-function botShot(b,dp){if(b.sil||dp>150||mode==='lobby'||!vSnd(0))return;sfx(700+900*Math.max(0,1-dp/150),Math.min(.75,1.2*(1-dp/150)),.16,panOf(b.x,b.z));if(dp<60&&mode==='ground'&&performance.now()-lastPing>350){lastPing=performance.now();pingDir(b.x,b.z,'shot')}}
+function botShot(b,dp){if(!b.sil&&dp<120)try{DZFX.flash(b.x+Math.sin(b.g.rotation.y)*.8,TERH(b.x,b.z)+1.35,b.z+Math.cos(b.g.rotation.y)*.8,.8)}catch(e){}if(b.sil||dp>150||mode==='lobby'||!vSnd(0))return;sfx(700+900*Math.max(0,1-dp/150),Math.min(.75,1.2*(1-dp/150)),.16,panOf(b.x,b.z));if(dp<60&&mode==='ground'&&performance.now()-lastPing>350){lastPing=performance.now();pingDir(b.x,b.z,'shot')}}
 
 // --- soltar itens ---
 const dropPos=()=>({x:P.x+Math.sin(yaw)*.9+(Math.random()-.5)*.7,z:P.z+Math.cos(yaw)*.9+(Math.random()-.5)*.7});

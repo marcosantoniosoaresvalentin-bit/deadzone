@@ -157,7 +157,7 @@
   };
 
   /* ---------- materiais de vegetação ---------- */
-  let MAT = null;
+  let MAT = null; const WT = { value: 0 };
   function mats() {
     if (MAT) return MAT;
     const bark = barkTex(); bark.wrapS = bark.wrapT = T.RepeatWrapping; bark.repeat.set(2, 3);
@@ -165,11 +165,22 @@
     const leaf = leafTex(), needle = needleTex(), grass = grassTex();
     // folhas: os dois lados usam a mesma normal (sem isso o verso fica preto)
     const noFlip = m => { m.onBeforeCompile = s => { s.fragmentShader = s.fragmentShader.replace('#include <normal_fragment_begin>', T.ShaderChunk.normal_fragment_begin.replace('normal = normal * faceDirection;', '')); }; return m; };
+    // vento: balança mais a parte de cima (altura no espaço do objeto)
+    const wind = (m, k, amp) => { const prev = m.onBeforeCompile; m.onBeforeCompile = s => { prev && prev(s); s.uniforms.uWT = WT;
+      s.vertexShader = 'uniform float uWT;\n' + s.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>
+      #ifdef USE_INSTANCING
+        vec3 wpI = (instanceMatrix * vec4(transformed, 1.0)).xyz;
+      #else
+        vec3 wpI = transformed;
+      #endif
+      float wk = clamp(transformed.y * ${k.toFixed(4)}, 0.0, 1.0); wk *= wk;
+      transformed.x += sin(uWT * 1.7 + wpI.x * 0.35 + wpI.z * 0.21) * ${amp.toFixed(4)} * wk;
+      transformed.z += cos(uWT * 1.33 + wpI.z * 0.29 + wpI.x * 0.17) * ${(amp * .7).toFixed(4)} * wk;`); }; return m; };
     const foliage = (map) => noFlip(new T.MeshStandardMaterial({ map, alphaTest: .42, side: T.DoubleSide, vertexColors: true, roughness: .85, metalness: 0 }));
     MAT = {
       bark: new T.MeshStandardMaterial({ map: bark, vertexColors: true, roughness: .95, metalness: 0 }),
-      leaf: foliage(leaf), needle: foliage(needle),
-      grass: noFlip(new T.MeshStandardMaterial({ map: grass, alphaTest: .4, side: T.DoubleSide, vertexColors: true, roughness: 1, metalness: 0 })),
+      leaf: wind(foliage(leaf), 1 / 9, .22), needle: wind(foliage(needle), 1 / 18, .3),
+      grass: wind(noFlip(new T.MeshStandardMaterial({ map: grass, alphaTest: .4, side: T.DoubleSide, vertexColors: true, roughness: 1, metalness: 0 })), 1.9, .09),
       rock: new T.MeshStandardMaterial({ map: rock, bumpMap: rock, bumpScale: .04, roughness: .95, metalness: 0 })
     };
     return MAT;
@@ -297,6 +308,7 @@
       sg.setAttribute('color', new T.Float32BufferAttribute(cols, 3));
       es.add(new T.Mesh(sg, new T.MeshBasicMaterial({ vertexColors: true, side: T.BackSide })));
       const pm = new T.PMREMGenerator(ren); const rtE = pm.fromScene(es, .02); DZR.envTex = rtE.texture; pm.dispose();
+      FLASH = new T.PointLight(0xffc27a, 0, 11, 2); sc.add(FLASH);
       DZR.applyQ((typeof CFG !== 'undefined' && CFG.q != null) ? CFG.q : 2);
     } catch (e) { console.warn('DZR.post', e); }
   };
@@ -307,6 +319,7 @@
     sc.traverse(o => { if (o.isHemisphereLight && !o.userData.dzLobby) o.intensity = hi ? .45 : .75; });
     ren.shadowMap.type = hi ? T.PCFSoftShadowMap : T.PCFShadowMap;
     const ms = hi ? 2048 : 1024; sun.shadow.mapSize.set(ms, ms); sun.shadow.radius = hi ? 2.5 : 1;
+    { const c = sun.shadow.camera, e = hi ? 60 : 42; c.left = c.bottom = -e; c.right = c.top = e; c.updateProjectionMatrix(); }
     if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; }
   };
   DZR.waterMat = function (base) {
@@ -454,6 +467,40 @@
     }
     for (const s of SH) { _o3.position.set(s.x, s.y, s.z); _o3.rotation.set(s.rx, s.ry, 0); _o3.scale.setScalar(s.s * (s.t > 5 ? 6 - s.t : 1)); _o3.updateMatrix(); SHM.setMatrixAt(n++, _o3.matrix); }
     SHM.count = n; SHM.instanceMatrix.needsUpdate = true;
+  };
+
+  /* =====================================================================
+     EFEITOS DE TIRO: clarão da arma e impacto das balas
+     ===================================================================== */
+  const DZFX = window.DZFX = {}; let FLASH = null, flT = 0;
+  DZFX.flash = function (x, y, z, k) {
+    if (!FLASH || (typeof CFG !== 'undefined' && CFG.q === 0)) return;
+    FLASH.position.set(x, y, z); FLASH.intensity = 3.5 * (k || 1); flT = .055;
+  };
+  // onde a bala realmente bate: chão/relevo ou parede (janela quebrada deixa passar)
+  DZFX.rayHit = function (o, d, maxT) {
+    const lim = Math.min(maxT, 160);
+    for (let t = .6; t < lim; t += .3) {
+      const x = o.x + d.x * t, y = o.y + d.y * t, z = o.z + d.z * t;
+      if (y < TERH(x, z)) return t;
+      for (const b of near(x, z)) if (b.w && !b.off && (b.yt !== undefined ? (y > b.yb && y < b.yt) : y < (b.h || 6)) && x > b.x0 && x < b.x1 && z > b.z0 && z < b.z1 && !(DZW.broken && DZW.hole(x, y, z))) return t;
+    }
+    return 1e9;
+  };
+  DZFX.impact = function (o, d, end, bot, rg) {
+    if (typeof fxP !== 'function') return;
+    const rand = (a, b) => a + Math.random() * (b - a);
+    if (bot) {
+      const x = o.x + d.x * end, y = o.y + d.y * end, z = o.z + d.z * end;
+      for (let i = 0; i < 14; i++) fxP(x, y, z, d.x * rand(.5, 2.5) + rand(-.8, .8), rand(-.3, 1.4), d.z * rand(.5, 2.5) + rand(-.8, .8), rand(.08, .17), rand(.3, .6), 0x6a0808, 7, 1.5);
+      return;
+    }
+    const t = Math.min(end, DZFX.rayHit(o, d, end)); if (t > 159) return;
+    const x = o.x + d.x * (t - .05), y = o.y + d.y * (t - .05), z = o.z + d.z * (t - .05);
+    if (typeof P !== 'undefined' && Math.hypot(x - P.x, z - P.z) > 130) return;
+    const ground = y < TERH(x, z) + .3, col = ground ? 0x6e5c45 : 0xa29d94;
+    for (let i = 0; i < 12; i++) fxP(x, y + .03, z, -d.x * rand(.4, 2.4) + rand(-1, 1), rand(.6, 2.6), -d.z * rand(.4, 2.4) + rand(-1, 1), rand(.08, .2), rand(.4, .9), col, 9, 1.2);
+    if (!ground) for (let i = 0; i < 4; i++) fxP(x, y, z, -d.x * rand(2, 5) + rand(-2, 2), rand(1, 3.5), -d.z * rand(2, 5) + rand(-2, 2), rand(.02, .04), rand(.08, .18), 0xffd27a, 12, .3);
   };
 
   /* =====================================================================
@@ -758,6 +805,7 @@
   function update() {
     const now = performance.now(), dt = Math.min(.1, (now - lastT) / 1000); lastT = now;
     for (const nm of DZR.water) { nm.offset.x += dt * .012; nm.offset.y += dt * .007; }
+    WT.value += dt; if (flT > 0) { flT -= dt; if (flT <= 0 && FLASH) FLASH.intensity = 0; }
     try { DZR.shardTick(dt); if (DZR._fallT) DZR._fallT.value += dt; if (typeof mode !== 'undefined' && mode !== 'plane' && mode !== 'lobby' && cam.position.y < TERH(cam.position.x, cam.position.z) + .45) cam.position.y = TERH(cam.position.x, cam.position.z) + .45; } catch (e) { }
     try { grassField(); } catch (e) { if (!DZR._gerr) { DZR._gerr = 1; console.warn('grass', e); } }
     if (!TPL) return;

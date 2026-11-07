@@ -4,7 +4,7 @@
 const FXP=[],WAVE=[],FLY=[],GROW=[],FXG=new T.BoxGeometry(1,1,1),FXM={};let SHK=0;
 const fxm=c=>FXM[c]||(FXM[c]=new T.MeshBasicMaterial({color:c})),shake=a=>{SHK=Math.min(1.2,Math.max(SHK,a))};
 function fxP(x,y,z,vx,vy,vz,s,life,c,g,d){const m=new T.Mesh(FXG,fxm(c));m.position.set(x,y,z);m.scale.setScalar(s);sc.add(m);FXP.push({m,vx,vy,vz,s,l:life,t:life,g:g==null?14:g,d:d==null?.6:d,r:[R(-6,6),R(-6,6)]});if(FXP.length>240)sc.remove(FXP.shift().m)}
-function fxDust(x,z,n){for(let i=0;i<n;i++){const a=R(0,6.28),s=R(1,3.2);fxP(x+Math.cos(a)*.3,.1,z+Math.sin(a)*.3,Math.cos(a)*s,R(.4,1.4),Math.sin(a)*s,R(.15,.3),R(.35,.7),0xa89878,3,2)}}
+function fxDust(x,z,n){for(let i=0;i<n;i++){const a=R(0,6.28),s=R(1,3.2);fxP(x+Math.cos(a)*.3,TERH(x,z)+.1,z+Math.sin(a)*.3,Math.cos(a)*s,R(.4,1.4),Math.sin(a)*s,R(.15,.3),R(.35,.7),0xa89878,3,2)}}
 function ringFx(x,y,z,r,c){const m=new T.Mesh(new T.RingGeometry(.85,1,32),new T.MeshBasicMaterial({color:c,transparent:true,opacity:.8,side:T.DoubleSide,depthWrite:false}));m.rotation.x=-Math.PI/2;m.position.set(x,y,z);sc.add(m);WAVE.push({m,t:0,r})}
 function fxBoom(x,y,z,r){const d=Math.hypot(P.x-x,P.z-z);shake(Math.max(0,1-d/(r*4))*.9);
  for(let i=0;i<24;i++){const a=R(0,6.28),e=R(.2,1),sp=R(4,r*1.2);fxP(x,y+.3,z,Math.cos(a)*sp*e,R(3,r*.9),Math.sin(a)*sp*e,R(.12,.3),R(.5,1.1),i%3?0xff9a2a:0xffdd66,16,.3)}

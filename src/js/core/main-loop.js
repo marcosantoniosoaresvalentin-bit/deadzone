@@ -27,7 +27,7 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
   else if(l>.05){const g=Math.atan2(dx,dz),d=((g-pl.rotation.y+Math.PI*3)%(Math.PI*2))-Math.PI;pl.rotation.y+=d*Math.min(1,dt*12)}
   ph+=dt*l*(11-cr*4);cw+=dt*l*4.5;amt+=(l-amt)*k;
   drawSlots();
-  fcd-=dt;if(rcA>0&&!firing&&!keys.f){const r_=Math.min(rcA,dt*.1);rcA-=r_;pit=Math.min(.85,pit+r_)}{const s_=cur>=0?slots[cur]:null;if(s_&&(firing||keys.f)&&fcd<=0&&!rlOn&&!cast&&dw>=1&&mpOk()){if(s_.mag>0){fcd=WS[wp].r;kk=1;s_.mag--;fire(fx,fz);sfx(s_.sil?700:1800,s_.sil?.12:.5,s_.sil?.1:.18,0)}else if(mt<=0)say(s_.res>0?'Recarregue a arma':'Sem munição',1.2)}else if(!s_&&(firing||keys.f))melee()}
+  fcd-=dt;if(rcA>0&&!firing&&!keys.f){const r_=Math.min(rcA,dt*.1);rcA-=r_;pit=Math.min(.85,pit+r_)}{const s_=cur>=0?slots[cur]:null;if(s_&&(firing||keys.f)&&fcd<=0&&!rlOn&&!cast&&dw>=1&&mpOk()){if(s_.mag>0){fcd=WS[wp].r;kk=1;s_.mag--;fire(fx,fz);if(!s_.sil)try{DZFX.flash(P.x+fx*.9,P.y+1.45-.45*cr-pr,P.z+fz*.9,1)}catch(e){}sfx(s_.sil?700:1800,s_.sil?.12:.5,s_.sil?.1:.18,0)}else if(mt<=0)say(s_.res>0?'Recarregue a arma':'Sem munição',1.2)}else if(!s_&&(firing||keys.f))melee()}
  }else if(mode==='sky'||mode==='chute'){
   const ch_=mode==='chute',f_=-iy;fw+=((f_>0?f_:0)-fw)*k;bk+=((f_<0?-f_:0)-bk)*k;sd+=(ix-sd)*k;
   const fc=fw+.6*bk,sp=(ch_?12:26)*(1+.5*fw);
@@ -51,8 +51,8 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
   const F=G.map((v,i)=>v*(1-sk-ch)+S[i]*sk+C[i]*ch);
   lg1.th.rotation.x=F[0];lg1.kn.rotation.x=F[1];lg2.th.rotation.x=F[2];lg2.kn.rotation.x=F[3];
   aR.sh.rotation.set(F[4],0,F[5]);aR.el.rotation.x=F[6];aL.sh.rotation.set(F[7],0,F[8]);aL.el.rotation.x=F[9];
-  tor.rotation.x=F[10];tor.rotation.y=F[11];head.rotation.x=F[12];hips.position.y=F[13];body.rotation.x=F[14];body.position.set(0,F[15],F[16]);body.rotation.z=.06*cs*cm;hips.rotation.y=.1*cs*cm;tor.rotation.z=-.05*cs*cm;lg1.th.rotation.z=-.12*p2-.06*cL;lg2.th.rotation.z=.12*p2+.06*cR;
-  rf.visible=!!ar;rf.rotation.x=-p2*Math.PI/2-.3*g2+(pit-.25)*.7*(1-p2);rf.position.set(.1,.27+.5*p2,.22*(1-p2));rf.rotation.z=0;if(dw<1){const e=dw*dw*(3-2*dw);rf.position.x=lp(0,rf.position.x,e);rf.position.y=lp(.32,rf.position.y,e);rf.position.z=lp(-.4,rf.position.z,e);rf.rotation.x=lp(-1.35,rf.rotation.x,e);rf.rotation.z=.3*(1-e)}rf.position.z-=.05*kk;rf.rotation.x-=.09*kk;if(wp==='bow'){const bq=BC>0?BC/.45:0;rf.position.z+=.14*BD-.07*bq;rf.position.y+=.04*BD;rf.rotation.x+=.06*BD}rf.position.y+=Math.abs(Math.sin(cw))*.012*w;
+  tor.rotation.x=F[10]+(pit-.25)*.3*(1-p2)*ar;tor.rotation.y=F[11];head.rotation.x=F[12];hips.position.y=F[13];body.rotation.x=F[14];body.position.set(0,F[15],F[16]);body.rotation.z=.06*cs*cm;hips.rotation.y=.1*cs*cm;tor.rotation.z=-.05*cs*cm;lg1.th.rotation.z=-.12*p2-.06*cL;lg2.th.rotation.z=.12*p2+.06*cR;
+  rf.visible=!!ar;rf.rotation.x=-p2*Math.PI/2-.3*g2+(pit-.25)*.4*(1-p2);rf.position.set(.1,.27+.5*p2,.22*(1-p2));rf.rotation.z=0;if(dw<1){const e=dw*dw*(3-2*dw);rf.position.x=lp(0,rf.position.x,e);rf.position.y=lp(.32,rf.position.y,e);rf.position.z=lp(-.4,rf.position.z,e);rf.rotation.x=lp(-1.35,rf.rotation.x,e);rf.rotation.z=.3*(1-e)}rf.position.z-=.05*kk;rf.rotation.x-=.09*kk;if(wp==='bow'){const bq=BC>0?BC/.45:0;rf.position.z+=.14*BD-.07*bq;rf.position.y+=.04*BD;rf.rotation.x+=.06*BD}rf.position.y+=Math.abs(Math.sin(cw))*.012*w;
   if(ar){rf.updateMatrix();const hh=HG[wp],hv=q=>new T.Vector3(q[0],q[1],q[2]).applyMatrix4(rf.matrix),r_=hv(hh[0]),l_=hv(hh[1]);
    if(gm>.01)l_.lerp(hv(MG[wp]),gm*(1-p2));
    ik(aR,1,r_.x,r_.y,r_.z);ik(aL,-1,l_.x,l_.y,l_.z);animW(rf.children[0],kk,rl,fcd>0?1-fcd/WS[wp].r:1)}}
@@ -93,7 +93,7 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
   else{b.wt-=dt;if(b.wt<=0||Math.hypot(b.tx-b.x,b.tz-b.z)<1.5){b.tx=b.x+R(-40,40);b.tz=b.z+R(-40,40);b.wt=R(5,10)}
    botNavigate(b,b.tx,b.tz,2.5,dt);mv=1}
   if(mv&&mode==='ground'&&dp<32&&b.team!==1&&vSnd(0)){b.st-=dt;if(b.st<=0){b.st=.5;pingDir(b.x,b.z,'step')}}
-  b.g.position.set(b.x,TERH(b.x,b.z),b.z);if(b.g.visible)animBot(b,dt,mv,dp)}
+  b.g.position.set(b.x,TERH(b.x,b.z),b.z);{const t_=b.g.rotation.y;if(b.sy==null)b.sy=t_;b.sy+=(((t_-b.sy+Math.PI*3)%(Math.PI*2))-Math.PI)*Math.min(1,dt*9);b.g.rotation.y=b.sy}if(b.g.visible)animBot(b,dt,mv,dp)}
  if(hp<=0&&mode!=='dead'&&!MP)die();
  if(trt>0){trt-=dt;if(trt<=0)trl.visible=false}
  if(plane.visible){for(const p of props)p.rotation.z+=dt*45;plane.position.set(pS.x+pD.x*55*gt,450,pS.z+pD.z*55*gt);if(gt>=44&&mode==='plane')jumpOut();if(gt>52)plane.visible=false}
