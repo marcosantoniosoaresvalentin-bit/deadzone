@@ -12,6 +12,7 @@ const ZMAT=new T.ShaderMaterial({uniforms:ZU,transparent:true,depthWrite:false,s
   float a=(.16+.30*h+.22*band*h)*(1.-smoothstep(uFar*.55,uFar*.92,d));
   a+=.22*h*(1.-smoothstep(0.,45.,d));
   a*=1.-smoothstep(50.,170.,vW.y);
+  a*=mix(1.,.12,smoothstep(40.,160.,uCam.y));   // vista do avião/paraquedas alto: a parede quase some para dar de ver o mapa
   gl_FragColor=vec4(mix(uC,vec3(.8,.93,1.),band*.55),clamp(a,0.,.72));}`}),
  zw=new T.Mesh(new T.CylinderGeometry(1,1,260,96,1,true),ZMAT);zw.position.y=120;zw.frustumCulled=false;zw.renderOrder=3;sc.add(zw);
 const ZK=MAPH/1200,ZS=[900,500,260,120,40].map(r=>Math.round(r*ZK)),Z0=1700*ZK;let zR=Z0,zI=0,zX=0,zZ=0,ZP=null;

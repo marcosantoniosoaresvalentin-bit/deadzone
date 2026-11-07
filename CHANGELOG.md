@@ -1,5 +1,13 @@
 # Histórico de versões
 
+## 3.4.1
+- **Dá para ver a ilha de dentro do avião**: a neblina do chão (que voltava ao sair do lobby)
+  escondia tudo lá de cima; agora no ar a neblina fica sempre longe. A parede da zona também
+  quase some quando a câmera está no alto.
+- **Hélices do avião certas**: giram retas, no eixo de cada motor (antes giravam em volta do
+  centro da "caixa" da peça e ficavam tortas e fora do lugar).
+- Fundo do mar escurece com a profundidade (sem o "quadrado" claro em volta da ilha visto do alto).
+
 ## 3.4.0
 - **Carros saltam**: agora têm velocidade vertical e gravidade. Em alta velocidade no topo de
   um morro o carro decola, voa (direção quase sem efeito no ar), inclina o bico conforme a queda

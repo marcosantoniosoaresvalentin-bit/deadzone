@@ -178,6 +178,26 @@
   }
   // vidro da cabine do helicóptero: claro e transparente para ver o piloto
   let _hg = null; const HGLASS = () => _hg || (_hg = new T.MeshStandardMaterial({ color: lin(0xbfd8e6), transparent: true, opacity: .2, roughness: .05, metalness: .2, depthWrite: false, side: T.DoubleSide }));
+  // hélice: pivô no CENTRO DO CUBO (média dos vértices, não a caixa) e eixo = direção perpendicular
+  // ao disco da hélice (menor variação dos vértices). Assim ela gira reta, no lugar do motor.
+  function propPivot(root, node) {
+    root.updateMatrixWorld(true); node.updateMatrixWorld(true);
+    const P = node.geometry.attributes.position, inv = new T.Matrix4().copy(root.matrixWorld).invert(), m = new T.Matrix4().multiplyMatrices(inv, node.matrixWorld), v = new T.Vector3(), c = new T.Vector3(), pts = [];
+    // posições compactadas (KHR_mesh_quantization): converte o inteiro de volta para -1..1
+    const A = P.array, dn = !P.normalized ? 1 : A instanceof Int16Array ? 32767 : A instanceof Uint16Array ? 65535 : A instanceof Int8Array ? 127 : A instanceof Uint8Array ? 255 : 1;
+    for (let i = 0; i < P.count; i++) { v.set(Math.max(-1, P.getX(i) / dn), Math.max(-1, P.getY(i) / dn), Math.max(-1, P.getZ(i) / dn)).applyMatrix4(m); pts.push(v.clone()); c.add(v); }
+    if (!pts.length) return null; c.divideScalar(pts.length);
+    const C = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+    for (const q of pts) { const d = [q.x - c.x, q.y - c.y, q.z - c.z]; for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) C[i * 3 + j] += d[i] * d[j]; }
+    const mul = (M, x) => new T.Vector3(M[0] * x.x + M[1] * x.y + M[2] * x.z, M[3] * x.x + M[4] * x.y + M[5] * x.z, M[6] * x.x + M[7] * x.y + M[8] * x.z);
+    const big = (M, s0) => { let x = s0.clone().normalize(); for (let k = 0; k < 60; k++) { const y = mul(M, x); if (y.lengthSq() < 1e-12) break; x = y.normalize(); } return x; };
+    const e1 = big(C, new T.Vector3(1, .3, .2)), l1 = mul(C, e1).dot(e1), C2 = C.slice();
+    for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) C2[i * 3 + j] -= l1 * e1.getComponent(i) * e1.getComponent(j);
+    const e2 = big(C2, new T.Vector3(.2, 1, .3)), ax = new T.Vector3().crossVectors(e1, e2).normalize();
+    if (!isFinite(ax.x) || ax.lengthSq() < .5) ax.set(0, 0, 1); if (ax.z < 0) ax.negate();
+    const piv = new T.Group(); piv.position.copy(c); piv.quaternion.setFromUnitVectors(new T.Vector3(0, 0, 1), ax); root.add(piv); piv.updateMatrixWorld(true); piv.attach(node);
+    return piv;
+  }
   function clone(name) { return SRC[name] ? T.SkeletonUtils.clone(SRC[name]) : null; }
 
   function dress(v) {
@@ -266,7 +286,7 @@
       plane.add(holder); holder.updateMatrixWorld(true);
       // as 4 hélices viram grupos com pivô no centro para girar
       const pr = []; s.traverse(o => { if (o.isMesh && /^Wings00[1-4]$/.test(o.parent && o.parent.name)) pr.push(o); });
-      props.length = 0; for (const o of pr) { const p = pivotOut(holder, o); if (p) props.push(p); }
+      props.length = 0; for (const o of pr) { const p = propPivot(holder, o); if (p) props.push(p); }
     };
     go();
   }, undefined, e => console.warn('avião', e));

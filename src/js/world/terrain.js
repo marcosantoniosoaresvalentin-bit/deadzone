@@ -119,13 +119,16 @@ window.TERH=TER.terh;window.TERG=TER.terg;
    float wet=1.-smoothstep(.15,.9,vWP.y);sand*=mix(1.,.62,wet);
    vec3 col=grass*w.x+dirt*w.y+rock*w.z+sand*w.w;
    col=mix(col,col*vec3(.55,.7,.72),1.-smoothstep(-2.5,0.,vWP.y));   // fundo do mar mais escuro
+   col=mix(col,vec3(.051,.208,.314),smoothstep(-1.5,-11.,vWP.y));   // e vai sumindo no azul do mar fundo
    col=mix(col,vec3(.93,.95,.95),.45*smoothstep(.22,.02,abs(vWP.y-.12)));    // espuma na beira
    vec4 texelColor=mapTexelToLinear(vec4(col,1.));diffuseColor*=texelColor;`);
  };
  const gr=new T.Mesh(TER.g,m);gr.receiveShadow=true;gr.renderOrder=-2;sc.add(gr);
  // mar no nível 0
  const wm=new T.MeshStandardMaterial({color:lin(0x2f6f9a),metalness:.5,roughness:.12,transparent:true,opacity:.86});if(window.DZR)DZR.waterMat(wm);wm.opacity=.82;
- const sea=new T.Mesh(new T.PlaneGeometry(6000,6000),wm);sea.rotation.x=-Math.PI/2;sea.position.y=0;sc.add(sea)}
+ const sea=new T.Mesh(new T.PlaneGeometry(6000,6000),wm);sea.rotation.x=-Math.PI/2;sea.position.y=0;sc.add(sea);
+ // fundo do mar escuro além do terreno (senão aparece um "quadrado" claro em volta da ilha, visto do alto)
+ const deep=new T.Mesh(new T.PlaneGeometry(6000,6000),new T.MeshBasicMaterial({color:lin(0x0d3550)}));deep.rotation.x=-Math.PI/2;deep.position.y=-14.6;deep.renderOrder=-3;sc.add(deep)}
 
 // ---------- imagem do terreno vista de cima (minimapa e mapa grande) ----------
 const TERMAP=(()=>{const W=1024,E=MAPH+30,c=document.createElement('canvas');c.width=c.height=W;const g=c.getContext('2d'),im=g.createImageData(W,W),d=im.data;
