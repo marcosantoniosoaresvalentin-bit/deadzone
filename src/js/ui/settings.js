@@ -18,7 +18,7 @@ $('edS').oninput=e=>{if(selB){EL[selB].a.s=e.target.value/100;edPos(selB)}};
 $('edV').onclick=()=>{CFG.lay={};for(const k in EL)CFG.lay[k]=EL[k].a;saveCfg();applyLay();$('edt').style.display='none';$('cfg').style.display='flex'};
 $('edR').onclick=()=>{CFG.lay={};saveCfg();applyLay();$('edt').style.display='none';$('cfg').style.display='flex'};
 $('edX').onclick=()=>{$('edt').style.display='none';$('cfg').style.display='flex'};
-$('cfgb').onclick=()=>{$('cfg').style.display='flex';$('cAuto').textContent=CFG.auto?'Ligado':'Desligado';$('cDoor').textContent=CFG.autoDoor?'Ligado':'Desligado';$('cQ').textContent=['Baixa','Média','Alta'][CFG.q==null?2:CFG.q];$('cSens').value=CFG.sens*100};
+$('cfgb').onclick=()=>{$('cfg').style.display='flex';$('cAuto').textContent=CFG.auto?'Ligado':'Desligado';$('cDoor').textContent=CFG.autoDoor?'Ligado':'Desligado';$('cQ').textContent=['Baixa','Média','Alta'][CFG.q==null?DZ_DEFQ:CFG.q];$('cSens').value=CFG.sens*100};
 $('cfgx').onclick=()=>{$('cfg').style.display='none'};
 $('cAuto').onclick=()=>{CFG.auto^=1;$('cAuto').textContent=CFG.auto?'Ligado':'Desligado';saveCfg()};
 $('cDoor').onclick=()=>{CFG.autoDoor^=1;$('cDoor').textContent=CFG.autoDoor?'Ligado':'Desligado';saveCfg()};

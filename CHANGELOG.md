@@ -1,5 +1,17 @@
 # Histórico de versões
 
+## 3.7.5
+- **Personagem não "sai" mais do carro bugado**: se o jogador morre dentro do veículo (batida
+  forte, carro explodindo), o corpo é colocado ao lado do carro antes da animação de morte;
+  com o carro explodindo, o motorista é jogado para fora.
+- **Menos travamento**:
+  - qualidade padrão **Média no celular** (Alta continua no PC e para quem escolheu Alta);
+  - suavização de bordas (MSAA) só na qualidade Alta;
+  - **resolução automática**: se o jogo cair abaixo de ~40 fps, a resolução baixa aos poucos
+    (até 60%) e volta a subir quando sobra desempenho;
+  - grama ao redor recalculada com menos frequência e em raio menor na Média.
+- Corrigida a imagem de fundo da tela de fim de partida (caminho errado no APK).
+
 ## 3.7.4
 - **Tela de carregamento** desde o primeiro instante: não aparece mais o lobby antigo nem os
   botões antigos com texto enquanto o jogo carrega.

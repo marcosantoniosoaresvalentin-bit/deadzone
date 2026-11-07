@@ -370,7 +370,7 @@
   function tick() {
     requestAnimationFrame(tick);
     if (!ready || typeof cam === 'undefined') return;
-    const q = (typeof CFG !== 'undefined' && CFG.q != null) ? CFG.q : 2, near = q === 0 ? 70 : q === 1 ? 110 : 160;
+    const q = (typeof CFG !== 'undefined' && CFG.q != null) ? CFG.q : (window.DZ_DEFQ != null ? DZ_DEFQ : 2), near = q === 0 ? 70 : q === 1 ? 110 : 160;
     for (const v of VEH) {
       if (!v.root) { dress(v); if (!v.root) continue; }
       v.g.getWorldPosition(_v); const n = v.heli ? _v.distanceTo(cam.position) < near : true;   // o buggy fica sempre com o modelo real

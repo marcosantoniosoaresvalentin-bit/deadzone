@@ -51,7 +51,7 @@ const dataUri = rel => {
 };
 const inlineAssets = t => t.replace(/(["'(])(assets\/[A-Za-z0-9_./-]+\.(?:jpg|jpeg|png|glb|webp))(?=["')])/g, (_, q, rel) => q + dataUri(rel));
 let single = index
-  .replace(/<link rel="stylesheet" href="([^"]+)">/g, (_, href) => `<style>\n${read(href)}</style>`)
+  .replace(/<link rel="stylesheet" href="([^"]+)">/g, (_, href) => `<style>\n${read(href).replace(/\.\.\/\.\.\/assets\//g, 'assets/')}</style>`)   // CSS embutido: caminho relativo ao HTML
   .replace(/<script src="([^"]+)"><\/script>/g, (_, src) => `<script>\n${read(src).replace(/<\/script/gi, '<\\/script')}\n</script>`)
   .replace(/<link rel="manifest"[^>]*>\n?/, '')
   .replace(/<link rel="(?:icon|apple-touch-icon)"[^>]*>\n?/g, '');

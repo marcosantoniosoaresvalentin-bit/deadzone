@@ -310,7 +310,7 @@
       es.add(new T.Mesh(sg, new T.MeshBasicMaterial({ vertexColors: true, side: T.BackSide })));
       const pm = new T.PMREMGenerator(ren); const rtE = pm.fromScene(es, .02); DZR.envTex = rtE.texture; pm.dispose();
       FLASH = new T.PointLight(0xffc27a, 0, 11, 2); sc.add(FLASH);
-      DZR.applyQ((typeof CFG !== 'undefined' && CFG.q != null) ? CFG.q : 2);
+      DZR.applyQ((typeof CFG !== 'undefined' && CFG.q != null) ? CFG.q : (window.DZ_DEFQ != null ? DZ_DEFQ : 2));
     } catch (e) { console.warn('DZR.post', e); }
   };
   // qualidade gráfica: Alta = reflexos do céu + sombras suaves; Média/Baixa = mais leve
@@ -911,12 +911,12 @@
   const hsh = (a, b, k) => { const v = Math.sin(a * 127.1 + b * 311.7 + k * 74.7) * 43758.5453; return v - Math.floor(v); };
   function grassField() {
     if (typeof P === 'undefined' || typeof mode === 'undefined' || typeof FP === 'undefined') return;
-    const q = (typeof CFG !== 'undefined' && CFG.q != null) ? CFG.q : 2;
+    const q = (typeof CFG !== 'undefined' && CFG.q != null) ? CFG.q : (window.DZ_DEFQ != null ? DZ_DEFQ : 2);
     if (!GF) { const m = new T.InstancedMesh(DZR.grassGeo(), mats().grass, 3200); m.instanceColor = new T.InstancedBufferAttribute(new Float32Array(3200 * 3).fill(1), 3); m.count = 0; m.frustumCulled = false; m.receiveShadow = true; m.castShadow = false; m.instanceMatrix.setUsage(T.DynamicDrawUsage); sc.add(m); GF = { m, cx: 1e9, cz: 1e9, q: -1 }; }
     const on = (mode === 'ground' || mode === 'chute' || mode === 'drive') && q > 0 && Math.abs(P.x) < 1200 && Math.abs(P.z) < 1200 && P.y < 30;
     GF.m.visible = on; if (!on) return;
-    const cx = Math.round(P.x / 6) * 6, cz = Math.round(P.z / 6) * 6; if (cx === GF.cx && cz === GF.cz && q === GF.q) return; GF.cx = cx; GF.cz = cz; GF.q = q;
-    const Rr = q >= 2 ? 30 : 20, M = GF.m, o = new T.Object3D(), col = new T.Color();
+    const cx = Math.round(P.x / 10) * 10, cz = Math.round(P.z / 10) * 10; if (cx === GF.cx && cz === GF.cz && q === GF.q) return; GF.cx = cx; GF.cz = cz; GF.q = q;
+    const Rr = q >= 2 ? 30 : 18, M = GF.m, o = new T.Object3D(), col = new T.Color();
     const fp = FP.filter(b => b.x1 > cx - Rr - 2 && b.x0 < cx + Rr + 2 && b.z1 > cz - Rr - 2 && b.z0 < cz + Rr + 2);
     const rd = RDS.filter(r => r[2] > cx - Rr - 8 && r[0] < cx + Rr + 8 && r[3] > cz - Rr - 8 && r[1] < cz + Rr + 8);
     const hp = (typeof HPADS !== 'undefined' ? HPADS : []).filter(h => Math.hypot(h.x - cx, h.z - cz) < Rr + 12);
@@ -948,7 +948,7 @@
     try { DZR.shardTick(dt); if (DZR._fallT) DZR._fallT.value += dt; if (typeof mode !== 'undefined' && mode !== 'plane' && mode !== 'lobby' && cam.position.y < TERH(cam.position.x, cam.position.z) + .45) cam.position.y = TERH(cam.position.x, cam.position.z) + .45; } catch (e) { }
     try { grassField(); } catch (e) { if (!DZR._gerr) { DZR._gerr = 1; console.warn('grass', e); } }
     if (!TPL) return;
-    const q = (typeof CFG !== 'undefined' && CFG.q != null) ? CFG.q : 2, lod = q === 0 ? 30 : q === 1 ? 50 : DZR.lod;
+    const q = (typeof CFG !== 'undefined' && CFG.q != null) ? CFG.q : (window.DZ_DEFQ != null ? DZ_DEFQ : 2), lod = q === 0 ? 30 : q === 1 ? 50 : DZR.lod;
     const cp = cam.position;
     for (let i = DZR.rigs.length - 1; i >= 0; i--) {
       const rig = DZR.rigs[i]; if (!rig.av) attach(rig); const av = rig.av; if (!av) continue;

@@ -73,12 +73,12 @@ function gEnd(win){if(ended)return;ended=1;mode='dead';setLabel();const place=wi
  const by=win?'':Math.hypot(P.x-zX,P.z-zZ)>zR?' · Morreu na zona ☠️':lastHitBy?' · Eliminado por '+bnm(lastHitBy):'';const canSpec=false;
  $('eg').innerHTML=`<div class="eg-stage"><div class="eg-scene"></div><div class="eg-x eg-t">${win?'VITÓRIA':'ELIMINADO'}</div><div class="eg-x eg-p">Posição <b>#${place}</b></div><div class="eg-x eg-bd">#${place}</div><div class="eg-x eg-v v1">${kills}</div><div class="eg-x eg-v v2">${Math.round(dmgDone)}</div><div class="eg-x eg-v v3">${mm_}:${ss}</div><div class="eg-x eg-v v4">+${xp} XP</div><div class="eg-x eg-s">+${coins}</div><div class="eg-x eg-m">Você: ${kills} abate(s) · ${Math.round(dmgDone)} de dano</div><button id="egr" type="button" aria-label="Voltar ao lobby"></button></div>`;
  egFit();if(canSpec)$('egs').onclick=()=>{$('eg').style.display='none';$('spc').style.display='flex';specNext(1,1)};$('eg').style.display='flex';updPn()}
-die=function(){gEnd(0)};
+die=function(){try{ejectDriver()}catch(e){}gEnd(0)};
 function specNext(d,auto){const L=bots.filter(b=>!b.dead&&!b.air);if(!L.length){spec=null;$('spc').style.display='none';$('eg').style.display='flex';return}let i=L.indexOf(spec);i=i<0?0:(i+d+L.length)%L.length;spec=L[i];$('spn').textContent=bnm(spec)}
 function specTick(){if(mode!=='dead'||$('spc').style.display==='none'){return}if(!spec||spec.dead||spec.air)specNext(1,1);if(!spec)return;P.x=spec.x;P.z=spec.z;P.y=0;pl.visible=false}
 setInterval(()=>{if(!ended&&mode==='ground'&&!MP&&(typeof N==='undefined'||!N)&&alive<=1&&hp>0&&BOTS_ON)gEnd(1)},500);
 
 // --- qualidade gráfica ---
-function applyQ(){const q=CFG.q==null?2:CFG.q;ren.setPixelRatio(q===0?Math.min(devicePixelRatio,.75):q===1?Math.min(devicePixelRatio,1):Math.min(devicePixelRatio,1.25));rs();sun.castShadow=q>=1;try{window.DZR&&DZR.applyQ&&DZR.envTex!==undefined&&DZR.applyQ(q)}catch(e){}}
-$('cQ').onclick=()=>{CFG.q=((CFG.q==null?2:CFG.q)+2)%3;$('cQ').textContent=['Baixa','Média','Alta'][CFG.q];saveCfg();applyQ()};
+function applyQ(){try{if(typeof DYN!=='undefined'){DYN.base=0;DYN.k=1}}catch(e){}const q=CFG.q==null?DZ_DEFQ:CFG.q;ren.setPixelRatio(q===0?Math.min(devicePixelRatio,.75):q===1?Math.min(devicePixelRatio,1):Math.min(devicePixelRatio,1.25));rs();sun.castShadow=q>=1;try{window.DZR&&DZR.applyQ&&DZR.envTex!==undefined&&DZR.applyQ(q)}catch(e){}}
+$('cQ').onclick=()=>{CFG.q=((CFG.q==null?DZ_DEFQ:CFG.q)+2)%3;$('cQ').textContent=['Baixa','Média','Alta'][CFG.q];saveCfg();applyQ()};
 applyQ();
