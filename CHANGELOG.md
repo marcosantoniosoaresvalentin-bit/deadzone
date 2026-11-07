@@ -1,5 +1,15 @@
 # Histórico de versões
 
+## 2.2.0
+- **Ilha flutuante refeita no visual**: acabou o visual de blocos coloridos.
+  - Paredes de cantaria (pedra cortada com argamassa e relevo), sem emendas entre blocos.
+  - Madeira com tábuas, veios e nós em pisos, varandas, cercas, pontes e torre de vigia.
+  - Janelas com vidro de verdade que **quebra com tiro** (igual às casas da cidade).
+  - Folhagem real no lugar dos cubos verdes (arbustos, trepadeiras, árvores do terraço).
+  - Caixas de madeira com cantoneiras, tambores cilíndricos com aros, antena parabólica,
+    lampiões, estandartes de tecido e calçamento de paralelepípedos.
+- Colisões, pisos e pontos de loot continuam os mesmos.
+
 ## 2.1.2
 - APK **release** (não é mais de depuração) assinado com os esquemas v1 + v2 + v3:
   corrige o erro "pacote inválido" em celulares Xiaomi.
