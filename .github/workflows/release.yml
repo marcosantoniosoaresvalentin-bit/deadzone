@@ -1,9 +1,16 @@
 name: Lançamento
 
-# Crie uma tag (ex.: v1.0.0) para publicar uma versão com o APK e o jogo em arquivo único.
+# Publica uma versão com o APK e o jogo em arquivo único.
+# Use: crie uma tag (ex.: v1.0.0) ou rode em Actions → Lançamento → Run workflow.
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versão (ex.: v1.0.0)'
+        required: true
+        default: 'v1.0.0'
 
 permissions:
   contents: write
@@ -26,12 +33,19 @@ jobs:
           gradle-version: '8.10.2'
       - run: gradle -p android assembleDebug
       - name: Renomeia arquivos
+        env:
+          VERSION: ${{ inputs.version || github.ref_name }}
         run: |
-          cp android/app/build/outputs/apk/debug/app-debug.apk "Deadzone-${GITHUB_REF_NAME}.apk"
-          cp dist/Deadzone.html "Deadzone-${GITHUB_REF_NAME}.html"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "Deadzone-${VERSION}.apk"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "Deadzone.apk"
+          cp dist/Deadzone.html "Deadzone-${VERSION}.html"
       - uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ inputs.version || github.ref_name }}
+          name: Deadzone ${{ inputs.version || github.ref_name }}
+          target_commitish: ${{ github.sha }}
           files: |
+            Deadzone.apk
             Deadzone-*.apk
             Deadzone-*.html
           generate_release_notes: true
