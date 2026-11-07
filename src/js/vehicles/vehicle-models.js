@@ -148,12 +148,12 @@
    ===================================================================== */
 (function () {
   // caminhos escritos por extenso: o build de arquivo único embute cada um
-  const URL_ = { helicopter: 'assets/models/vehicles/helicopter.glb', sedan: 'assets/models/vehicles/sedan.glb', suv: 'assets/models/vehicles/suv.glb', pickup: 'assets/models/vehicles/pickup.glb', taxi: 'assets/models/vehicles/taxi.glb', police: 'assets/models/vehicles/police.glb', buggy: 'assets/models/vehicles/buggy.glb' };
-  const CAR_MODELS = [['sedan', 3, 4.5], ['suv', 3, 4.6], ['pickup', 2, 5.0], ['taxi', 1, 4.4], ['police', 1, 4.8], ['buggy', 1, 3.7]];
+  const URL_ = { helicopter: 'assets/models/vehicles/helicopter.glb', sedan: 'assets/models/vehicles/sedan.glb', suv: 'assets/models/vehicles/suv.glb', pickup: 'assets/models/vehicles/pickup.glb', buggy: 'assets/models/vehicles/buggy.glb' };
+  const CAR_MODELS = [['sedan', 3, 4.5], ['suv', 3, 4.6], ['pickup', 2, 5.0], ['buggy', 2, 3.7]];
   const SRC = {}; let ready = false;
   // banco do motorista de cada modelo (coordenadas do veículo: +z = frente, +x = esquerda, y = altura do assento)
-  const SEAT = window.DZSEAT = { sedan: new T.Vector3(.38, .62, -.2), suv: new T.Vector3(.4, .7, -.38), pickup: new T.Vector3(.4, .72, .12), taxi: new T.Vector3(.38, .62, -.15),
-    police: new T.Vector3(.38, .62, -.2), buggy: new T.Vector3(.33, .52, -.25), helicopter: new T.Vector3(0, 1.5, 1.25) };
+  const SEAT = window.DZSEAT = { sedan: new T.Vector3(.38, .62, -.2), suv: new T.Vector3(.4, .7, -.38), pickup: new T.Vector3(.4, .72, .12), 
+    buggy: new T.Vector3(.33, .52, -.25), helicopter: new T.Vector3(0, 1.5, 1.25) };
   const VEH = window.DZVEH = [];
   // registra cada carro/heli criado (inclusive os do lobby)
   const _car = window.DZCar, _heli = window.DZHeli;
@@ -226,23 +226,30 @@
       }
     }
   }
-  // carros SEM VIDRO (para ver quem está dentro): esconde as peças de vidro e, quando o vidro
-  // está pintado na mesma textura da lataria (picape), recorta os pixels azulados das janelas
-  function noGlass(scene) {
+  // VIDROS TRANSPARENTES em todos os carros (dá para ver quem está dentro).
+  // Vidro em peça própria: troca por vidro claro. Vidro pintado na textura da lataria (picape):
+  // a lataria recorta os pixels do vidro e uma cópia por cima desenha só o vidro, transparente.
+  let _cg = null; const CGLASS = () => _cg || (_cg = new T.MeshStandardMaterial({ color: lin(0xb4cddb), transparent: true, opacity: .26, roughness: .04, metalness: .25, depthWrite: false, side: T.DoubleSide, envMapIntensity: 1.5 }));
+  const GL_TEST = 'vec3 c_=diffuseColor.rgb;float mx_=max(max(c_.r,c_.g),c_.b),mn_=min(min(c_.r,c_.g),c_.b);bool isG=c_.b>c_.r*1.25&&c_.g>c_.r*1.12&&mx_-mn_>.035&&mx_<.75;';
+  function glassify(scene, painted) {
+    const add = [];
     scene.traverse(o => {
       if (!o.isMesh || !o.material) return;
       const m = o.material;
-      if (m.transparent || m.opacity < 1) { o.visible = false; return; }
-      if (m.userData.noGlass) return; m.userData.noGlass = 1;
-      m.onBeforeCompile = s => { s.fragmentShader = s.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
-        { vec3 c_=diffuseColor.rgb; float mx_=max(max(c_.r,c_.g),c_.b),mn_=min(min(c_.r,c_.g),c_.b);
-          if(c_.b>c_.r*1.25&&c_.g>c_.r*1.12&&mx_-mn_>.035&&mx_<.75)discard; }`); };
-      m.customProgramCacheKey = () => 'noglass'; m.side = T.DoubleSide; m.needsUpdate = true;
+      if (m.transparent || m.opacity < 1) { o.material = CGLASS(); o.renderOrder = 2; return; }
+      if (!painted || m.userData.gl) return; m.userData.gl = 1;
+      m.onBeforeCompile = s => { s.fragmentShader = s.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\n{' + GL_TEST + 'if(isG)discard;}'); };
+      m.customProgramCacheKey = () => 'cutglass'; m.needsUpdate = true;
+      const gm = new T.MeshStandardMaterial({ map: m.map, color: 0xffffff, transparent: true, opacity: .32, roughness: .04, metalness: .25, depthWrite: false, side: T.DoubleSide });
+      gm.onBeforeCompile = s => { s.fragmentShader = s.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\n{' + GL_TEST + 'if(!isG)discard;diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.72,.83,.9),.55);}'); };
+      gm.customProgramCacheKey = () => 'onlyglass';
+      add.push([o, gm]);
     });
+    for (const [o, gm] of add) { const c = new T.Mesh(o.geometry, gm); c.renderOrder = 2; c.name = 'glass_overlay'; o.add(c); }
   }
   function load() {
     const names = ['helicopter', ...CAR_MODELS.map(c => c[0])]; let left = names.length;
-    for (const n of names) new T.GLTFLoader().load(URL_[n], g => { SRC[n] = g.scene; if (n !== 'helicopter') try { noGlass(g.scene); } catch (e) { } if (--left === 0) { ready = true; } }, undefined, e => { console.warn('veículo', n, e); if (--left === 0) ready = true; });
+    for (const n of names) new T.GLTFLoader().load(URL_[n], g => { SRC[n] = g.scene; if (n !== 'helicopter') try { glassify(g.scene, n === 'pickup'); } catch (e) { } if (--left === 0) { ready = true; } }, undefined, e => { console.warn('veículo', n, e); if (--left === 0) ready = true; });
   }
   load(); requestAnimationFrame(tick);
 

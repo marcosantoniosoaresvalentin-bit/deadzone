@@ -66,6 +66,7 @@
     try { if (typeof PAR !== 'undefined' && typeof selP !== 'undefined') DZChute.skin(PAR[selP]); } catch (e) { }
   }, undefined, e => console.warn('paraquedas', e));
 
+  DZChute.fallback = function () { if (ST.holder) ST.holder.visible = false; for (const c of canopy.children) if (c !== ST.holder) c.visible = true; ST.ready = DZChute.ready = false; console.warn('paraquedas: usando o modelo simples'); };
   DZChute.skin = function (pk) { if (!pk) return; U.uA.value.set(pk.c).convertSRGBToLinear(); U.uB.value.set(pk.c2 != null ? pk.c2 : 0xf2f2f2).convertSRGBToLinear(); };
 
   // chamado pelo laço principal no lugar do posicionamento antigo
@@ -75,6 +76,8 @@
     if (on && !ST.was) { ST.t = 0; ST.roll = 0; ST.rv = 0; ST.pitch = .6; ST.pv = 0; ST.yaw = yaw; }
     ST.was = on; if (!on) return;
     ST.t += dt;
+    // segurança: se o shader do paraquedas não compilar neste aparelho, volta para o paraquedas antigo
+    if (!ST.chk && ST.t > .5) { ST.chk = 1; try { const bad = (ren.info.programs || []).some(p => /dzchute/.test(p.cacheKey || '') && p.diagnostics && p.diagnostics.runnable === false); if (bad) DZChute.fallback(); } catch (e) { } }
     // abertura com "tranco": 0 -> passa um pouco de 1 -> assenta
     const t = ST.t; ST.open = t < 1.6 ? 1 - Math.exp(-t * 3.2) * Math.cos(t * 7.5) : 1; U.uOpen.value = Math.max(0, ST.open);
     // molas: inclinação lateral (curva), arfagem (mergulho/planar) e direção com atraso
