@@ -1,5 +1,13 @@
 # Histórico de versões
 
+## 3.1.2
+- **Céu novo e mais realista**: degradê do horizonte ao azul do alto, brilho do sol e nuvens
+  macias que andam devagar, com sombra embaixo e borda iluminada.
+  Corrige as nuvens "em degraus" (o céu era cortado pelo limite de visão da câmera).
+- **Heliponto**: o "H" não aparece mais através da montanha.
+- **Bots desativados** (não removidos): `BOTS_ON` em `src/js/game/match.js`. Vale para os bots
+  da partida e para os companheiros de equipe. Para religar, troque para `true`.
+
 ## 3.1.1
 - **Zona nova**: parede azul transparente (dá para ver através), mais forte perto do chão,
   com faixas subindo devagar; some com a distância, sem os "pedaços cortados" de antes.

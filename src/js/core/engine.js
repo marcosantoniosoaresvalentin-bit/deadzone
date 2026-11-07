@@ -7,9 +7,37 @@ const sc=new T.Scene();sc.background=new T.Color(0xcce0f2);sc.fog=new T.Fog(new 
 const cam=new T.PerspectiveCamera(65,1,.1,600);sc.add(cam);const rt=new T.WebGLRenderTarget(512,512),cam2=new T.PerspectiveCamera(16,1,.1,600),vmH=new T.Group();vmH.rotation.y=Math.PI;vmH.visible=false;cam.add(vmH);
 sc.add(new T.HemisphereLight(0xbfd9ff,0x56633f,.75));
 const sun=new T.DirectionalLight(0xfff0d2,2.1);sun.position.set(55,90,30);sun.castShadow=true;sun.shadow.mapSize.set(768,768);{const c=sun.shadow.camera;c.left=c.bottom=-42;c.right=c.top=42;c.near=10;c.far=260}sun.shadow.bias=-.0004;sun.shadow.normalBias=.04;sc.add(sun,sun.target);
-const sky=new T.Mesh(new T.SphereGeometry(540,24,16),new T.ShaderMaterial({side:T.BackSide,depthWrite:false,uniforms:{sd:{value:new T.Vector3(55,90,30).normalize()}},
+// ---- CÉU: atmosfera (horizonte claro, zênite azul), sol com brilho e nuvens macias que andam devagar.
+// O ruído das nuvens vem de uma textura (não de seno), para ficar liso também no celular.
+const skyN=(()=>{const W=256,c=document.createElement('canvas');c.width=c.height=W;const g=c.getContext('2d'),im=g.createImageData(W,W);let s=9;const r=()=>(s=(s*16807)%2147483647)/2147483647;
+ // ruído de valor suave e que repete sem emenda (grade 32x32 interpolada)
+ const G=32,v=new Float32Array(G*G);for(let k=0;k<G*G;k++)v[k]=r();const at=(i,j)=>v[((j%G+G)%G)*G+((i%G+G)%G)];
+ for(let y=0;y<W;y++)for(let x=0;x<W;x++){const fx=x/W*G,fy=y/W*G,i=Math.floor(fx),j=Math.floor(fy),u=fx-i,w=fy-j,uu=u*u*(3-2*u),ww=w*w*(3-2*w);
+  const n=(at(i,j)*(1-uu)+at(i+1,j)*uu)*(1-ww)+(at(i,j+1)*(1-uu)+at(i+1,j+1)*uu)*ww,o=(y*W+x)*4;im.data[o]=im.data[o+1]=im.data[o+2]=n*255;im.data[o+3]=255}
+ g.putImageData(im,0,0);const t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;return t})();
+const sky=new T.Mesh(new T.SphereGeometry(540,48,24),new T.ShaderMaterial({side:T.BackSide,depthWrite:false,fog:false,uniforms:{sd:{value:new T.Vector3(55,90,30).normalize()},uT:{value:0},tN:{value:skyN}},
 vertexShader:'varying vec3 vp;void main(){vp=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-fragmentShader:'varying vec3 vp;uniform vec3 sd;float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5);}float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}void main(){vec3 d=normalize(vp);float t=clamp(d.y,0.,1.);vec3 c=mix(vec3(.80,.88,.95),vec3(.22,.45,.82),pow(t,.55));float s=max(dot(d,sd),0.);c+=vec3(1.,.85,.6)*(pow(s,600.)*3.+pow(s,12.)*.25);vec2 q=d.xz/(d.y+.25)*2.2;float cl=n(q)*.55+n(q*2.1)*.3+n(q*4.3)*.15;cl=smoothstep(.5,.85,cl)*smoothstep(0.,.15,d.y);c=mix(c,vec3(1.),cl*.85);if(d.y<0.)c=vec3(.72,.8,.86);gl_FragColor=vec4(c,1.);}'}));
+fragmentShader:`varying vec3 vp;uniform vec3 sd;uniform float uT;uniform sampler2D tN;
+float fbm(vec2 p){float f=0.,a=.5;for(int i=0;i<5;i++){f+=a*texture2D(tN,p).r;p=p*2.03+vec2(.173,.317);a*=.5;}return f/.97;}
+void main(){vec3 d=normalize(vp);float y=max(d.y,0.),s=max(dot(d,sd),0.);
+ vec3 zen=vec3(.13,.34,.74),hor=vec3(.70,.81,.92);
+ vec3 c=mix(hor,zen,pow(y,.42));
+ c+=vec3(1.,.80,.55)*(pow(s,6.)*.16+pow(s,48.)*.30);
+ if(d.y>0.){
+  vec2 q=d.xz/(d.y+.10)*.055+vec2(uT*.0016,uT*.0007);
+  float b=fbm(q),dt=fbm(q*3.3+vec2(.41,.13)+uT*.0008),den=b*.72+dt*.36;
+  float cl=smoothstep(.50,.74,den);
+  // luz das nuvens: amostra um pouco na direção do sol; mais densa ali = lado de sombra
+  float den2=fbm(q+sd.xz*.012)*.72+dt*.36,sh=clamp((den2-den)*6.+.5,0.,1.);
+  vec3 cc=mix(vec3(1.,.99,.96),vec3(.62,.67,.76),smoothstep(.55,.95,den)*.8+sh*.25);
+  cc+=vec3(1.,.85,.6)*pow(s,10.)*.35*(1.-smoothstep(.5,.9,den));
+  float fade=smoothstep(.0,.22,d.y);
+  c=mix(c,cc,cl*fade*.96);
+  c=mix(c,hor,(1.-smoothstep(0.,.10,d.y))*.6);   // névoa no horizonte
+ }
+ c+=vec3(1.,.96,.88)*pow(s,1200.)*5.;
+ if(d.y<0.)c=mix(hor,vec3(.55,.66,.76),min(1.,-d.y*3.));
+ gl_FragColor=vec4(c,1.);}`}));
 sky.renderOrder=-1;sc.add(sky);
 function rs(){const w=cv.clientWidth,h=cv.clientHeight;ren.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()}
 addEventListener('resize',rs);rs();

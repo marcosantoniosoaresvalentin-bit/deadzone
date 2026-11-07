@@ -76,7 +76,7 @@ function gEnd(win){if(ended)return;ended=1;mode='dead';setLabel();const place=wi
 die=function(){gEnd(0)};
 function specNext(d,auto){const L=bots.filter(b=>!b.dead&&!b.air);if(!L.length){spec=null;$('spc').style.display='none';$('eg').style.display='flex';return}let i=L.indexOf(spec);i=i<0?0:(i+d+L.length)%L.length;spec=L[i];$('spn').textContent=bnm(spec)}
 function specTick(){if(mode!=='dead'||$('spc').style.display==='none'){return}if(!spec||spec.dead||spec.air)specNext(1,1);if(!spec)return;P.x=spec.x;P.z=spec.z;P.y=0;pl.visible=false}
-setInterval(()=>{if(!ended&&mode==='ground'&&!MP&&(typeof N==='undefined'||!N)&&alive<=1&&hp>0)gEnd(1)},500);
+setInterval(()=>{if(!ended&&mode==='ground'&&!MP&&(typeof N==='undefined'||!N)&&alive<=1&&hp>0&&BOTS_ON)gEnd(1)},500);
 
 // --- qualidade gráfica ---
 function applyQ(){const q=CFG.q==null?2:CFG.q;ren.setPixelRatio(q===0?Math.min(devicePixelRatio,.75):q===1?Math.min(devicePixelRatio,1):Math.min(devicePixelRatio,1.25));rs();sun.castShadow=q>=1;try{window.DZR&&DZR.applyQ&&DZR.envTex!==undefined&&DZR.applyQ(q)}catch(e){}}

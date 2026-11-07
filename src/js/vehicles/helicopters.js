@@ -89,7 +89,7 @@ const HPADS=[],HELIS=[];
 const hpT=ctex(256,256,(g,w,h)=>{g.clearRect(0,0,w,h);g.fillStyle='#3a3e44';g.beginPath();g.arc(128,128,124,0,7);g.fill();g.fillStyle='#2f3338';for(let i=0;i<420;i++){g.fillRect(R(10,246),R(10,246),R(1,3),R(1,3))}
  g.strokeStyle='#e8b81c';g.lineWidth=9;g.beginPath();g.arc(128,128,108,0,7);g.stroke();g.strokeStyle='rgba(255,255,255,.55)';g.lineWidth=3;g.beginPath();g.arc(128,128,122,0,7);g.stroke();
  g.fillStyle='#f4f4f0';g.fillRect(78,68,22,120);g.fillRect(156,68,22,120);g.fillRect(78,115,100,26)},1,1);
-{const pm=new T.MeshStandardMaterial({map:hpT,alphaTest:.5,roughness:.95,depthTest:false,depthWrite:false}),pg=new T.PlaneGeometry(15,15),
+{const pm=new T.MeshStandardMaterial({map:hpT,alphaTest:.5,roughness:.95,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4}),pg=new T.PlaneGeometry(15,15),
  poleM=hmat(0xd8d8d8,.6,.2),flagM=hmat(0xff6a1a,.7,0),lampM=new T.MeshBasicMaterial({color:0xffd24a});
  const spots=HPS;
  const hitB=(x,z)=>{for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)for(const b of near(x+i*32,z+j*32))if(b.x1>x-13&&b.x0<x+13&&b.z1>z-13&&b.z0<z+13)return 1;return 0};
