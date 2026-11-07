@@ -79,7 +79,7 @@ deadzone/
 │       ├── fx/             partículas e efeitos
 │       └── features/       sistemas do lobby: conta, equipe, party, menus, telas
 ├── assets/
-│   ├── models/             soldier.glb (personagem)
+│   ├── models/             human.glb (personagem) e animations.glb (captura de movimento)
 │   ├── textures/           grama, tijolo, água
 │   ├── images/             telas de carregamento, vitória e fim de partida
 │   └── icons/              ícones do app
@@ -103,7 +103,8 @@ Detalhes técnicos em [docs/ARQUITETURA.md](docs/ARQUITETURA.md).
 
 - Motor 3D: [three.js](https://threejs.org) r128 (licença MIT).
 - Online: [MQTT.js](https://github.com/mqttjs/MQTT.js) (licença MIT) com broker público EMQX.
-- Personagem: `Soldier.glb` dos exemplos do three.js (personagem da Mixamo).
+- Personagem: avatar `readyplayer.me.glb` dos exemplos do three.js (Ready Player Me).
+- Animações de captura de movimento: `Soldier.glb` dos exemplos do three.js (Mixamo).
 - Texturas de grama, tijolo e ondas da água: exemplos do three.js.
 - Folhas, agulhas, casca, pedra, telhas e reboco: geradas por código.
 

@@ -1,5 +1,24 @@
 # Histórico de versões
 
+## 2.0.0
+- **Personagem humano realista** (rosto, barba, cabelo, pele) no lugar do soldado de armadura,
+  com animações de captura de movimento traduzidas para o novo esqueleto.
+- **15 skins** com estampas de tecido (camuflados woodland, deserto, urbano, digital, tigre,
+  flecktarn, neve, liso, jeans...) na camisa, calça e sapatos. Aliados usam a sua skin;
+  bots têm roupas, tons de pele e barba variados.
+- **Equipamentos visíveis no corpo**: capacete, colete e mochila aparecem quando equipados.
+- **Armas recriadas do zero**: fuzil estilo M4, rifle de precisão com bipé, espingarda de bomba,
+  pistola; lunetas holográfica, 2x e 8x; silenciador.
+- **Itens novos**: colete, capacete, mochilas, kit médico, bandagem, caixa de munição, granadas,
+  galão, faca, acessórios.
+- **Muito mais loot** (cerca de 4x): mais pontos por construção, arma sempre com munição perto.
+- **Veículos novos**: carro com carroceria de verdade e rodas de liga, helicóptero com fuselagem
+  arredondada, avião metálico com janelas.
+- **Câmera estilo PUBG**: mais perto, sobre o ombro, sem atravessar paredes.
+- **Rastejar corrigido** (sem "nadar" nem bater as pernas).
+- **Estabilidade**: um erro nunca congela a tela; analógico não fica preso ao tocar no painel
+  de loot; erros aparecem discretamente na tela.
+
 ## 1.1.0
 - Antisserrilhado (bordas suaves) nas qualidades Média e Alta.
 - Vento: grama, folhas e pinheiros balançam.

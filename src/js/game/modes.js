@@ -49,7 +49,7 @@ function autoPvp(){$('on').style.display='flex';onShow('onWait');$('onwt').textC
 
 // ===== v14: Clássico online com bots do anfitrião =====
 const WLL=['rifle','shotgun','pistol','sniper','bow'],CB={};let KK=null;
-function regenLoot(){for(const o of loot)sc.remove(o.top);loot.length=0;for(const sp of LS)mkLoot(lt[Math.floor(R(0,lt.length))],sp.x,sp.z);for(const c of CARS)if(Math.random()<.35)mkLoot('fuel',c.x+3.2,c.z+1);lkey=''}
+function regenLoot(){for(const o of loot)sc.remove(o.top);loot.length=0;for(const sp of LS)spawnSpot(sp);for(const c of CARS)if(Math.random()<.35)mkLoot('fuel',c.x+3.2,c.z+1);lkey=''}
 function ghTg(b,best){if(!(N&&N.host&&N.mode==='classic'))return;for(const id in CL){const o=CL[id];if(o.dead||!o.vis||o.py>2)continue;const d=Math.hypot(o.x-b.x,o.z-b.z);if(d<best){best=d;b.tg=o}}}
 function hurtB2(tg,b,d){if(tg.id)gp({t:'hit',to:tg.id,d,x:b.x,z:b.z},1);else hurtBot(tg,d,b)}
 {const _kb=killBot;killBot=function(b,me){_kb(b,me);if(N&&N.mode==='classic'&&N.host)gp({t:'bk',i:bots.indexOf(b),k:KK||(me?mpId:null),x:b.x,z:b.z,w:WLL.indexOf(b.w),s:b.sil},1)}}

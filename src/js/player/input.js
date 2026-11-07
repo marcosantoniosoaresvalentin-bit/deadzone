@@ -19,6 +19,10 @@ cv.addEventListener('touchmove',e=>{e.preventDefault();for(const t of e.changedT
  else if(t.identifier===tl){look(t.clientX-lx,t.clientY-ly);lx=t.clientX;ly=t.clientY}}},{passive:false});
 const te=e=>{for(const t of e.changedTouches){if(t.identifier===tm){tm=null;jx=jy=0;jb.style.display=jk.style.display='none'}if(t.identifier===tl)tl=null}};
 cv.addEventListener('touchend',te);cv.addEventListener('touchcancel',te);
+// o dedo pode terminar fora do canvas (ex.: sobre um botão do loot): solta do mesmo jeito
+addEventListener('touchend',te,true);addEventListener('touchcancel',te,true);
+addEventListener('blur',()=>{tm=tl=null;jx=jy=0;jb.style.display=jk.style.display='none';firing=0});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){tm=tl=null;jx=jy=0;firing=0}});
 cv.addEventListener('mousedown',e=>{drag=1;lx=e.clientX;ly=e.clientY});addEventListener('mouseup',()=>drag=0);
 addEventListener('mousemove',e=>{if(drag){look(e.clientX-lx,e.clientY-ly);lx=e.clientX;ly=e.clientY}});
 addEventListener('keydown',e=>keys[e.key.toLowerCase()]=1);addEventListener('keyup',e=>keys[e.key.toLowerCase()]=0);

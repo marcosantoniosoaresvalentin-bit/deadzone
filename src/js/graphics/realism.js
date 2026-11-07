@@ -12,7 +12,8 @@
   'use strict';
   const T = THREE;
   const ASSET = {
-    soldier: 'assets/models/soldier.glb',
+    human: 'assets/models/human.glb',
+    anim: 'assets/models/animations.glb',
     grass: 'assets/textures/grass.jpg',
     brick: 'assets/textures/brick.jpg',
     water: 'assets/textures/water-normals.jpg'
@@ -555,108 +556,247 @@
   /* =====================================================================
      PERSONAGEM REALISTA
      ===================================================================== */
-  let TPL = null;           // modelo base calibrado
+  let TPL = null;           // pessoa realista (modelo que aparece na tela), já calibrada
+  let ANI = null;           // animações de captura de movimento "traduzidas" para qualquer esqueleto
   const _m = new T.Matrix4(), _m2 = new T.Matrix4(), _q = new T.Quaternion(), _q2 = new T.Quaternion(), _p = new T.Vector3(), _s = new T.Vector3();
   const _a = new T.Vector3(), _b = new T.Vector3(), _c = new T.Vector3(), _d = new T.Vector3(), _e = new T.Vector3();
-  const SPINE = ['Spine', 'Spine1', 'Spine2'];
-  const MAPPED = ['Hips', 'Spine', 'Spine1', 'Spine2', 'Neck', 'Head', 'RightArm', 'RightForeArm', 'LeftArm', 'LeftForeArm', 'RightUpLeg', 'RightLeg', 'LeftUpLeg', 'LeftLeg'];
-  const PALETTE = [0xffffff, 0xc8d0b0, 0xb9b2a0, 0xa9b4bd, 0xd8c9a8, 0x9fae9a, 0xc0b0a0];
 
   function bname(o) { return o.name.replace(/^mixamorig[:_]?/, ''); }
-  function boneMap(root) { const B = {}; root.traverse(o => { if (o.isBone) B[bname(o)] = o; }); return B; }
+  function boneMap(root) { const B = {}; root.traverse(o => { if (!(o.isBone || /^mixamorig/.test(o.name))) return; const n = bname(o); if (!B[n]) B[n] = o; }); return B; }
   function wq(o) { o.matrixWorld.decompose(_p, _q, _s); return _q.clone(); }
   function wp(o) { return new T.Vector3().setFromMatrixPosition(o.matrixWorld); }
 
-  function calibrate(scene) {
-    // o modelo original olha para -Z; o jogo usa +Z como frente
-    const wrap = new T.Group(); wrap.rotation.y = Math.PI; wrap.add(scene); wrap.updateMatrixWorld(true);
-    const box = new T.Box3().setFromObject(scene), h = box.max.y - box.min.y || 1;
+  /* Calibra um esqueleto (pessoa ou fonte de animação) para a pose de referência do jogo:
+     frente em +Z, quadril a 0,97 m, braços e pernas retos para baixo, dedos fechados. */
+  function calibrate(scene, withMesh) {
+    const wrap = new T.Group(); wrap.add(scene); wrap.updateMatrixWorld(true);
     const B = boneMap(scene);
-    // escala: quadril a ~0.97 m (mesma altura do esqueleto do jogo)
-    const hipY = wp(B.Hips).y - box.min.y, s = .97 / (hipY || h * .53);
-    wrap.scale.setScalar(s); wrap.position.y = -box.min.y * s; wrap.updateMatrixWorld(true);
+    if (B.LeftFoot && B.LeftToeBase && wp(B.LeftToeBase).sub(wp(B.LeftFoot)).z < 0) { wrap.rotation.y = Math.PI; wrap.updateMatrixWorld(true); }
+    let minY;
+    if (withMesh) minY = new T.Box3().setFromObject(scene).min.y;
+    else { minY = 1e9; for (const k in B) minY = Math.min(minY, wp(B[k]).y); }
+    const s = .97 / Math.max(.01, wp(B.Hips).y - minY);
+    wrap.scale.setScalar(s); wrap.position.y = -minY * s; wrap.updateMatrixWorld(true);
     const rot = (bn, r) => { const b = B[bn]; if (!b) return; const pa = wq(b.parent), na = r.clone().multiply(wq(b)); b.quaternion.copy(pa.invert().multiply(na)); wrap.updateMatrixWorld(true); };
     const aim = (bn, cn, dir) => { const b = B[bn], c = B[cn]; if (!b || !c) return; const v = wp(c).sub(wp(b)).normalize(); rot(bn, new T.Quaternion().setFromUnitVectors(v, dir)); };
     const DN = V(0, -1, 0);
-    // pose de repouso igual à do esqueleto do jogo: braços e pernas retos para baixo
     for (const s_ of ['Left', 'Right']) {
       const out = V((s_ === 'Right' ? -1 : 1) * .14, -1, 0).normalize(); // braço levemente afastado do corpo
       aim(s_ + 'Arm', s_ + 'ForeArm', out); aim(s_ + 'ForeArm', s_ + 'Hand', DN);
       if (B[s_ + 'HandMiddle1']) aim(s_ + 'Hand', s_ + 'HandMiddle1', DN);
       aim(s_ + 'UpLeg', s_ + 'Leg', DN); aim(s_ + 'Leg', s_ + 'Foot', DN);
     }
-    // postura: cabeça e tronco um pouco para a frente (a pose original olha para cima)
-    rot('Neck', new T.Quaternion().setFromAxisAngle(V(1, 0, 0), .2));
-    rot('Spine1', new T.Quaternion().setFromAxisAngle(V(1, 0, 0), .06));
-    // dedos levemente fechados (segurando a arma)
-    for (const s_ of ['Left', 'Right']) {
+    if (withMesh) for (const s_ of ['Left', 'Right']) { // dedos levemente fechados (segurando a arma)
       const sg = s_ === 'Right' ? 1 : -1;
       for (const f of ['Index', 'Middle', 'Ring', 'Pinky']) for (let k = 1; k <= 3; k++) rot(s_ + 'Hand' + f + k, new T.Quaternion().setFromAxisAngle(V(0, 0, 1), sg * (k === 1 ? .7 : .8)));
       for (let k = 1; k <= 3; k++) rot(s_ + 'HandThumb' + k, new T.Quaternion().setFromAxisAngle(V(0, 0, 1), sg * .25));
     }
     wrap.updateMatrixWorld(true);
-    const D = { s, oy: wrap.position.y, Q0: {}, L0: {}, hips0: wp(B.Hips), hipsParentInv: new T.Matrix4().copy(B.Hips.parent.matrixWorld).invert(), hipsParentQ: wq(B.Hips.parent) };
+    const D = { s, ry: wrap.rotation.y, oy: wrap.position.y, Q0: {}, L0: {}, hips0: wp(B.Hips), hipsParentInv: new T.Matrix4().copy(B.Hips.parent.matrixWorld).invert(), hipsParentQ: wq(B.Hips.parent), B, wrap };
     for (const k in B) { D.Q0[k] = wq(B[k]); D.L0[k] = B[k].quaternion.clone(); }
     D.armLen = {};
-    for (const s_ of ['Left', 'Right']) D.armLen[s_] = [wp(B[s_ + 'ForeArm']).distanceTo(wp(B[s_ + 'Arm'])), wp(B[s_ + 'Hand']).distanceTo(wp(B[s_ + 'ForeArm']))];
-    wrap.remove(scene);
+    for (const s_ of ['Left', 'Right']) if (B[s_ + 'Arm']) D.armLen[s_] = [wp(B[s_ + 'ForeArm']).distanceTo(wp(B[s_ + 'Arm'])), wp(B[s_ + 'Hand']).distanceTo(wp(B[s_ + 'ForeArm']))];
     return D;
   }
 
-  // mede a velocidade de deslocamento de cada animação (amplitude do pé / duração)
-  function clipSpeeds() {
-    const sc_ = TPL.scene, B = boneMap(sc_), D = TPL.D, keep = {};
-    for (const k in B) keep[k] = [B[k].quaternion.clone(), B[k].position.clone()];
-    const mx = new T.AnimationMixer(sc_), v = new T.Vector3(), h = new T.Vector3();
-    for (const nm of ['Walk', 'Run']) {
-      const c = TPL.clips[nm]; if (!c) continue; const a = mx.clipAction(c); a.reset().play(); let mn = 1e9, mxv = -1e9;
-      for (let i = 0; i <= 40; i++) { mx.setTime(c.duration * i / 40); sc_.updateMatrixWorld(true); v.setFromMatrixPosition(B.LeftFoot.matrixWorld); h.setFromMatrixPosition(B.Hips.matrixWorld); const z = (v.z - h.z) * D.s; mn = Math.min(mn, z); mxv = Math.max(mxv, z); }
-      a.stop(); TPL['v' + nm] = Math.max(.6, 2 * (mxv - mn) / c.duration);
+  /* Traduz as animações (parado/andar/correr) para "rotações relativas à pose de referência".
+     Assim servem para qualquer pessoa calibrada, mesmo com esqueleto diferente. */
+  const BAKE = ['Hips', 'Spine', 'Spine1', 'Spine2', 'LeftShoulder', 'LeftArm', 'LeftForeArm', 'LeftHand', 'RightShoulder', 'RightArm', 'RightForeArm', 'RightHand', 'LeftUpLeg', 'LeftLeg', 'LeftFoot', 'LeftToeBase', 'RightUpLeg', 'RightLeg', 'RightFoot', 'RightToeBase'];
+  function bakeClips(scene, clips) {
+    const D = calibrate(scene, false), B = D.B, mx = new T.AnimationMixer(scene), out = { clips: {} };
+    for (const nm of ['Idle', 'Walk', 'Run']) {
+      const c = clips[nm]; if (!c) continue;
+      const a = mx.clipAction(c); a.reset().play();
+      const n = 36, F = [], H = []; let mn = 1e9, mxz = -1e9;
+      for (let i = 0; i < n; i++) {
+        mx.setTime(c.duration * i / n); D.wrap.updateMatrixWorld(true);
+        const f = {}; for (const k of BAKE) if (B[k]) f[k] = wq(B[k]).multiply(D.Q0[k].clone().invert());
+        F.push(f); H.push(wp(B.Hips).sub(D.hips0));
+        if (B.LeftFoot) { const z = wp(B.LeftFoot).z - wp(B.Hips).z; mn = Math.min(mn, z); mxz = Math.max(mxz, z); }
+      }
+      a.stop();
+      out.clips[nm] = { n, dur: c.duration, F, H, v: Math.max(.6, 2 * (mxz - mn) / c.duration) };
     }
-    mx.stopAllAction(); mx.uncacheRoot(sc_);
-    for (const k in B) { B[k].quaternion.copy(keep[k][0]); B[k].position.copy(keep[k][1]); }
-    TPL.vWalk = TPL.vWalk || 1.4; TPL.vRun = TPL.vRun || 4;
+    mx.stopAllAction(); D.wrap.remove(scene);
+    out.vWalk = out.clips.Walk ? out.clips.Walk.v : 1.4; out.vRun = out.clips.Run ? out.clips.Run.v : 4;
+    return out;
+  }
+
+  /* ---------- equipamentos visíveis no corpo (capacete, colete, mochila) ---------- */
+  function gearDefs(D) {
+    const B = D.B, G = {};
+    const put = (bone, pos) => { const m = new T.Matrix4().compose(pos, new T.Quaternion(), V(1, 1, 1)); return new T.Matrix4().copy(B[bone].matrixWorld).invert().multiply(m); };
+    if (B.Head) {
+      const h = wp(B.Head), top = B.HeadTop_End ? wp(B.HeadTop_End) : h.clone().add(V(0, .22, 0)), L = h.distanceTo(top);
+      G.helm = { bone: 'Head', m: put('Head', h.clone().lerp(top, .52).add(V(0, 0, -.01))), r: L * .62 };
+    }
+    if (B.Spine2) {
+      const c = wp(B.Spine2), w = B.LeftShoulder && B.RightShoulder ? wp(B.LeftShoulder).distanceTo(wp(B.RightShoulder)) : .3;
+      G.vest = { bone: 'Spine2', m: put('Spine2', c.clone().add(V(0, -.07, .015))), w: Math.max(.3, w * 1.25) };
+      G.bag = { bone: 'Spine2', m: put('Spine2', c.clone().add(V(0, -.12, -.2))), w: Math.max(.28, w * .95) };
+    }
+    return G;
+  }
+  let GEAR = null;
+  function gearMeshes(G) {
+    if (!GEAR) {
+      const helm = new T.Group();
+      { const s = new T.Mesh(new T.SphereGeometry(1, 22, 12, 0, Math.PI * 2, 0, Math.PI * .56), null); s.scale.set(1.08, 1, 1.18); helm.add(s);
+        const rim = new T.Mesh(new T.TorusGeometry(1.06, .06, 6, 28), null); rim.rotation.x = Math.PI / 2; rim.position.y = .16; rim.scale.set(1.04, 1.16, 1); helm.add(rim);
+        const st = new T.Mesh(new T.BoxGeometry(.5, .12, .08), null); st.position.set(0, .55, 1.13); helm.add(st); }
+      const vest = new T.Group();
+      { const b = new T.Mesh(new T.CylinderGeometry(.5, .5, 1, 18, 1, true), null); b.scale.set(1, .38, .62); vest.add(b);
+        const fp = new T.Mesh(new T.BoxGeometry(.62, .3, .05), null); fp.position.set(0, .01, .31); vest.add(fp);
+        const bp = new T.Mesh(new T.BoxGeometry(.6, .3, .05), null); bp.position.set(0, .02, -.31); vest.add(bp);
+        for (let i = -1; i <= 1; i++) { const p = new T.Mesh(new T.BoxGeometry(.13, .1, .06), null); p.position.set(i * .16, -.06, .355); vest.add(p); }
+        for (const s of [-1, 1]) { const sh = new T.Mesh(new T.BoxGeometry(.08, .04, .5), null); sh.position.set(s * .17, .2, 0); vest.add(sh); } }
+      const bag = new T.Group();
+      { const b = new T.Mesh(new T.BoxGeometry(1, 1.35, .55), null); bag.add(b);
+        const t = new T.Mesh(new T.CylinderGeometry(.28, .28, 1, 12), null); t.rotation.z = Math.PI / 2; t.position.set(0, .72, 0); bag.add(t);
+        const p = new T.Mesh(new T.BoxGeometry(.7, .5, .2), null); p.position.set(0, -.25, .34); bag.add(p);
+        for (const s of [-1, 1]) { const sd = new T.Mesh(new T.BoxGeometry(.22, .6, .4), null); sd.position.set(s * .58, -.1, 0); bag.add(sd); } }
+      const hair = new T.Group();
+      { const h = new T.Mesh(new T.SphereGeometry(1, 24, 14, 0, Math.PI * 2, 0, Math.PI * .6), null); h.scale.set(.9, .84, 1.0); h.position.set(0, -.1, -.1); h.rotation.x = -.55; hair.add(h); }
+      GEAR = { helm, vest, bag, hair };
+    }
+    return GEAR;
+  }
+  const FAB = (c, r) => new T.MeshStandardMaterial({ color: lin(c), roughness: r || .85, metalness: 0 });
+  function addGear(av) {
+    const G = TPL.gear, M = gearMeshes(G), B = av.B;
+    const mk = (key, scale, mat, mesh) => {
+      const def = G[key]; if (!def || !B[def.bone]) return null;
+      const g = M[mesh || key].clone(true); g.traverse(o => { if (o.isMesh) { o.material = mat; o.castShadow = true; } });
+      const holder = new T.Group(); holder.matrixAutoUpdate = false; holder.matrix.copy(def.m); holder.add(g); g.scale.setScalar(scale);
+      B[def.bone].add(holder); holder.visible = false; return holder;
+    };
+    av.gearMat = { helm: FAB(0x3b4430, .55), vest: FAB(0x2f3828), bag: FAB(0x4d5a3a), hair: FAB(0x2a1d14, .95) };
+    av.gear = { hair: mk('helm', G.helm ? G.helm.r * .8 : .1, av.gearMat.hair, 'hair'), helm: mk('helm', G.helm ? G.helm.r : .13, av.gearMat.helm), vest: mk('vest', G.vest ? G.vest.w : .36, av.gearMat.vest), bag: mk('bag', G.bag ? G.bag.w * .9 : .3, av.gearMat.bag) };
+  }
+
+  /* ---------- skins: estampas de tecido geradas por código ---------- */
+  const PAT = {};
+  function fabricTex(kind, cols) {
+    const key = kind + cols.join(',');
+    if (PAT[key]) return PAT[key];
+    const t = canvasTex(512, 512, (g, w, h) => {
+      const r = rng(key.length * 97 + cols[0]), hx = c => '#' + c.toString(16).padStart(6, '0');
+      g.fillStyle = hx(cols[0]); g.fillRect(0, 0, w, h);
+      const blob = (c, n, s0, s1) => { g.fillStyle = hx(c); for (let i = 0; i < n; i++) { const x = r() * w, y = r() * h, s = s0 + r() * (s1 - s0); g.beginPath(); for (let k = 0; k < 9; k++) { const a = k / 9 * 6.283, rr = s * (.6 + r() * .6); g.lineTo(x + Math.cos(a) * rr * 1.4, y + Math.sin(a) * rr); } g.fill(); } };
+      if (kind === 'woodland') { blob(cols[1], 26, 30, 60); blob(cols[2], 22, 20, 45); blob(cols[3], 18, 8, 20); }
+      else if (kind === 'desert') { blob(cols[1], 30, 25, 55); blob(cols[2], 40, 4, 10); }
+      else if (kind === 'urban') { blob(cols[1], 24, 20, 50); blob(cols[2], 20, 15, 35); blob(cols[3], 30, 6, 14); }
+      else if (kind === 'digital') { for (const [ci, n] of [[1, 900], [2, 600], [3, 300]]) { g.fillStyle = hx(cols[ci]); for (let i = 0; i < n; i++) { const x = Math.floor(r() * 64) * 8, y = Math.floor(r() * 64) * 8, cw = 8 * (1 + Math.floor(r() * 3)), ch = 8 * (1 + Math.floor(r() * 2)); g.fillRect(x, y, cw, ch); } } }
+      else if (kind === 'tiger') { g.fillStyle = hx(cols[1]); for (let i = 0; i < 40; i++) { const y = r() * h, x = r() * w; g.beginPath(); g.ellipse(x, y, 40 + r() * 70, 5 + r() * 7, (r() - .5) * .4, 0, 7); g.fill(); } g.fillStyle = hx(cols[2]); for (let i = 0; i < 30; i++) { g.beginPath(); g.ellipse(r() * w, r() * h, 20 + r() * 40, 3 + r() * 4, (r() - .5) * .4, 0, 7); g.fill(); } }
+      else if (kind === 'fleck') { for (const [ci, n] of [[1, 500], [2, 400], [3, 300]]) { g.fillStyle = hx(cols[ci]); for (let i = 0; i < n; i++) { g.beginPath(); g.arc(r() * w, r() * h, 3 + r() * 6, 0, 7); g.fill(); } } }
+      else if (kind === 'jeans') { for (let y = 0; y < h; y += 2) { g.fillStyle = 'rgba(255,255,255,' + (r() * .06) + ')'; g.fillRect(0, y, w, 1); } for (let i = 0; i < 3000; i++) { g.fillStyle = 'rgba(' + (r() < .5 ? '0,0,30' : '200,210,255') + ',' + r() * .12 + ')'; g.fillRect(r() * w, r() * h, 1, 3); } }
+      // trama do tecido e sujeira leve
+      for (let i = 0; i < 9000; i++) { g.fillStyle = 'rgba(' + (r() < .5 ? '0,0,0' : '255,255,255') + ',' + (r() * .06) + ')'; g.fillRect(r() * w, r() * h, 1 + r() * 2, 1); }
+      for (let i = 0; i < 18; i++) { g.fillStyle = 'rgba(60,50,35,' + (r() * .06) + ')'; g.beginPath(); g.arc(r() * w, r() * h, 20 + r() * 60, 0, 7); g.fill(); }
+    });
+    t.wrapS = t.wrapT = T.RepeatWrapping; return PAT[key] = t;
+  }
+  // 15 roupas (mesma ordem da lista do inventário)
+  const SKINS = {
+    soldado: { top: ['woodland', 0x55663f, 0x3b4a2c, 0x7a7350, 0x23281c], bot: ['woodland', 0x4f5640, 0x3a4030, 0x6d6748, 0x23281c], shoe: 0x2a2620 },
+    urbano: { top: ['urban', 0x6a6f76, 0x45494f, 0x8d9299, 0x2b2d31], bot: ['solid', 0x3a3d42], shoe: 0x1c1c1c },
+    deserto: { top: ['desert', 0xc2a878, 0x9a8458, 0x6d5a3a], bot: ['desert', 0xb59a6a, 0x8f7a50, 0x6d5a3a], shoe: 0x7a5f3a },
+    artico: { top: ['urban', 0xe6ebef, 0xb9c3cc, 0x8f9aa4, 0x5a636b], bot: ['solid', 0xc9d1d8], shoe: 0x3a3f44 },
+    selva: { top: ['tiger', 0x3a6a3c, 0x1f3a22, 0x6a7a3a], bot: ['tiger', 0x355f37, 0x1c331e, 0x5f6f35], shoe: 0x231f18 },
+    ouro: { top: ['solid', 0xc9a227], bot: ['solid', 0x2a2416], shoe: 0x8a6d1a },
+    sangue: { top: ['urban', 0x8a1f1f, 0x4a1212, 0xb53a3a, 0x1a0808], bot: ['solid', 0x221111], shoe: 0x111111 },
+    noturno: { top: ['digital', 0x2a3550, 0x1c2336, 0x3a4a6a, 0x0c101a], bot: ['digital', 0x1c2336, 0x141a28, 0x2a3550, 0x0c101a], shoe: 0x0c0c0c },
+    dz_elite: { top: ['solid', 0x24262a], bot: ['solid', 0x15171a], shoe: 0xe8742d },
+    digital: { top: ['digital', 0x6f7a5a, 0x4a5440, 0x9a9a78, 0x2c3226], bot: ['digital', 0x5f6a4c, 0x404a36, 0x8a8a6a, 0x2c3226], shoe: 0x2a2620 },
+    tigre: { top: ['tiger', 0x8a7a50, 0x2a2a1c, 0x4a5a30], bot: ['tiger', 0x7a6a44, 0x2a2a1c, 0x4a5a30], shoe: 0x231f18 },
+    flecktarn: { top: ['fleck', 0x6f7a55, 0x3e4a30, 0x2a2a20, 0x8a7a50], bot: ['fleck', 0x66704e, 0x3e4a30, 0x2a2a20, 0x8a7a50], shoe: 0x231f18 },
+    neve: { top: ['digital', 0xe8ecef, 0xc4ccd3, 0x9aa4ad, 0x6a737b], bot: ['digital', 0xdfe4e8, 0xbac3ca, 0x8f99a2, 0x6a737b], shoe: 0x50565c },
+    civil: { top: ['solid', 0xd8d4cc], bot: ['jeans', 0x3a5a86], shoe: 0xf2f2f2 },
+    agente: { top: ['solid', 0x15171a], bot: ['solid', 0x1c1e22], shoe: 0x0c0c0c }
+  };
+  const SKIN_IDS = Object.keys(SKINS);
+  const TONES = [0xffffff, 0xf0d8c4, 0xd9ad8c, 0xb07d5b, 0x8a5a3c, 0x5e3b26];
+  const outfitOf = rig => {
+    const own = rig.pl === (typeof pl !== 'undefined' ? pl : null) || rig.CM;
+    const ally = !own && rig.team === 1;
+    let id = null;
+    if (own || ally) { try { id = OUT[selO] && OUT[selO].id; } catch (e) { } }
+    if (!id || !SKINS[id]) id = SKIN_IDS[rig.seed % SKIN_IDS.length];
+    return { id, own: own || ally };
+  };
+  function applySkin(rig) {
+    const av = rig.av, o = outfitOf(rig), S = SKINS[o.id];
+    let pc = null; try { if (o.own && typeof PM !== 'undefined') pc = PM; } catch (e) { }
+    const hx = c => c.getHex ? c.clone().convertLinearToSRGB().getHex() : c;
+    const key = o.id + (pc ? [pc.ol, pc.pt, pc.bt, pc.hl, pc.vs, pc.bg].map(m => m && m.color ? m.color.getHex() : 0).join(',') : '');
+    if (key === av.skinKey) return; av.skinKey = key;
+    const set = (mesh, spec, tint) => {
+      if (!mesh) return; const m = mesh.material;
+      if (spec[0] === 'solid') { m.map = fabricTex('solid', [tint != null ? tint : spec[1]]); }
+      else m.map = fabricTex(spec[0], spec.slice(1));
+      m.color.set(0xffffff); m.roughness = .92; m.metalness = 0; m.needsUpdate = true;
+    };
+    // roupa lisa segue a cor escolhida no inventário (camisa/calça)
+    set(av.parts.top, S.top, pc && S.top[0] === 'solid' ? hx(pc.ol.color) : null);
+    set(av.parts.bottom, S.bot, pc && S.bot[0] === 'solid' ? hx(pc.pt.color) : null);
+    if (av.parts.shoes) { const m = av.parts.shoes.material; m.color.copy(lin(S.shoe)); m.needsUpdate = true; }
+    const tone = o.own && rig.pl === (typeof pl !== 'undefined' ? pl : null) ? TONES[0] : TONES[rig.seed % TONES.length];
+    if (av.parts.head) av.parts.head.material.color.copy(lin(tone));
+    if (av.parts.body) { const m = av.parts.body.material; m.map = null; m.color.copy(lin(0xc89a7c)).multiply(lin(tone)); m.roughness = .7; m.needsUpdate = true; }
+    if (av.gearMat) { const hc = [0x2a1d14, 0x14100c, 0x4a3420, 0x6a4a2a, 0x1c1c1c][rig.seed % 5]; av.gearMat.hair.color.copy(lin(o.own ? 0x2a1d14 : hc)); }
+    if (av.parts.beard) av.parts.beard.visible = o.own ? true : rig.seed % 3 !== 0;
+    if (pc && av.gearMat) { av.gearMat.helm.color.copy(pc.hl.color); av.gearMat.vest.color.copy((pc.vs || pc.dk).color); av.gearMat.bag.color.copy(pc.bg.color); }
+  }
+  function gearState(rig) {
+    const av = rig.av; if (!av.gear) return;
+    let h, v, b;
+    if (typeof pl !== 'undefined' && rig.pl === pl) { try { h = ARM.helm > 0; v = ARM.vest > 0; b = bagLv > 0; } catch (e) { h = v = b = false; } }
+    else { h = rig.seed % 2 === 0; v = rig.seed % 3 !== 1; b = rig.seed % 4 !== 0; }
+    if (av.gear.helm) av.gear.helm.visible = !!h; if (av.gear.hair) av.gear.hair.visible = !h; if (av.gear.vest) av.gear.vest.visible = !!v; if (av.gear.bag) av.gear.bag.visible = !!b;
   }
 
   function load() {
     if (!window.THREE || !T.GLTFLoader) return;
-    const ok = g => {
-        const scene = g.scene; scene.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false; if (o.material) { o.material.envMapIntensity = .8; } } });
-        TPL = { scene, D: calibrate(scene), clips: {} }; DZR.ready = true;
-        for (const c of g.animations || []) TPL.clips[c.name] = c;
-        try { clipSpeeds(); } catch (e) { console.warn('clipSpeeds', e); }
-        for (const r of DZR.rigs) attach(r);
+    const get = (url, cb) => {
+      if (url.startsWith('data:')) new T.GLTFLoader().parse(b64ab(url), '', cb, e => console.warn(e));
+      else new T.GLTFLoader().load(url, cb, undefined, e => console.warn(url, e));
     };
-    try {
-      // arquivo embutido (build de arquivo único) ou arquivo normal (projeto/web/APK)
-      if (ASSET.soldier.startsWith('data:')) new T.GLTFLoader().parse(b64ab(ASSET.soldier), '', ok, e => console.warn('soldier.glb', e));
-      else new T.GLTFLoader().load(ASSET.soldier, ok, undefined, e => console.warn('soldier.glb', e));
-    } catch (e) { console.warn('DZR.load', e); }
+    let human = null, anim = null;
+    const done = () => {
+      if (!human || !anim) return;
+      try { ANI = bakeClips(anim.scene, Object.fromEntries((anim.animations || []).map(c => [c.name, c]))); } catch (e) { console.warn('animações', e); }
+      const scene = human.scene;
+      scene.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false; if (o.material) o.material.envMapIntensity = .7; } });
+      const D = calibrate(scene, true);
+      TPL = { scene, D, gear: gearDefs(D) }; D.wrap.remove(scene); DZR.ready = true;
+      for (const r of DZR.rigs) attach(r);
+    };
+    try { get(ASSET.human, g => { human = g; done(); }); get(ASSET.anim, g => { anim = g; done(); }); } catch (e) { console.warn('DZR.load', e); }
   }
 
   function attach(rig) {
     if (rig.av || !TPL) return;
     const scn = T.SkeletonUtils.clone(TPL.scene), B = boneMap(scn), D = TPL.D;
     for (const k in B) B[k].quaternion.copy(D.L0[k]);
-    const inner = new T.Group(); inner.rotation.y = Math.PI; inner.scale.setScalar(D.s); inner.position.y = D.oy; inner.add(scn);
+    const inner = new T.Group(); inner.rotation.y = D.ry; inner.scale.setScalar(D.s); inner.position.y = D.oy; inner.add(scn);
     const root = new T.Group(); root.scale.set(-1, 1, 1); root.add(inner); // espelho: arma na mão direita
-    const meshes = [];
-    scn.traverse(o => { if (o.isMesh) { o.material = o.material.clone(); meshes.push(o); } });
+    const parts = {};
+    scn.traverse(o => {
+      if (!o.isMesh) return;
+      const n = o.name;
+      const k = /Outfit_Top/.test(n) ? 'top' : /Outfit_Bottom/.test(n) ? 'bottom' : /Footwear/.test(n) ? 'shoes' : /Wolf3D_Body/.test(n) ? 'body' : /Wolf3D_Head/.test(n) ? 'head' : /Beard/.test(n) ? 'beard' : null;
+      if (k) { o.material = o.material.clone(); parts[k] = o; }
+    });
     rig.pl.add(root);
-    rig.av = { root, inner, B, meshes, tint: -1, near: false, lw: 0, ph: Math.random() };
-    if (TPL.clips.Idle && TPL.clips.Walk && TPL.clips.Run) {
-      const mx = new T.AnimationMixer(scn), act = {};
-      for (const k of ['Idle', 'Walk', 'Run']) { const a = mx.clipAction(TPL.clips[k]); a.play(); a.setEffectiveWeight(0); act[k] = a; }
-      act.Walk.timeScale = act.Run.timeScale = 0; act.Idle.time = Math.random() * TPL.clips.Idle.duration;
-      rig.av.mx = mx; rig.av.act = act;
-    }
+    rig.av = { root, inner, B, parts, near: false, lw: 0, ph: Math.random(), pi: Math.random() };
+    try { addGear(rig.av); } catch (e) { console.warn('gear', e); }
     root.visible = false;
   }
 
   DZR.reg = function (rig, lo, CM) {
     rig.CM = CM; rig.lo = lo; rig.pm = [];
     rig.pl.traverse(o => { if (o.isMesh) rig.pm.push(o); });
-    rig.seed = Math.floor(Math.random() * PALETTE.length);
+    rig.seed = Math.floor(Math.random() * 1e6);
     DZR.rigs.push(rig); hook();
     if (TPL) attach(rig);
   };
@@ -668,15 +808,13 @@
   const QH = new T.Quaternion(), QT = new T.Quaternion(), QHd = new T.Quaternion(), QA = {}, QW = {};
   function ikArm(rig, side, j) {
     const B = rig.av.B, D = TPL.D, arm = B[side + 'Arm'], fa = B[side + 'ForeArm'], hd = B[side + 'Hand'];
-    if (!arm || !fa || !hd) return;
-    // alvo: mão do esqueleto procedural (pegada da arma)
+    if (!arm || !fa || !hd || !D.armLen[side]) return;
     // peso do IK: mão à frente do tronco = segurando algo
     const gl = _e.set(0, -.31, 0).applyMatrix4(j.el.matrixWorld); rig.tor.worldToLocal(gl);
     const w = Math.max(0, Math.min(1, (gl.z - .06) / .14)); if (w <= .01) return;
     const grip = jp(rig, j.el, 0, -.31, 0, _a), elb = jp(rig, j.el, 0, 0, 0, _b);
     const dir = _c.copy(grip).sub(elb); const dl = dir.length(); if (dl > 1e-4) dir.multiplyScalar(1 / dl);
     const T_ = grip.addScaledVector(dir, -.07);
-    // posições atuais do braço do avatar (espaço do avatar)
     const toA = v => { v.applyMatrix4(rig.ainv); return v; };
     const S = toA(_d.setFromMatrixPosition(arm.matrixWorld)), E = toA(new T.Vector3().setFromMatrixPosition(fa.matrixWorld)), H = toA(new T.Vector3().setFromMatrixPosition(hd.matrixWorld));
     const L1 = D.armLen[side][0], L2 = D.armLen[side][1];
@@ -689,7 +827,6 @@
     const H1 = new T.Vector3().subVectors(H, E).applyQuaternion(q1).add(E2);
     const Tc = new T.Vector3().copy(S).addScaledVector(st, d);
     const q2 = new T.Quaternion().setFromUnitVectors(H1.sub(E2).normalize(), Tc.sub(E2).normalize());
-    // aplica: novas rotações absolutas
     const I = new T.Quaternion(); if (w < 1) { q1.slerp(I, 1 - w); q2.slerp(I, 1 - w); }
     const armA = q1.clone().multiply(QA[side + 'Arm']), faA = q2.clone().multiply(q1).multiply(QA[side + 'ForeArm']);
     arm.quaternion.copy(QW[side + 'ArmP'].clone().invert().multiply(armA));
@@ -697,29 +834,37 @@
   }
 
   const LOWER = new Set(['Hips', 'LeftUpLeg', 'LeftLeg', 'LeftFoot', 'LeftToeBase', 'RightUpLeg', 'RightLeg', 'RightFoot', 'RightToeBase']);
-  const UPPER = ['Spine', 'Spine1', 'Spine2', 'Neck', 'Head', 'LeftShoulder', 'LeftArm', 'LeftForeArm', 'LeftHand', 'RightShoulder', 'RightArm', 'RightForeArm', 'RightHand'];
-  const ALLB = new Set([...LOWER, ...UPPER]);
+  const ALLB = new Set(BAKE);
+  const _qa = new T.Quaternion(), _qb = new T.Quaternion();
+  function sampleQ(c, ph, k, out) {
+    const f = ph * c.n, i0 = Math.floor(f) % c.n, i1 = (i0 + 1) % c.n, t = f - Math.floor(f);
+    const a = c.F[i0][k], b = c.F[i1][k]; if (!a) return null; return out.copy(a).slerp(b, t);
+  }
+  function sampleH(c, ph, out) { const f = ph * c.n, i0 = Math.floor(f) % c.n, i1 = (i0 + 1) % c.n, t = f - Math.floor(f); return out.copy(c.H[i0]).lerp(c.H[i1], t); }
   // animações de captura de movimento (parado/andar/correr) misturadas à pose do jogo
   function loco(rig, dt) {
-    const av = rig.av, L = rig.loco; if (!av.mx) return null;
+    const av = rig.av, L = rig.loco; if (!ANI || !ANI.clips.Idle || !ANI.clips.Walk || !ANI.clips.Run) return null;
     av.lw += (((L && L.w) || 0) - av.lw) * Math.min(1, dt * 8); if (av.lw < .01) return null;
-    const sp = Math.max(0, L.sp || 0), A = av.act, cW = TPL.clips.Walk, cR = TPL.clips.Run;
+    const sp = Math.max(0, L.sp || 0), cI = ANI.clips.Idle, cW = ANI.clips.Walk, cR = ANI.clips.Run;
     const wi = Math.max(0, 1 - sp / .7), wr = Math.max(0, Math.min(1, (sp - 2.3) / 1.6)), ww = Math.max(0, 1 - wi - wr);
-    A.Idle.setEffectiveWeight(wi); A.Walk.setEffectiveWeight(ww); A.Run.setEffectiveWeight(wr);
-    // fase única para andar/correr (os pés não "patinam" na transição)
-    const rate = (ww * sp / TPL.vWalk / cW.duration + wr * sp / TPL.vRun / cR.duration) / Math.max(.001, ww + wr);
+    const rate = (ww * sp / ANI.vWalk / cW.dur + wr * sp / ANI.vRun / cR.dur) / Math.max(.001, ww + wr);
     av.ph = (av.ph + dt * rate * ((L.fw != null && L.fw < -.3) ? -1 : 1) + 1) % 1;
-    A.Walk.time = av.ph * cW.duration; A.Run.time = av.ph * cR.duration;
-    av.mx.update(dt);
-    const set = L.arm ? LOWER : ALLB, sv = {};
-    for (const k of set) if (av.B[k]) sv[k] = av.B[k].quaternion.clone();
-    sv._hp = av.B.Hips.position.clone(); sv._set = set; sv._w = av.lw;
-    return sv;
+    av.pi = (av.pi + dt / cI.dur) % 1;
+    const set = L.arm ? LOWER : ALLB, sv = { D: {}, w: av.lw };
+    const mv = ww + wr > 0 ? wr / (ww + wr) : 0;
+    for (const k of set) {
+      const qw = sampleQ(cW, av.ph, k, new T.Quaternion()); if (!qw) continue;
+      if (mv > 0) qw.slerp(sampleQ(cR, av.ph, k, _qa), mv);
+      if (wi > 0) qw.slerp(sampleQ(cI, av.pi, k, _qb), wi);
+      sv.D[k] = qw;
+    }
+    const h = sampleH(cW, av.ph, new T.Vector3()); if (mv > 0) h.lerp(sampleH(cR, av.ph, _c), mv); if (wi > 0) h.lerp(sampleH(cI, av.pi, _d), wi);
+    sv.hp = h; return sv;
   }
 
   function pose(rig, dt) {
-    const sv = loco(rig, dt || .016);
     const av = rig.av, B = av.B, D = TPL.D;
+    const sv = loco(rig, dt || .016);
     rig.pl.updateMatrixWorld(true);
     rig.inv = (rig.inv || new T.Matrix4()).copy(rig.pl.matrixWorld).invert();
     jq(rig, rig.hips, QH); jq(rig, rig.tor, QT); jq(rig, rig.head, QHd);
@@ -731,32 +876,23 @@
       RightUpLeg: jq(rig, rig.lg2.th, new T.Quaternion()), RightLeg: jq(rig, rig.lg2.kn, new T.Quaternion()),
       LeftUpLeg: jq(rig, rig.lg1.th, new T.Quaternion()), LeftLeg: jq(rig, rig.lg1.kn, new T.Quaternion())
     };
-    // percorre a hierarquia calculando rotações absolutas (espaço do avatar)
-    const W = {};
     const walk = (b, parentA) => {
       const k = bname(b); let A;
       if (tgt[k]) A = tgt[k].clone().multiply(D.Q0[k]); else A = parentA.clone().multiply(D.L0[k] || b.quaternion);
-      if (sv && sv[k]) A.slerp(parentA.clone().multiply(sv[k]), sv._w);
+      if (sv && sv.D[k]) A.slerp(sv.D[k].clone().multiply(D.Q0[k]), sv.w);
       b.quaternion.copy(parentA.clone().invert().multiply(A));
-      W[k] = A; if (k === 'RightArm' || k === 'LeftArm') QW[k + 'P'] = parentA.clone();
+      if (k === 'RightArm' || k === 'LeftArm') QW[k + 'P'] = parentA.clone();
       if (k === 'RightArm' || k === 'LeftArm' || k === 'RightForeArm' || k === 'LeftForeArm') QA[k] = A;
       for (const c of b.children) if (c.isBone) walk(c, A);
     };
-    // quadril: posição
+    // quadril: posição (segue o esqueleto do jogo; nas animações reais, o balanço do mocap)
     const hp = jp(rig, rig.hips, 0, 0, 0, new T.Vector3()), off = D.hips0.clone().sub(V(0, .95, 0));
-    // D.hips0 está no espaço "wrap" (escala s); o deslocamento do quadril segue a rotação do quadril
-    const hpos = hp.add(off.applyQuaternion(QH));
-    const hipsTarget = new T.Vector3().copy(hpos);
-    // converte para o espaço local do pai do Hips
-    const pInv = D.hipsParentInv;
-    const local = hipsTarget.clone();
-    // espaço do avatar -> espaço "wrap" usado na calibração (mesma origem/escala do grupo inner)
-    local.applyMatrix4(pInv);
-    B.Hips.position.copy(local); if (sv) B.Hips.position.lerp(sv._hp, sv._w);
+    const pos = hp.add(off.applyQuaternion(QH));
+    if (sv) pos.lerp(D.hips0.clone().add(sv.hp), sv.w);
+    B.Hips.position.copy(pos.applyMatrix4(D.hipsParentInv));
     walk(B.Hips, D.hipsParentQ);
-    // IK das mãos para segurar a arma exatamente onde ela está
     rig.ainv = (rig.ainv || new T.Matrix4()).copy(av.root.matrixWorld).invert();
-    if (rig._dist < 30 && !(sv && !rig.loco.arm && sv._w > .5)) { av.inner.updateMatrixWorld(true); ikArm(rig, 'Right', rig.aR); ikArm(rig, 'Left', rig.aL); }
+    if (rig._dist < 30 && !(sv && !rig.loco.arm && sv.w > .5)) { av.inner.updateMatrixWorld(true); ikArm(rig, 'Right', rig.aR); ikArm(rig, 'Left', rig.aL); }
   }
 
   function effVisible(o) { while (o) { if (!o.visible) return false; if (o.isScene) return true; o = o.parent; } return false; }
@@ -783,6 +919,7 @@
     const Rr = q >= 2 ? 30 : 20, M = GF.m, o = new T.Object3D(), col = new T.Color();
     const fp = FP.filter(b => b.x1 > cx - Rr - 2 && b.x0 < cx + Rr + 2 && b.z1 > cz - Rr - 2 && b.z0 < cz + Rr + 2);
     const rd = RDS.filter(r => r[2] > cx - Rr - 8 && r[0] < cx + Rr + 8 && r[3] > cz - Rr - 8 && r[1] < cz + Rr + 8);
+    const hp = (typeof HPADS !== 'undefined' ? HPADS : []).filter(h => Math.hypot(h.x - cx, h.z - cz) < Rr + 12);
     const lk = LK.filter(l => Math.hypot(l.x - cx, l.z - cz) < l.r + Rr + 9), ct = CITIES.filter(c => Math.abs(c.x - cx) < 95 + Rr && Math.abs(c.z - cz) < 95 + Rr);
     const cs = 1.45; let n = 0;
     for (let gx = Math.floor((cx - Rr) / cs); gx <= Math.ceil((cx + Rr) / cs) && n < 3200; gx++) for (let gz = Math.floor((cz - Rr) / cs); gz <= Math.ceil((cz + Rr) / cs) && n < 3200; gz++) {
@@ -793,6 +930,7 @@
       if (rd.some(r => x > r[0] - .6 && x < r[2] + .6 && z > r[1] - .6 && z < r[3] + .6)) continue;
       if (fp.some(b => x > b.x0 - .8 && x < b.x1 + .8 && z > b.z0 - .8 && z < b.z1 + .8)) continue;
       if (lk.some(l => Math.hypot(x - l.x, z - l.z) < l.r + 7.5)) continue;
+      if (hp.some(h => Math.hypot(x - h.x, z - h.z) < 9.5)) continue;
       let gy = 0; const th = TERH(x, z); try { gy = GY(x, z, th + .5); } catch (e) { } if (gy > th + .05) continue;
       const fade = Math.min(1, (Rr - d) / 6), sc_ = (.75 + h3 * .7) * fade;
       o.position.set(x, TERH(x, z), z); o.rotation.set(0, h1 * 6.283, 0); o.scale.set(sc_ * (1 + h2 * .4), sc_ * (.8 + h1 * .6), sc_); o.updateMatrix();
@@ -819,14 +957,8 @@
       const near = dist < lod;
       if (near !== av.near) { av.near = near; av.root.visible = near; for (const m of rig.pm) m.visible = !near; }
       if (!near) continue;
-      // cor da roupa (skins)
-      const CM = rig.CM, own = CM && CM.ol && CM.ol.color, tk = own ? CM.ol.color.getHex() : rig.seed;
-      if (tk !== av.tint) {
-        av.tint = tk; let c;
-        if (own) { c = CM.ol.color.clone().convertLinearToSRGB(); c.lerp(new T.Color(0xffffff), .15); c.convertSRGBToLinear(); }
-        else c = lin(PALETTE[rig.seed]);
-        for (const m of av.meshes) if (m.material && m.material.color && !/visor/i.test(m.name)) m.material.color.copy(c);
-      }
+      // roupa (skin) e equipamentos visíveis
+      applySkin(rig); gearState(rig);
       pose(rig, dt);
     }
   }

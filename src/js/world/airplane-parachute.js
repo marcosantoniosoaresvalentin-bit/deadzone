@@ -26,7 +26,7 @@ for(const x of[-10.5,-5.5,5.5,10.5]){const ld=2.5-(Math.abs(x)-1.5)*.147,zc=ld+.
  const pg=new T.Group();pg.position.set(x,1,zc+1.8);plane.add(pg);
  for(let k=0;k<4;k++){const b=new T.Mesh(new T.BoxGeometry(.22,2.8,.05),M(0x222222));b.rotation.z=k*Math.PI/2;b.position.set(0,0,0);pg.add(b)}
  pg.add(new T.Mesh(new T.CircleGeometry(1.45,20),new T.MeshBasicMaterial({color:0x222222,transparent:true,opacity:.12,side:T.DoubleSide})));props.push(pg)}}
-plane.visible=false;sc.add(plane);
+plane.visible=false;sc.add(plane);try{window.DZPlaneUp&&DZPlaneUp(plane)}catch(e){console.warn('avião',e)}
 const canopy=new T.Group();
 {const cl=[0xe8742d,0xf2f2f2];for(let i=0;i<8;i++){const m=new T.Mesh(new T.SphereGeometry(4,6,8,i*Math.PI/4,Math.PI/4,0,Math.PI/2),new T.MeshLambertMaterial({color:cl[i%2],side:T.DoubleSide}));m.scale.set(1,.7,1.15);m.position.y=4.2;canopy.add(m)}
 const pts=[];for(let i=0;i<8;i++){const a=i*Math.PI/4+Math.PI/8;pts.push(Math.cos(a)*4,4.2,Math.sin(a)*4.6,(i%2?.12:-.12),0,0)}

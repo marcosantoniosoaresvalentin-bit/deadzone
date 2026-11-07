@@ -7,7 +7,7 @@ const CARS=[],CGM=new T.BoxGeometry(2.1,.7,4.4),CCG=new T.BoxGeometry(1.8,.65,2.
 // ---------- carro realista ----------
 const CHG={},cbx=(a,b,c)=>CHG[a+'_'+b+'_'+c]||(CHG[a+'_'+b+'_'+c]=new T.BoxGeometry(a,b,c));
 let CARX=null;
-function mkCar(bodyMat,o){o=o||{};
+function mkCar(bodyMat,o){o=o||{};if(window.DZCar)try{return DZCar(bodyMat,o)}catch(e){console.warn('carro',e)}
  if(!CARX){const st=(c,r,m)=>new T.MeshStandardMaterial({color:lin(c),roughness:r,metalness:m});
   CARX={dark:st(0x15181c,.6,.4),metal:st(0xc2c9d0,.3,.85),plate:st(0xeeeeee,.7,0),tail:new T.MeshBasicMaterial({color:0xd01818}),amber:new T.MeshBasicMaterial({color:0xffa020}),
    rim:new T.CylinderGeometry(.25,.25,.32,12),hub:new T.CylinderGeometry(.09,.09,.34,8),cab:cbx(1.56,.72,1.5)}}

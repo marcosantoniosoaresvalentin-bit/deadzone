@@ -6,7 +6,7 @@ function mkBot(){const R_=buildChar(1),g=R_.pl;g.rig=R_;g.tr=R_.tor;g.aR=R_.aR;g
 function armBot(b,t,sl){b.w=t;b.sil=sl||((t!=='shotgun'&&Math.random()<.2)?1:0);const w=mkW(t,0,b.sil);b.g.tr.add(w);b.wg=w;b.dw=0}
 const _a=new T.Vector3();
 function animBot(b,dt,mv,dp){const r=b.g.rig,k=Math.min(1,dt*8);b.am+=((mv?1:0)-b.am)*k;b.ph+=dt*9*mv;const s_=Math.sin(b.ph),c=Math.cos(b.ph),w=b.am;
- const fight=(b.w&&mode==='ground'&&dp<55&&!mv)?1:0;b.cr+=(fight-b.cr)*Math.min(1,dt*5);const cr=b.cr;r.loco={w:1-cr,sp:w*2.8,arm:!!b.w,fw:1};
+ const fight=(b.w&&mode==='ground'&&dp<55&&!mv)?1:0;b.cr+=(fight-b.cr)*Math.min(1,dt*5);const cr=b.cr;r.loco={w:1-cr,sp:w*2.8,arm:!!b.w,fw:1};r.team=b.team;
  r.lg1.th.rotation.x=-s_*.85*w-1.1*cr;r.lg1.kn.rotation.x=Math.max(0,c)*1.1*w+1.9*cr;r.lg2.th.rotation.x=s_*.85*w-1.1*cr;r.lg2.kn.rotation.x=Math.max(0,-c)*1.1*w+1.9*cr;
  r.hips.position.y=.95-.33*cr+Math.abs(s_)*.03*w;r.tor.rotation.x=.1*w+.3*cr;if(b.fl>0){b.fl=Math.max(0,b.fl-dt*4);const e_=Math.sin(b.fl*Math.PI);r.tor.rotation.x-=.45*e_;r.tor.rotation.z=.25*e_*(b.fs||1);r.head.rotation.x=-.3*e_}else{r.tor.rotation.z=0;r.head.rotation.x=0}
  if(b.w){const wg=b.wg;if(b.dw<1){b.dw=Math.min(1,b.dw+dt/.7);const e=b.dw*b.dw*(3-2*b.dw);wg.position.set(.1*e,.32+(.27-.32)*e,-.36+.58*e);wg.rotation.set(-1.35*(1-e),0,.3*(1-e))}else{b.kk=Math.max(0,(b.kk||0)-dt*6);wg.position.set(.1,.27,.22-.04*b.kk);wg.rotation.set(-.06*b.kk,0,0);animW(wg,b.kk,0,1)}

@@ -55,7 +55,7 @@ function mkBld(o){const{x,z,w,d,th,type}=o,S=SPEC[type],H=S.H,items=[],A=(a,b,c,
  else if(type==='shop'){A(w-5,1.1,.8,WOOD,0,.6,-hz+3);wbox(-(w-5)/2,(w-5)/2,-hz+2.6,-hz+3.4,{h:1.2});for(const sx of[-1,1]){A(.5,2,d-5,WOOD,sx*(w/2-.8),1.05,-1);wbox(sx*(w/2-.8)-.25,sx*(w/2-.8)+.25,-hz+1.5,hz-3.5,{h:2.1})}}
  else if(type==='church'){for(let k=0;k<4;k++)for(const sx of[-1,1]){A(3,.9,.6,WOOD,sx*3,.5,-hz+4+k*3);wbox(sx*3-1.5,sx*3+1.5,-hz+3.7+k*3,-hz+4.3+k*3,{h:1})}A(3,1,1,CONC,0,.55,-hz+1.5);}
  else for(let k=0;k<nF;k++){const px=R(-iw,iw),pz=R(-hz+1,fz),q=k%3;if(q===0){A(1.4,.8,.9,WOOD,px,.45,pz);A(.45,.9,.45,WOOD,px-1,.5,pz);A(.45,.9,.45,WOOD,px+1,.5,pz);wbox(px-.7,px+.7,pz-.45,pz+.45,{h:1})}else if(q===1){A(2,.85,.9,fa,px,.5,pz);A(2,.8,.2,fa,px,.9,pz-.45);wbox(px-1,px+1,pz-.5,pz+.5,{h:1.4})}else{A(1.8,.7,1.1,FAB[1],px,.4,pz);A(1.8,.5,.15,WOOD,px,.8,pz-.55);wbox(px-.9,px+.9,pz-.55,pz+.55,{h:1.1})}}
- for(let k=0;k<(type==='house'?1:type==='warehouse'?3:2);k++){const lx=R(-iw,iw),lz=R(-hz+1.2,fz);LS.push({x:WX(lx,lz),z:WZ(lx,lz)})}
+ for(let k=0;k<({house:3,villa:4,apartment:5,shop:3,warehouse:5,church:3}[type]||3);k++){const lx=R(-iw,iw),lz=R(-hz+1.2,fz);LS.push({x:WX(lx,lz),z:WZ(lx,lz)})}
  const g=new T.Group();g.position.set(x,0,z);g.rotation.y=th;sc.add(g);bake(g,items);if(DZW_)DZW.add(g,GL_);
  const piv=new T.Group();piv.position.set(dc-DW/2,0,hz-Tn/2);g.add(piv);bake(piv,[[new T.BoxGeometry(DW-.04,DH-.04,.07),DOORM,DW/2,DH/2,0],[new T.BoxGeometry(.12,.04,.07),DARK,DW-.15,1.05,.07],[new T.BoxGeometry(.12,.04,.07),DARK,DW-.15,1.05,-.07]]);
  const D={piv,x:WX(dc,hz),z:WZ(dc,hz),open:0,a:0,bx:db};db.door=D;doors.push(D);

@@ -2,7 +2,9 @@
  * Laço principal do jogo (atualização e câmera a cada quadro).
  */
 let last=0;
-function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;smokeTick(dt);if(spec)specTick();
+// Proteção: um erro em um quadro não pode congelar a tela.
+function loop(t){requestAnimationFrame(loop);try{loopBody(t)}catch(e){dzErr(e);try{ren.render(sc,cam)}catch(_){}}}
+function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;smokeTick(dt);if(spec)specTick();
  
  if(mode!=='lobby'&&mode!=='dead'){gt+=dt;while(si<sched.length&&sched[si].lt<=gt)spawnBot(sched[si++])}
  if(mt>0){mt-=dt;if(mt<=0)msg.textContent=''}
@@ -41,10 +43,10 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
  {const p1=sat(pr/.4),p2=sat((pr-.4)/.6),kn=Math.max(cr,p1*(1-p2)),ar=(wp&&mode==='ground')?1:0;
   const w=amt*(1-cr*.5)*(1-pr*.9)*(1-air),sA=Math.sin(ph),cA=Math.cos(ph),tb=-1.1*kn-.7*air,kb=1.9*kn+1*air;
   const cs=Math.sin(cw),cm=p2*sat(l*3),hd=p1*(1-p2),sw=sA*.7*w,gm=sat(rl*4)*(1-sat((rl-.5)*4)),rR=(cs+1)/2,rL=(1-cs)/2,cR=Math.max(0,cs)*cm,cL=Math.max(0,-cs)*cm,g2=gm*(1-p2);
-  const pRz=lp(lp(.2,lp(.85,.08,rR),cm),-.25+.1*cs*cm,ar),pLz=lp(lp(-.2,-lp(.85,.08,rL),cm),.35-.1*cs*cm,ar);
-  const aRx=lp(lp(lp(-sw,-.6,ar),-.5,hd),Math.PI-.12,p2),aRz=lp(lp(lp(.06,-.25,ar),-.15,hd),pRz,p2),aRe=lp(lp(lp(-.2-.3*Math.abs(sA)*w,-1.4,ar),-.3,hd),-.1-.9*cL,p2);
-  const aLx=lp(lp(lp(lp(sw,-.8,ar),-.5,hd),Math.PI-.12,p2),.1,g2),aLz=lp(lp(lp(lp(-.06,.6,ar),.15,hd),pLz,p2),.2,g2),aLe=lp(lp(lp(lp(-.2-.3*Math.abs(sA)*w,-1.2,ar),-.3,hd),-.1-.9*cR,p2),-1.3,g2);
-  const G=[tb-sA*.85*w+.3*cR,kb+Math.max(0,cA)*w+.9*cR,tb+sA*.85*w+.3*cL,kb+Math.max(0,-cA)*w+.9*cL,aRx,aRz,aRe,aLx,aLz,aLe,.1*amt+.35*kn,sA*.12*w+.14*cs*cm,-p2*1.2-.3*kn,.95-.33*kn,p2*Math.PI/2,p2*.2,-p2*.85];
+  const pRz=lp(lp(.25,lp(.38,.28,rR),cm),-.25+.06*cs*cm,ar),pLz=lp(lp(-.25,-lp(.38,.28,rL),cm),.35-.06*cs*cm,ar);
+  const aRx=lp(lp(lp(-sw,-.6,ar),-.5,hd),Math.PI-.55+.2*cs*cm,p2),aRz=lp(lp(lp(.06,-.25,ar),-.15,hd),pRz,p2),aRe=lp(lp(lp(-.2-.3*Math.abs(sA)*w,-1.4,ar),-.3,hd),-1-.35*cL,p2);
+  const aLx=lp(lp(lp(lp(sw,-.8,ar),-.5,hd),Math.PI-.55-.2*cs*cm,p2),.1,g2),aLz=lp(lp(lp(lp(-.06,.6,ar),.15,hd),pLz,p2),.2,g2),aLe=lp(lp(lp(lp(-.2-.3*Math.abs(sA)*w,-1.2,ar),-.3,hd),-1-.35*cR,p2),-1.3,g2);
+  const G=[tb-sA*.85*w+.1*cR,kb+Math.max(0,cA)*w+.32*cR,tb+sA*.85*w+.1*cL,kb+Math.max(0,-cA)*w+.32*cL,aRx,aRz,aRe,aLx,aLz,aLe,.1*amt+.35*kn,sA*.12*w+.14*cs*cm,-p2*1.2-.3*kn,.95-.33*kn,p2*Math.PI/2,p2*.2,-p2*.85];
   const pR=Math.max(0,sd),pL=Math.max(0,-sd),sw2=Math.sin(tt*1.5)*.08;
   const S=[.3+.2*bk,.6,.3+.2*bk,.6,-.2,1.3,-.3,-.2,-1.3,-.3,-.25,0,-1,.95,1.35+.35*fw-.25*bk,.5,-.85];
   const C=[-.25+sw2-1.25*bk,.4-.25*bk,-.25-sw2-1.25*bk,.4-.25*bk,Math.PI*1.08+.9*pR,.3,-.2-1.2*pR,Math.PI*1.08+.9*pL,-.3,-.2-1.2*pL,-.05-.15*bk,0,-.2,.95,.5*fw-.4*bk,0,0];
@@ -58,7 +60,7 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
    ik(aR,1,r_.x,r_.y,r_.z);ik(aL,-1,l_.x,l_.y,l_.z);animW(rf.children[0],kk,rl,fcd>0?1-fcd/WS[wp].r:1)}}
  if(pr>.05){const pp=sat((pr-.4)/.6),mv_=sat(l*3),c_=Math.sin(cw),k_=pp*mv_;
   head.rotation.x-=.55*pp;tor.rotation.x-=.18*pp*(1+.5*Math.abs(c_)*mv_);hips.rotation.y+=.18*c_*k_;hips.position.y+=.02*Math.abs(c_)*k_;
-  lg1.kn.rotation.x+=.55*Math.max(0,c_)*k_;lg2.kn.rotation.x+=.55*Math.max(0,-c_)*k_;lg1.th.rotation.x-=.25*Math.max(0,c_)*k_;lg2.th.rotation.x-=.25*Math.max(0,-c_)*k_;body.position.y-=.03*pp}
+  lg1.kn.rotation.x+=.28*Math.max(0,c_)*k_;lg2.kn.rotation.x+=.28*Math.max(0,-c_)*k_;lg1.th.rotation.x-=.08*Math.max(0,c_)*k_;lg2.th.rotation.x-=.08*Math.max(0,-c_)*k_;lg1.th.rotation.z-=.18*Math.max(0,c_)*k_;lg2.th.rotation.z+=.18*Math.max(0,-c_)*k_;body.position.y-=.03*pp}
  if(ml>0){ml=Math.max(0,ml-dt);const q_=1-ml/.35,s_=Math.sin(Math.min(1,q_)*Math.PI);if(mode==='ground'){aR.sh.rotation.set(mlK?-1.2-.6*s_:-1.3-.9*s_,mlK?-.5*s_:0,mlK?-.4+.9*s_:.1);aR.el.rotation.x=-.25-(1-s_)*.7;tor.rotation.y=-.45*s_;tor.rotation.x+=.1*s_}}
  knf.visible=ml>0&&!!mlK&&mode==='ground';
  animExtra(dt);try{const g_=mode==='ground'&&ml<=0;CH.loco={w:mode==='lobby'?1:g_?(1-cr)*(1-Math.min(1,pr*3))*(1-air):0,sp:g_?amt*(6-cr*3)*(1-.4*adk)*(cast?.5:1):0,arm:!!(rf.visible||cast||GA||TH||ml>0),fw:l>.05?(dx*Math.sin(pl.rotation.y)+dz*Math.cos(pl.rotation.y))/l:1}}catch(e){}pl.position.set(P.x,P.y,P.z);shd.visible=mode==='ground'||mode==='lobby';shd.position.x=P.x;shd.position.z=P.z;{const g_=GY(P.x,P.z,P.y);shd.position.y=g_+.03;shd.scale.setScalar(Math.max(.4,1-(P.y-g_)*.2))};
@@ -102,10 +104,10 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
  insB=null;if(mode==='ground')for(const b of FP)if(P.x>b.x0&&P.x<b.x1&&P.z>b.z0&&P.z<b.z1){insB=b;break}insK+=((insB?1:0)-insK)*Math.min(1,dt*4);
  if(mode==='lobby'){pl.rotation.y=lobRot;pl.visible=true;cam.position.set(P.x,1.25,P.z+3.5+(window.dzLobBack||0));cam.lookAt(P.x,1.0,P.z)}
  else if(mode==='plane'){const cp=Math.cos(op),D=58;cam.position.set(plane.position.x+Math.sin(oy)*cp*D,plane.position.y+Math.sin(op)*D,plane.position.z+Math.cos(oy)*cp*D);cam.lookAt(plane.position)}
- else if(mode==='ground'){const gyc=GY(P.x,P.z,P.y),ty=gyc+(P.y-gyc)*.6+1.6-.45*cr-pr-.3*insK,cd=lp(5.2,2.4,insK),so=lp(.9,.45,insK),c2=Math.cos(pit),rx=-fz,rz=fx,lk=pit-.12,cl=Math.cos(lk);
+ else if(mode==='ground'){const gyc=GY(P.x,P.z,P.y),ty=gyc+(P.y-gyc)*.6+1.6-.45*cr-pr-.3*insK,cd=lp(3.1,2.1,insK),so=lp(.62,.42,insK),c2=Math.cos(pit),rx=-fz,rz=fx,lk=pit-.12,cl=Math.cos(lk);
   const ax=P.x-fx*cd*c2+rx*so,az=P.z-fz*cd*c2+rz*so,ay=Math.max(gyc+.35,ty+.2+Math.sin(pit)*cd),atx=ax+fx*30*cl,aty=ay-Math.sin(lk)*30,atz=az+fz*30*cl;
   const eh=P.y+Math.max(.35,1.55-.5*cr-1.2*pr),bx=P.x+fx*.3,bz=P.z+fz*.3,l2=pit-.25,c3=Math.cos(l2),btx=bx+fx*30*c3,bty=eh-Math.sin(l2)*30,btz=bz+fz*30*c3;
-  let cx_=lp(ax,bx,adk),cy_=lp(ay,eh,adk),cz_=lp(az,bz,adk);if(insB){cx_=Math.max(insB.x0+.4,Math.min(insB.x1-.4,cx_));cz_=Math.max(insB.z0+.4,Math.min(insB.z1-.4,cz_));cy_=Math.min(cy_,gyc+2.6)}cam.position.set(cx_,cy_,cz_);cam.lookAt(lp(atx,btx,adk),lp(aty,bty,adk),lp(atz,btz,adk))}
+  let cx_=lp(ax,bx,adk),cy_=lp(ay,eh,adk),cz_=lp(az,bz,adk);if(insB){cx_=Math.max(insB.x0+.4,Math.min(insB.x1-.4,cx_));cz_=Math.max(insB.z0+.4,Math.min(insB.z1-.4,cz_));cy_=Math.min(cy_,gyc+2.6)}{/* câmera não atravessa paredes: puxa para perto do personagem */const hx=P.x+rx*.25,hy=gyc+1.55-.4*cr-.8*pr,hz=P.z+rz*.25;let px=hx,py=hy,pz=hz,k=1;for(let i=1;i<=8;i++){const u=i/8,nx=hx+(cx_-hx)*u,ny=hy+(cy_-hy)*u,nz=hz+(cz_-hz)*u;if(blocked(px,py,pz,nx,ny,nz)){k=Math.max(.12,u-.18);break}px=nx;py=ny;pz=nz}if(k<1){cx_=hx+(cx_-hx)*k;cy_=hy+(cy_-hy)*k;cz_=hz+(cz_-hz)*k}}cam.position.set(cx_,cy_,cz_);cam.lookAt(lp(atx,btx,adk),lp(aty,bty,adk),lp(atz,btz,adk))}
  else if(mode==='drive'&&drv.heli){const c=drv,d_=15+Math.abs(c.spd)*.14+Math.min(10,c.y*.04);yaw=c.yaw;cam.position.set(c.x-Math.sin(c.yaw)*d_,Math.max(1.5,c.y+4.6+Math.sin(pit)*7),c.z-Math.cos(c.yaw)*d_);cam.lookAt(c.x+Math.sin(c.yaw)*6,c.y+2,c.z+Math.cos(c.yaw)*6)}
  else if(mode==='drive'){const c=drv,d_=8.5+Math.abs(c.spd)*.08,cy=c.g.position.y||0;yaw=c.yaw;const cx_=c.x-Math.sin(c.yaw)*d_,cz_=c.z-Math.cos(c.yaw)*d_;cam.position.set(cx_,Math.max(cy+3.4+Math.sin(pit)*3,TERH(cx_,cz_)+1.2),cz_);cam.lookAt(c.x+Math.sin(c.yaw)*4,cy+1.2,c.z+Math.cos(c.yaw)*4)}
  else{const ty=(mode==='ground'?P.y*.6+1.6-.45*cr-pr:P.y+1),cd=mode==='ground'?6.5:8;

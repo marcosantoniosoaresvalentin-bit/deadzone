@@ -12,7 +12,7 @@ const HPAL=[
  {body:0x203a63,accent:0xeceef2,dark:0x14181e,mil:1},
  {body:0xa89868,accent:0x4a3a28,dark:0x24201a,mil:1},
  {body:0x2a2d33,accent:0x9a2222,dark:0x101214,mil:1}];
-function mkHeli(o){
+function mkHeli(o){if(window.DZHeli)try{return DZHeli(o)}catch(e){console.warn('heli',e)}
  o=o||{};const bc=o.body!=null?o.body:0x4a5a3a,ac=o.accent!=null?o.accent:0xe0b020,dk=o.dark!=null?o.dark:0x1d2229,mil=o.mil==null?1:o.mil;
  const BODY=hmat(bc,.55,.25),DARK=hmat(dk,.6,.35),ACC=hmat(ac,.5,.2),SEAT=hmat(0x30353c,.9,.1),METAL=hmat(0x8c939a,.4,.7),TIP=hmat(ac,.5,.1);
  const g=new T.Group();g.rotation.order='YXZ';
