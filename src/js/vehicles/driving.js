@@ -36,58 +36,77 @@ function collideCar(c){const sx=Math.sin(c.yaw),cz=Math.cos(c.yaw);let hit=0;
   c.x+=ax;c.z+=az}
  if(hit){const s=Math.abs(c.spd);if(s>5)hitCar(c,(s-5)*2.4);if(drv===c&&s>12)hp-=(s-12)*1.2;c.spd*=-.25;sfx(400,Math.min(.6,s/30),.15,0)}
  carVsCars(c);c.x=Math.max(-(MAPH-5),Math.min(MAPH-5,c.x));c.z=Math.max(-(MAPH-5),Math.min(MAPH-5,c.z))}
-// FÍSICA DO CARRO: saltos e capotamento.
-// O carro é uma caixa (1,9 x 1,5 x 4,4 m). Tem velocidade vertical (salta em rampas e topos de morro)
-// e inclinação lateral/frontal com velocidade angular. No chão, uma "mola" leva a caixa para a posição
-// de repouso mais próxima: em pé, de lado ou de teto (como uma caixa de verdade: passou do ponto de
-// equilíbrio, tomba). Pousar em pé NÃO dá dano; só pancada forte de lado/teto.
-// Capotado e parado por 3 s, ele se desvira sozinho (como se alguém empurrasse).
-const CBX={hw:.95,h:1.5,hl:2.2};
-function carMinY(p,r){const cp=Math.cos(p),sp=Math.sin(p),cr=Math.cos(r),sr=Math.sin(r);let m=1e9;
- for(const x of[-CBX.hw,CBX.hw])for(const y of[0,CBX.h])for(const z of[-CBX.hl,CBX.hl]){const y1=x*sr+y*cr,yy=y1*cp-z*sp;if(yy<m)m=yy}return m}
+// FÍSICA DO CARRO (corpo rígido): 4 rodas com suspensão (mola + amortecedor) e 8 quinas da
+// carroceria que batem no chão. Gravidade, inércia de arfagem/rolagem e força da curva.
+// Nada "puxa" o carro de volta para ficar em pé: se passar do ponto de equilíbrio, ele tomba.
+// Estado: c.cy (altura do centro de massa), c.vy, c.p (arfagem), c.r (rolagem), c.pv, c.rv.
+const CPH={g:24,cm:.62,ix:2.8,iz:1.15,
+ wheels:[[.86,.02,1.38],[-.86,.02,1.38],[.86,.02,-1.38],[-.86,.02,-1.38]],
+ body:[[.95,.32,2.2],[-.95,.32,2.2],[.95,.32,-2.2],[-.95,.32,-2.2],[.92,1.5,1.1],[-.92,1.5,1.1],[.92,1.5,-1.2],[-.92,1.5,-1.2]],
+ kw:150,dw:18,kb:700,db:45,fw:70,fb:260};
 const wrapA=a=>((a+Math.PI*3)%(Math.PI*2))-Math.PI;
-function restRoll(d){const a=Math.abs(d),s=Math.sign(d)||1;return a<.92?0:a<2.24?s*Math.PI/2:s*Math.PI}   // em pé / de lado / de teto
-function restPitch(d){return Math.abs(d)<1.35?0:(Math.sign(d)||1)*Math.PI}
+const _cE=new T.Euler(),_cQ=new T.Quaternion(),_cV=new T.Vector3(),_cO=new T.Vector3(),_cU=new T.Vector3();
+function carInit(c){const sx=Math.sin(c.yaw),cz=Math.cos(c.yaw),hf=TERH(c.x+sx*1.4,c.z+cz*1.4),hb=TERH(c.x-sx*1.4,c.z-cz*1.4),hl=TERH(c.x+cz*.86,c.z-sx*.86),hr=TERH(c.x-cz*.86,c.z+sx*.86);
+ // nasce apoiado no relevo (inclinado igual ao chão) e já com a suspensão assentada: nada de pulo ao entrar
+ c.p=-Math.atan2(hf-hb,2.76);c.r=Math.atan2(hl-hr,1.72);c.cy=(hf+hb+hl+hr)/4+CPH.cm-.03;c.vy=0;c.pv=0;c.rv=0;c.air=0;c.ok=true;c.flipT=0;c.lyaw=c.yaw;c.prev=null;c.wn=4;c.sleep=0}
 function carAir(c,dt){
- if(c.y==null||!isFinite(c.y)){c.y=TERH(c.x,c.z);c.vy=0;c.p=0;c.r=0;c.pv=0;c.rv=0;c.bump=0;c.flipT=0;c.lyaw=c.yaw}
- const n=2,h=dt/n;let yr=wrapA(c.yaw-(c.lyaw==null?c.yaw:c.lyaw))/Math.max(dt,1e-3);c.lyaw=c.yaw;
- for(let k=0;k<n;k++){
-  const sx=Math.sin(c.yaw),cz=Math.cos(c.yaw),hf=TERH(c.x+sx*1.6,c.z+cz*1.6),hb=TERH(c.x-sx*1.6,c.z-cz*1.6),hl=TERH(c.x+cz*.95,c.z-sx*.95),hr=TERH(c.x-cz*.95,c.z+sx*.95),g=(hf+hb+hl+hr)/4;
-  const tp=-Math.atan2(hf-hb,3.2),tr=Math.atan2(hl-hr,1.9);
-  const y0=c.y;c.vy-=24*h;c.y+=c.vy*h;
-  const dr=wrapA(c.r-tr),dp=wrapA(c.p-tp),mY=carMinY(dp,dr);   // altura do canto mais baixo em relação ao plano do terreno
-  if(c.y+mY<=g+.02){ // encostou no chão
-   if(c.air){const imp=-c.vy,up=Math.abs(dr)<.6&&Math.abs(dp)<.7;if(imp>4){c.bump=Math.min(.3,imp*.02);sfx(140,Math.min(.5,imp/30),.18,0)}
-    if(!up&&imp>7){hitCar(c,(imp-7)*2);if(drv===c)hp-=(imp-7)*.6}
-    c.rv*=.35;c.pv*=.35}
-   c.air=0;c.y=g-mY;c.vy=Math.max(-20,Math.min(16,(c.y-y0)/h));
-   // molas para o repouso mais próximo (em pé / de lado / de teto) + inclinação nas curvas rápidas
-   const lat=Math.max(-60,Math.min(60,c.spd*yr));
-   const rr_=c.righting?0:restRoll(dr),rp_=c.righting?0:restPitch(dp);
-   c.rv+=(-(dr-rr_)*55-c.rv*8+(Math.abs(dr)<.92?lat*.22:0))*h;
-   c.pv+=(-(dp-rp_)*60-c.pv*9)*h;
-   const ok=Math.abs(dr)<.6&&Math.abs(dp)<.7;c.ok=ok;
-   if(!ok){c.spd-=Math.sign(c.spd)*Math.min(Math.abs(c.spd),7*h);
-    if(Math.abs(c.spd)<1.5&&Math.abs(c.rv)<.6){c.flipT=(c.flipT||0)+h;if(c.flipT>3&&!c.righting){c.righting=1;c.vy=3.5}}}
-   else{c.flipT=0;c.righting=0}}
-  else{c.air=1;c.ok=false;c.rv*=Math.pow(.6,h);c.pv*=Math.pow(.6,h);
-   // no ar o bico acompanha devagar a direção da queda
-   c.pv+=(Math.max(-.5,Math.min(.5,-Math.atan2(c.vy,Math.abs(c.spd)+3)*.6))-c.p)*1.5*h}
-  c.r+=c.rv*h;c.p+=c.pv*h;c.r=wrapA(c.r);c.p=wrapA(c.p)}
- c.bump=(c.bump||0)*Math.exp(-dt*7);
- c.g.rotation.order='YXZ';c.g.position.set(c.x,c.y-c.bump*Math.cos(c.bump*40),c.z);c.g.rotation.set(c.p,c.yaw,c.r)}
+ if(c.cy==null||!isFinite(c.cy)||!isFinite(c.p)||!isFinite(c.r))carInit(c);
+ const N=Math.max(2,Math.min(10,Math.ceil(dt/.006))),h=dt/N,G=CPH.g;
+ const yr=wrapA(c.yaw-(c.lyaw==null?c.yaw:c.lyaw))/Math.max(dt,1e-3);c.lyaw=c.yaw;
+ const lat=Math.max(-40,Math.min(40,c.spd*yr));let wn=0,maxImp=0,bodyHit=0,bImp=0;
+ for(let k=0;k<N;k++){
+  _cQ.setFromEuler(_cE.set(c.p,c.yaw,c.r,'YXZ'));
+  // origem do modelo (chão do carro) = centro de massa - R*(0,cm,0)
+  _cO.set(0,CPH.cm,0).applyQuaternion(_cQ);const ox=c.x-_cO.x,oy=c.cy-_cO.y,oz=c.z-_cO.z;
+  let Fy=0,tx=0,tz=0;wn=0;
+  const cyw=Math.cos(-c.yaw),syw=Math.sin(-c.yaw),hvx=Math.sin(c.yaw)*c.spd,hvz=Math.cos(c.yaw)*c.spd;
+  const contact=(q,K,D,isW)=>{_cV.set(q[0],q[1],q[2]).applyQuaternion(_cQ);const wx=ox+_cV.x,wy=oy+_cV.y,wz=oz+_cV.z,g=TERH(wx,wz),pen=g-wy;
+   if(pen<=0)return;
+   // quanto o chão sobe/desce sob o ponto com o carro andando (o amortecedor usa a velocidade RELATIVA ao chão)
+   const gr=(TERH(wx+hvx*.08,wz+hvz*.08)-g)/.08;
+   // velocidade vertical do ponto = vy + (w x r).y ; w em coordenadas "sem yaw"
+   // braço a partir do CENTRO DE MASSA, girado para o referencial do carro sem a direção (yaw)
+   const rx=_cV.x-_cO.x,rz=_cV.z-_cO.z,ax=rx*cyw+rz*syw,az=-rx*syw+rz*cyw;
+   const vp=c.vy+c.rv*ax-c.pv*az-gr;
+   // força limitada (fim de curso da suspensão / deformação do pneu): sem "coice" que joga o carro longe
+   let f=K*Math.min(pen,.5)-D*vp;if(f<0)f=0;if(f>(isW?CPH.fw:CPH.fb))f=isW?CPH.fw:CPH.fb;if(-vp>maxImp)maxImp=-vp;if(!isW&&-vp>bImp){bImp=-vp;bodyHit=1}
+   Fy+=f;tx+=-az*f;tz+=ax*f;if(isW)wn++};
+  for(const q of CPH.wheels)contact(q,CPH.kw,CPH.dw,1);
+  for(const q of CPH.body)contact(q,CPH.kb,CPH.db,0);
+  // força da curva (centrífuga) aplicada no centro de massa: inclina a carroceria e pode capotar
+  if(wn>=2)tz+=lat*.3*CPH.cm*Math.cos(c.r);
+  c.vy+=(Fy-G)*h;c.cy+=c.vy*h;
+  c.pv+=tx/CPH.ix*h;c.rv+=tz/CPH.iz*h;
+  const ad=Math.exp(-(wn?1.6:.9)*h);c.pv*=ad;c.rv*=ad;
+  // no ar: o bico acompanha a direção do voo e a rolagem estabiliza devagar (efeito do ar/peso), sem travar
+  if(wn===0){const tp_=Math.max(-.45,Math.min(.45,-Math.atan2(c.vy,Math.abs(c.spd)+4)*.8));c.pv+=((tp_-c.p)*3.2-c.pv*1.6)*h;if(Math.abs(c.r)<1.3)c.rv+=(-c.r*2.2-c.rv*1.2)*h}
+  c.p=wrapA(c.p+c.pv*h);c.r=wrapA(c.r+c.rv*h);
+  if(c.cy<TERH(c.x,c.z)-.5){c.cy=TERH(c.x,c.z)+CPH.cm;c.vy=0}}
+ c.wn=wn;c.air=wn===0&&!bodyHit;c.bImp=bImp;
+ _cU.set(0,1,0).applyQuaternion(_cQ);const up=_cU.y;c.ok=up>.55&&wn>=2;
+ // pancadas: rodas aguentam muito (pouso em pé não machuca); carroceria batendo forte machuca
+ // dano só quando a CARROCERIA bate forte (pouso nas rodas nunca machuca)
+ if(bodyHit&&bImp>18){hitCar(c,(bImp-18)*2);if(drv===c)hp-=(bImp-18)*.5;sfx(120,Math.min(.6,bImp/25),.2,0)}
+ if(maxImp>5)sfx(150,Math.min(.4,maxImp/30),.12,0);
+ // capotado e quase parado por 3 s: desvira devagar (como se alguém empurrasse)
+ if(up<.55&&Math.abs(c.spd)<2&&Math.abs(c.rv)+Math.abs(c.pv)<1.2){c.flipT=(c.flipT||0)+dt;if(c.flipT>3){c.r-=c.r*Math.min(1,dt*1.6);c.p-=c.p*Math.min(1,dt*1.6);c.vy=Math.max(c.vy,1.2);c.rv*=.5;c.pv*=.5}}else if(up>.9)c.flipT=0;
+ if(!c.ok)c.spd-=Math.sign(c.spd)*Math.min(Math.abs(c.spd),(wn?6:1.2)*dt);
+ // dorme quando assentado (economiza no celular)
+ c.sleep=(wn===4&&Math.abs(c.vy)<.05&&Math.abs(c.pv)+Math.abs(c.rv)<.03&&Math.abs(c.spd)<.05)?(c.sleep||0)+dt:0;
+ _cO.set(0,CPH.cm,0).applyQuaternion(_cQ.setFromEuler(_cE.set(c.p,c.yaw,c.r,'YXZ')));
+ c.y=c.cy-_cO.y;c.g.rotation.order='YXZ';c.g.position.set(c.x-_cO.x,c.y,c.z-_cO.z);c.g.rotation.set(c.p,c.yaw,c.r)}
 function updCars(dt,ix,iy){nearCar=null;let nd=4.2;
  for(const c of CARS){const dv=drv===c&&mode==='drive',d=Math.hypot(c.x-P.x,c.z-P.z);c.g.visible=d<(c.heli?520:400)&&!MP;
   if(c.heli){if(MP)continue;updHeli(c,dt,dv,ix,iy,d);if(mode==='ground'&&!c.dead&&c.y-(c.fb||0)<1.5&&d-2<nd){nd=d-2;nearCar=c}continue}
   if(c.fire&&!c.dead){c.hp-=dt*4;c.fl.visible=true;for(const f of c.fl.children)f.scale.y=.7+Math.random()*.8;if(dv)hp-=3*dt;if(c.hp<=0)boom(c)}
   if(c.dead)continue;
-  if(dv||Math.abs(c.spd)>.05||c.air||c.ok===false||Math.abs(c.rv||0)>.02||Math.abs(c.pv||0)>.02){
+  if(dv||Math.abs(c.spd)>.05||c.cy==null||!(c.sleep>.5)){
    // pedais: acelerar = frente; ré = freia até quase parar e então anda para trás (a física já faz isso); freio = para
-   if(dv){const cb_=window.DZPED||{},th=cb_.g?1:cb_.r?-1:cb_.b?0:-iy;let a=0;if(c.fuel>0&&c.ok!==false)a=th*(th>0?15:9)*((th>0&&c.spd<-.3)||(th<0&&c.spd>.3)?2:1);c.spd+=a*dt*(c.air?.12:1);if(Math.abs(th)<.05||c.fuel<=0)c.spd-=Math.sign(c.spd)*Math.min(Math.abs(c.spd),4*dt);
-    c.yaw-=ix*dt*1.9*Math.max(-1,Math.min(1,c.spd/7))*(c.air?.15:c.ok===false?0:1);if(c.fuel>0)c.fuel=Math.max(0,c.fuel-dt*(.08+.35*Math.abs(th)+.008*Math.abs(c.spd)));
+   if(dv){const cb_=window.DZPED||{},th=cb_.g?1:cb_.r?-1:cb_.b?0:-iy;let a=0;if(c.fuel>0&&c.ok!==false&&c.wn>=2)a=th*(th>0?15:9)*((th>0&&c.spd<-.3)||(th<0&&c.spd>.3)?2:1);c.spd+=a*dt;if(Math.abs(th)<.05||c.fuel<=0)c.spd-=Math.sign(c.spd)*Math.min(Math.abs(c.spd),4*dt);
+    c.yaw-=ix*dt*1.9*Math.max(-1,Math.min(1,c.spd/7))*(c.wn>=2&&c.ok!==false?1:0);if(c.fuel>0)c.fuel=Math.max(0,c.fuel-dt*(.08+.35*Math.abs(th)+.008*Math.abs(c.spd)));
     for(const b of bots){if(b.dead||b.air||b.team===1||Math.abs(c.spd)<6)continue;if(Math.hypot(b.x-c.x,b.z-c.z)<2.2&&tt-(b.ro||0)>.4){b.ro=tt;b.hp-=Math.abs(c.spd)*6;if(b.hp<=0&&!b.dead)killBot(b,1)}}}
-   else if(!c.air)c.spd-=Math.sign(c.spd)*Math.min(Math.abs(c.spd),5*dt);
-   if(dv&&window.DZPED&&DZPED.b&&!c.air)c.spd-=Math.sign(c.spd)*Math.min(Math.abs(c.spd),26*dt);
+   else if(c.wn>=2)c.spd-=Math.sign(c.spd)*Math.min(Math.abs(c.spd),5*dt);
+   if(dv&&window.DZPED&&DZPED.b&&c.wn>=2)c.spd-=Math.sign(c.spd)*Math.min(Math.abs(c.spd),26*dt);
    c.spd=Math.max(-8,Math.min(28,c.spd));c.x+=Math.sin(c.yaw)*c.spd*dt;c.z+=Math.cos(c.yaw)*c.spd*dt;collideCar(c);
    carAir(c,dt);if(dv){P.x=c.x;P.z=c.z;P.y=c.g.position.y}}
   if(mode==='ground'&&d<nd&&!c.dead){nd=d;nearCar=c}}}
