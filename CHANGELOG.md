@@ -1,5 +1,14 @@
 # Histórico de versões
 
+## 3.7.4
+- **Tela de carregamento** desde o primeiro instante: não aparece mais o lobby antigo nem os
+  botões antigos com texto enquanto o jogo carrega.
+- **Desempenho (menos travamento)**:
+  - interior dos carros montado em 3 peças em vez de ~14, e só desenhado de perto (40 m);
+  - peças das rodas de mesmo material juntas;
+  - carros só fazem sombra até 80 m (antes, todos os buggies do mapa faziam sombra);
+  - peças pequenas dos buggies (faróis, molas, antena) somem a mais de 60 m.
+
 ## 3.7.3
 - **Rodas da frente retas e girando certo**: no modelo do buggy as rodas dianteiras vinham
   esterçadas e inclinadas. Agora o eixo real de cada pneu é calculado pela forma dele e a roda

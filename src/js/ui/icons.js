@@ -86,7 +86,7 @@
     // "Itens" (arremessáveis) sem texto
     try { const tw = document.getElementById('twi'); if (tw) new MutationObserver(() => { const sm = tw.querySelector('small'); if (sm && sm.textContent.trim() === 'Itens') sm.outerHTML = '<span class="slot-empty">' + I.items + '</span>'; }).observe(tw, { childList: true, subtree: true }); } catch (e) { }
   }
-  function start() { carButtons(); all(); slotsIcons(); }
+  function start() { carButtons(); all(); slotsIcons(); document.body.classList.add('dzicons'); }
   if (document.readyState === 'loading') addEventListener('DOMContentLoaded', start); else start();
   // a cada quadro: mostra os botões do carro só dirigindo carro (não helicóptero)
   (function tick() {

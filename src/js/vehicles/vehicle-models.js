@@ -161,24 +161,42 @@
   const SEAT = window.DZSEAT = { helicopter: new T.Vector3(0, 1.5, 1.25) };
   for (const k in CAB) SEAT[k] = new T.Vector3(...CAB[k].seat);
   // interior simples e leve: bancos com encosto e apoio de cabeça, painel, volante, console e assoalho
+  // junta várias geometrias (mesmo material) em uma só: menos "desenhos" por quadro no celular
+  function mergeG(list) {
+    let n = 0; for (const [g] of list) n += (g.index ? g.index.count : g.attributes.position.count);
+    const P = new Float32Array(n * 3), N = new Float32Array(n * 3), U = new Float32Array(n * 2); let o = 0, hasU = true;
+    const v = new T.Vector3(), nm = new T.Matrix3();
+    for (const [g0, m] of list) { const g = g0.index ? g0.toNonIndexed() : g0, p = g.attributes.position, nr = g.attributes.normal, uv = g.attributes.uv; if (!uv) hasU = false;
+      if (m) nm.getNormalMatrix(m);
+      for (let i = 0; i < p.count; i++, o++) { v.fromBufferAttribute(p, i); if (m) v.applyMatrix4(m); P[o * 3] = v.x; P[o * 3 + 1] = v.y; P[o * 3 + 2] = v.z;
+        if (nr) { v.fromBufferAttribute(nr, i); if (m) v.applyMatrix3(nm).normalize(); N[o * 3] = v.x; N[o * 3 + 1] = v.y; N[o * 3 + 2] = v.z; }
+        if (uv) { U[o * 2] = uv.getX(i); U[o * 2 + 1] = uv.getY(i); } } }
+    const ge = new T.BufferGeometry(); ge.setAttribute('position', new T.BufferAttribute(P, 3)); ge.setAttribute('normal', new T.BufferAttribute(N, 3)); if (hasU) ge.setAttribute('uv', new T.BufferAttribute(U, 2)); ge.computeBoundingSphere(); return ge;
+  }
   const IM = {};
   const imat = (k, c, r) => IM[k] || (IM[k] = new T.MeshStandardMaterial({ color: lin(c), roughness: r, metalness: 0 }));
+  const INT = {};
   function interior(kind) {
     const C = CAB[kind]; if (!C) return null;
-    const g = new T.Group(), fab = imat('fab', 0x26282b, .95), pla = imat('pla', 0x15171a, .7), car = imat('car', 0x1b1c1e, 1);
-    const box = (m, w, h, d, x, y, z, rx) => { const o = new T.Mesh(new T.BoxGeometry(w, h, d), m); o.position.set(x, y, z); if (rx) o.rotation.x = rx; o.castShadow = false; o.receiveShadow = true; g.add(o); return o; };
-    const [sx, sy, sz] = C.seat;
-    const seat = (x, z, w) => { box(fab, w, .12, .5, x, sy - .08, z + .05); box(fab, w, .62, .12, x, sy + .26, z - .24, -.22); box(fab, w * .55, .18, .1, x, sy + .66, z - .32, -.22); };
-    seat(sx, sz, .5); seat(-sx, sz, .5);
-    if (C.rear != null) { box(fab, C.hw * 2 - .2, .12, .5, 0, sy - .1, C.rear + .05); box(fab, C.hw * 2 - .2, .58, .12, 0, sy + .22, C.rear - .25, -.2); }
-    if (!C.open) box(car, C.hw * 2, .04, Math.abs(C.dashZ - (C.rear != null ? C.rear : sz) + .7), 0, C.floor, (C.dashZ + (C.rear != null ? C.rear : sz) - .5) / 2);
-    box(pla, C.hw * 2 - .04, .22, .34, 0, C.dashY, C.dashZ + .08, -.25);   // painel
-    box(pla, .2, .3, .7, 0, sy - .02, sz + .18);                           // console
-    // volante (anel + raios) em um pivô que gira com a direção
-    const wp = new T.Group(); wp.position.set(sx, sy + .44, sz + .5); wp.rotation.x = -.42; g.add(wp);
-    const ring = new T.Mesh(new T.TorusGeometry(.17, .022, 8, 24), pla); wp.add(ring);
-    for (let k = 0; k < 3; k++) { const a = k * 2.094 + Math.PI / 2, sp = new T.Mesh(new T.BoxGeometry(.03, .16, .02), pla); sp.position.set(Math.cos(a) * .085, Math.sin(a) * .085, 0); sp.rotation.z = a - Math.PI / 2; wp.add(sp); }
-    const col = new T.Mesh(new T.CylinderGeometry(.03, .04, .3, 8), pla); col.rotation.x = Math.PI / 2 - .42; col.position.set(sx, sy + .38, sz + .66); g.add(col);
+    const fab = imat('fab', 0x26282b, .95), pla = imat('pla', 0x15171a, .7), car = imat('car', 0x1b1c1e, 1);
+    if (!INT[kind]) {
+      const L = new Map(), o = new T.Object3D(), add = (m, geo, x, y, z, rx, ry, rz) => { o.position.set(x, y, z); o.rotation.set(rx || 0, ry || 0, rz || 0); o.updateMatrix(); if (!L.has(m)) L.set(m, []); L.get(m).push([geo, o.matrix.clone()]); };
+      const box = (m, w, h, d, x, y, z, rx) => add(m, new T.BoxGeometry(w, h, d), x, y, z, rx);
+      const [sx, sy, sz] = C.seat;
+      const seat = (x, z, w) => { box(fab, w, .12, .5, x, sy - .08, z + .05); box(fab, w, .62, .12, x, sy + .26, z - .24, -.22); box(fab, w * .55, .18, .1, x, sy + .66, z - .32, -.22); };
+      seat(sx, sz, .5); seat(-sx, sz, .5);
+      if (C.rear != null) { box(fab, C.hw * 2 - .2, .12, .5, 0, sy - .1, C.rear + .05); box(fab, C.hw * 2 - .2, .58, .12, 0, sy + .22, C.rear - .25, -.2); }
+      if (!C.open) box(car, C.hw * 2, .04, Math.abs(C.dashZ - (C.rear != null ? C.rear : sz) + .7), 0, C.floor, (C.dashZ + (C.rear != null ? C.rear : sz) - .5) / 2);
+      box(pla, C.hw * 2 - .04, .22, .34, 0, C.dashY, C.dashZ + .08, -.25);
+      box(pla, .2, .3, .7, 0, sy - .02, sz + .18);
+      add(pla, new T.CylinderGeometry(.03, .04, .3, 8), sx, sy + .38, sz + .66, Math.PI / 2 - .42);
+      const W = [[new T.TorusGeometry(.17, .022, 8, 24), new T.Matrix4()]];
+      for (let k = 0; k < 3; k++) { const a = k * 2.094 + Math.PI / 2; o.position.set(Math.cos(a) * .085, Math.sin(a) * .085, 0); o.rotation.set(0, 0, a - Math.PI / 2); o.updateMatrix(); W.push([new T.BoxGeometry(.03, .16, .02), o.matrix.clone()]); }
+      INT[kind] = { parts: [...L].map(([m, l]) => [m, mergeG(l)]), wheel: mergeG(W), wp: [sx, sy + .44, sz + .5] };
+    }
+    const D = INT[kind], g = new T.Group();
+    for (const [m, ge] of D.parts) { const me = new T.Mesh(ge, m); me.castShadow = false; me.receiveShadow = true; g.add(me); }
+    const wp = new T.Group(); wp.position.set(...D.wp); wp.rotation.x = -.42; g.add(wp); wp.add(new T.Mesh(D.wheel, pla));
     g.userData.wheel = wp; g.userData.wheelR = .17; return g;
   }
   const VEH = window.DZVEH = [];
@@ -255,7 +273,7 @@
   const _prep = prep;
   prep = function (s, l) { const r = _prep(s, l); r.userData.dz = 1; return r; };
 
-  const _v = new T.Vector3(); let burnM = null;
+  const _v = new T.Vector3(), _v2 = new T.Vector3(); let burnM = null;
   // ---------- RODAS QUE GIRAM ----------
   // O modelo do buggy vem com as rodas grudadas na carroceria. Aqui o pneu é achado pela geometria
   // (a malha escura com mais vértices), as 4 rodas são localizadas pelos quadrantes e todos os
@@ -329,7 +347,9 @@
         }
         g.setIndex(e.keep);   // carroceria sem as rodas (geometria compartilhada pelos clones)
       }
-      for (const w of wheels) delete w.comps;
+      for (const w of wheels) { delete w.comps;
+        const G = new Map(); for (const p of w.parts) { const k = p.mat.uuid + (p.spin ? 's' : 'f'); if (!G.has(k)) G.set(k, { mat: p.mat, spin: p.spin, l: [] }); G.get(k).l.push([p.ge, null]); }
+        w.parts = [...G.values()].map(g => ({ ge: g.l.length > 1 ? mergeG(g.l) : g.l[0][0], mat: g.mat, spin: g.spin })); }
       W = WSPLIT[kind] = wheels;
       window.DZWHEELS = window.DZWHEELS || {}; DZWHEELS[kind] = wheels.map(w => [w.c.x, w.c.y - w.r, w.c.z, w.r]);
     }
@@ -362,6 +382,12 @@
       } else if (!v.burnt) {
         const c = v.car || (v.car = typeof CARS !== 'undefined' ? CARS.find(c => c.g === v.g) : null);
         if (c && v.wheels) spinWheels(v, c);
+        { const d = _v.distanceTo(cam.position), ni = d < 40, ns = d < 80;
+          if (ni !== v.ni) { v.ni = ni; const it = v.g.userData.cab; if (it) it.visible = ni; }
+          if (ns !== v.ns) { v.ns = ns; v.root.traverse(o => { if (o.isMesh && !o.material.transparent) o.castShadow = ns; }); }
+          // peças pequenas (faróis, molas, antena...) somem de longe: quase não aparecem e pesam no celular
+          if (!v.small) { v.small = []; v.root.traverse(o => { if (o.isMesh && o.geometry) { if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere(); const r = o.geometry.boundingSphere.radius * o.getWorldScale(_v2).x; if (r < .35 && !o.material.transparent) v.small.push(o); } }); }
+          const nf = d < 60; if (nf !== v.nf) { v.nf = nf; for (const o of v.small) o.visible = nf; } }
         if (c && c.dead) { v.burnt = 1; burnM = burnM || (typeof BURN !== 'undefined' ? BURN : new T.MeshStandardMaterial({ color: 0x151515 })); v.root.traverse(o => { if (o.isMesh) o.material = burnM; }); }
       }
     }
