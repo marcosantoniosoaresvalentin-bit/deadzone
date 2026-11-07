@@ -229,7 +229,7 @@
   // VIDROS TRANSPARENTES em todos os carros (dá para ver quem está dentro).
   // Vidro em peça própria: troca por vidro claro. Vidro pintado na textura da lataria (picape):
   // a lataria recorta os pixels do vidro e uma cópia por cima desenha só o vidro, transparente.
-  let _cg = null; const CGLASS = () => _cg || (_cg = new T.MeshStandardMaterial({ color: lin(0xb4cddb), transparent: true, opacity: .26, roughness: .04, metalness: .25, depthWrite: false, side: T.DoubleSide, envMapIntensity: 1.5 }));
+  let _cg = null; const CGLASS = () => _cg || (_cg = new T.MeshStandardMaterial({ color: lin(0xc4d8e4), transparent: true, opacity: .16, roughness: .05, metalness: 0, depthWrite: false, side: T.DoubleSide, envMapIntensity: .5 }));
   const GL_TEST = 'vec3 c_=diffuseColor.rgb;float mx_=max(max(c_.r,c_.g),c_.b),mn_=min(min(c_.r,c_.g),c_.b);bool isG=c_.b>c_.r*1.25&&c_.g>c_.r*1.12&&mx_-mn_>.035&&mx_<.75;';
   function glassify(scene, painted) {
     const add = [];
@@ -249,7 +249,7 @@
   }
   function load() {
     const names = ['helicopter', ...CAR_MODELS.map(c => c[0])]; let left = names.length;
-    for (const n of names) new T.GLTFLoader().load(URL_[n], g => { SRC[n] = g.scene; if (n !== 'helicopter') try { glassify(g.scene, n === 'pickup'); } catch (e) { } if (--left === 0) { ready = true; } }, undefined, e => { console.warn('veículo', n, e); if (--left === 0) ready = true; });
+    for (const n of names) new T.GLTFLoader().load(URL_[n], g => { SRC[n] = g.scene; if (n !== 'helicopter') try { glassify(g.scene, n !== 'buggy'); } catch (e) { } if (--left === 0) { ready = true; } }, undefined, e => { console.warn('veículo', n, e); if (--left === 0) ready = true; });
   }
   load(); requestAnimationFrame(tick);
 

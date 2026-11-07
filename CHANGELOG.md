@@ -1,5 +1,16 @@
 # Histórico de versões
 
+## 3.4.0
+- **Carros saltam**: agora têm velocidade vertical e gravidade. Em alta velocidade no topo de
+  um morro o carro decola, voa (direção quase sem efeito no ar), inclina o bico conforme a queda
+  e aterrissa com tranco na suspensão (queda muito forte causa dano).
+- **Sem viatura de polícia e sem táxi** (modelos removidos do jogo).
+- **Vidros de volta em todos os veículos**, só que claros e transparentes (dá para ver o motorista).
+- **Posição sentada refeita**: quadril no banco, costas um pouco para trás, pernas dobradas.
+- **Mãos no volante com animação**: as mãos seguram o volante e giram junto com ele para os lados
+  nas curvas; a cabeça acompanha a curva. No helicóptero, mãos no manche e no coletivo.
+- Paraquedas: se o visual novo não funcionar no aparelho, o jogo volta sozinho para o modelo simples.
+
 ## 3.3.0 — personagem dentro dos veículos
 - **O personagem aparece dentro do veículo**, sentado no banco do motorista, com as mãos
   no volante (que gira um pouco nas curvas). Banco ajustado em cada modelo: sedã, SUV, picape,

@@ -113,7 +113,7 @@ Detalhes técnicos em [docs/ARQUITETURA.md](docs/ARQUITETURA.md).
   licença [CC-BY 4.0](http://creativecommons.org/licenses/by/4.0/) (texturas reduzidas e convertidas para WebP).
 - Paraquedas: velame e linhas do parapente "paraglider-red-ridge" da
   [SwissAirfields](https://github.com/SwissAirfields/SwissAirfieldsFS2020) (CC0).
-- Veículos (sedã, SUV, picape, táxi, viatura, buggy e helicóptero): biblioteca Microsoft Remix 3D
+- Veículos (sedã, SUV, picape, buggy e helicóptero): biblioteca Microsoft Remix 3D
   (CC0), via [Ethereal Engine Open Asset Kit](https://github.com/ir-engine/ir-engine-assets-basic).
 - Texturas de grama, tijolo e ondas da água: exemplos do three.js.
 - Folhas, agulhas, casca, pedra, telhas e reboco: geradas por código.
