@@ -152,7 +152,7 @@
   const CAR_MODELS = [['sedan', 3, 4.5], ['suv', 3, 4.6], ['pickup', 2, 5.0], ['taxi', 1, 4.4], ['police', 1, 4.8], ['buggy', 1, 3.7]];
   const SRC = {}; let ready = false;
   // banco do motorista de cada modelo (coordenadas do veículo: +z = frente, +x = esquerda, y = altura do assento)
-  const SEAT = window.DZSEAT = { sedan: new T.Vector3(.38, .62, -.2), suv: new T.Vector3(.4, .82, -.05), pickup: new T.Vector3(.4, .86, .3), taxi: new T.Vector3(.38, .62, -.15),
+  const SEAT = window.DZSEAT = { sedan: new T.Vector3(.38, .62, -.2), suv: new T.Vector3(.4, .7, -.38), pickup: new T.Vector3(.4, .72, .12), taxi: new T.Vector3(.38, .62, -.15),
     police: new T.Vector3(.38, .62, -.2), buggy: new T.Vector3(.33, .52, -.25), helicopter: new T.Vector3(0, 1.35, 2.2) };
   const VEH = window.DZVEH = [];
   // registra cada carro/heli criado (inclusive os do lobby)
