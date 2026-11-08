@@ -108,7 +108,7 @@
     // silenciador na ponta do cano
     if (sil && t !== 'shotgun') { const L = t === 'pistol' ? .13 : .19; Z(.02, .02, L, blk, 0, Mm[1], Mm[0] + L / 2 - .005, 16); u.fl = null; }
     // miras (mesmas peças das armas antigas, apoiadas no trilho deste modelo)
-    let ey = [0, Sm[1] - .006, Sm[0] - (t === 'pistol' ? .15 : .12)];
+    let ey = [0, Sm[1] - .006, Sm[0] - (t === 'pistol' ? .3 : .16)];
     if ((t === 'rifle' || t === 'sniper') && lv > 0) {
       const yb = Rm[1], ax = yb + .052, zc = Rm[0] + .02;
       if (lv === 1) {
