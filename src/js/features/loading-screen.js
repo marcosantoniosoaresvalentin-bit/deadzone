@@ -29,6 +29,11 @@
   },80);
  }
  function hide(){clearInterval(timer);root.classList.remove('on')}
+ // tela curta ao entrar em qualquer partida (Arena, Confronto, salas): cobre a montagem do mapa
+ function brief(ms){if(root.classList.contains('on'))return;sub.textContent=teamLabel();setP(0);fit();root.classList.add('on');t0=Date.now();clearInterval(timer);
+  timer=setInterval(()=>{const k=(Date.now()-t0)/ms;setP(Math.min(100,k*100));if(k>=1){clearInterval(timer);setTimeout(hide,250)}},60)}
+ window.dzLoad=brief;
+ for(const fn of ['startMatch','sqStart']){const o=window[fn];if(typeof o==='function')window[fn]=function(){brief(1600);return o.apply(this,arguments)}}
  // Somente a partida no modo Clássico (mapa Zona Morta) usa esta tela; não há como cancelar durante o carregamento
  const orig=window.queue;
  if(typeof orig==='function'){

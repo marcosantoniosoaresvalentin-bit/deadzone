@@ -14,7 +14,7 @@
   if (CFG.fps == null) CFG.fps = touch ? 1 : 0;   // 0 = 60 FPS, 1 = 30 FPS (economiza bateria e não esquenta)
   if (CFG.showFps == null) CFG.showFps = 0;
   const q = () => Math.max(0, Math.min(3, CFG.q | 0));
-  window.DZRD = () => RDM[Math.max(0, Math.min(3, CFG.rd | 0))];
+  window.DZRD = () => Math.round([200, 280, 380, 480][q()] * (window.__rdK || 1));
 
   // ---------- qualidade ----------
   window.applyQ = function () {
@@ -32,25 +32,22 @@
   // ---------- painel ----------
   function row(id, label) { const r = document.createElement('div'); r.className = 'row'; r.innerHTML = '<span>' + label + '</span><button id="' + id + '"></button>'; return r; }
   const qRow = $('cQ') && $('cQ').closest('.row');
-  if (qRow && !$('cRD')) {
+  if (qRow && !$('cSh')) {
     const sub = document.createElement('p'); sub.className = 'sm'; sub.id = 'cGfxH'; sub.style.margin = '6px 0 0'; sub.innerHTML = '<b>Gráficos</b>';
     qRow.parentNode.insertBefore(sub, qRow);
-    const rB = row('cBots', 'Bots na partida (completam quando faltar jogador)'), rRD = row('cRD', 'Distância de renderização'), rSh = row('cSh', 'Sombras'), rF = row('cFps', 'Limite de FPS'), rFs = row('cFpsS', 'Mostrar FPS na tela');
-    qRow.after(rRD); rRD.after(rSh); rSh.after(rF); rF.after(rFs);
-    rFs.after(rB);
-    const tip = document.createElement('p'); tip.className = 'sm'; tip.textContent = 'Se o jogo travar: qualidade Baixa ou Média, distância Curta, sombras desligadas e 30 FPS. Ultra é só para celulares fortes.'; rB.after(tip);
+    const rSh = row('cSh', 'Sombras'), rF = row('cFps', 'Limite de FPS'), rFs = row('cFpsS', 'Mostrar FPS na tela');
+    qRow.after(rSh); rSh.after(rF); rF.after(rFs);
+    const tip = document.createElement('p'); tip.className = 'sm'; tip.textContent = 'Se o jogo travar: qualidade Baixa, sombras desligadas e 30 FPS. A distância de visão se ajusta sozinha.'; rFs.after(tip);
   }
   function paint() {
-    if (!$('cQ')) return; $('cQ').textContent = QN[q()]; $('cRD').textContent = RDN[CFG.rd | 0] + ' (' + DZRD() + ' m)'; $('cSh').textContent = CFG.sh ? 'Ligadas' : 'Desligadas';
-    $('cFps').textContent = CFG.fps ? '30 FPS' : '60 FPS'; $('cBots').textContent = ['Poucos (15)', 'Normal (30)', 'Muitos (50)'][CFG.bots == null ? 1 : CFG.bots]; $('cFpsS').textContent = CFG.showFps ? 'Ligado' : 'Desligado';
+    if (!$('cQ')) return; $('cQ').textContent = QN[q()]; $('cSh').textContent = CFG.sh ? 'Ligadas' : 'Desligadas';
+    $('cFps').textContent = CFG.fps ? '30 FPS' : '60 FPS'; $('cFpsS').textContent = CFG.showFps ? 'Ligado' : 'Desligado';
   }
   if ($('cQ')) {
     $('cQ').onclick = () => { CFG.q = (q() + 1) % 4; saveCfg(); applyQ(); paint(); };
-    $('cRD').onclick = () => { CFG.rd = ((CFG.rd | 0) + 1) % 4; saveCfg(); applyRD(); paint(); };
     $('cSh').onclick = () => { CFG.sh = CFG.sh ? 0 : 1; saveCfg(); applyQ(); paint(); };
     $('cFps').onclick = () => { CFG.fps = CFG.fps ? 0 : 1; saveCfg(); paint(); };
     $('cFpsS').onclick = () => { CFG.showFps = CFG.showFps ? 0 : 1; saveCfg(); paint(); fpsEl.style.display = CFG.showFps ? 'block' : 'none'; };
-    $('cBots').onclick = () => { CFG.bots = ((CFG.bots == null ? 1 : CFG.bots) + 1) % 3; saveCfg(); paint(); };
     $('cfgb').addEventListener('click', () => setTimeout(paint, 0));
   }
 
@@ -60,7 +57,7 @@
   const _loop = window.loop;
   if (typeof _loop === 'function') window.loop = function (t) {
     if (CFG.fps && lastF && t - lastF < 30.5) { requestAnimationFrame(window.loop); return; }  // 30 FPS: pula quadros
-    lastF = t; fN++; if (t - fT > 1000) { if (CFG.showFps) fpsEl.textContent = Math.round(fN * 1000 / (t - fT)) + ' FPS · ' + (ren.info.render.calls | 0) + ' desenhos'; fN = 0; fT = t; }
+    lastF = t; fN++; if (t - fT > 1000) { { /* distância automática: FPS baixo -> enxerga menos; FPS bom -> volta */ const fps = fN * 1000 / (t - fT), alvo = CFG.fps ? 27 : 50, k0 = window.__rdK || 1; let k = k0; if (fps < alvo * .8) k = Math.max(.6, k - .1); else if (fps > alvo * .95) k = Math.min(1, k + .05); if (k !== k0 && mode !== 'lobby') { window.__rdK = k; applyRD(); } } if (CFG.showFps) fpsEl.textContent = Math.round(fN * 1000 / (t - fT)) + ' FPS · ' + (ren.info.render.calls | 0) + ' desenhos'; fN = 0; fT = t; }
     _loop(t);
   };
 

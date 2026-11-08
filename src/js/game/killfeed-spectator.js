@@ -1,7 +1,7 @@
 /* Deadzone · game/killfeed-spectator.js
  * Abates em todos os modos, fumaça sincronizada e espectador.
  */
-// ===== v18: dano/killfeed em todos os modos + granada de fumaça em PVP/Squad/Gladiadores =====
+// ===== v18: dano/killfeed em todos os modos + granada de fumaça em PVP/Squad/Arena =====
 function nmHash(id){let h=0;const q=String(id||'');for(let i=0;i<q.length;i++)h=(h*31+q.charCodeAt(i))>>>0;return NMS[h%NMS.length]+(10+h%89)}
 function nmId(id){return id===mpId?'Você':nmHash(id)}
 function nmOf(e){return e&&e.id?nmId(e.id):bnm(e)}

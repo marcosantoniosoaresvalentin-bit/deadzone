@@ -1,7 +1,7 @@
 /* Deadzone · network/matchmaking.js
- * Pareamento, PVP, Contra Squad e Clássico online.
+ * Pareamento, PVP, Confronto e Clássico online.
  */
-// ===== v2: pareamento, PVP c/ bot, Contra Squad 4v4 =====
+// ===== v2: pareamento, PVP c/ bot, Confronto 4v4 =====
 {const s=document.createElement('style');s.textContent='#qo{position:fixed;inset:0;z-index:10;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(8,12,8,.96);color:#fff;text-align:center;padding:20px}#qo button,#sqs button,#sqb{background:#f0a830;color:#1a1405;border:0;border-radius:8px;font-weight:800;padding:10px 18px;font-size:15px;margin:3px}#sqh{position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:4;color:#fff;font-weight:800;text-align:center;background:rgba(0,0,0,.55);padding:4px 16px;border-radius:10px;display:none;pointer-events:none;font-size:15px}#sqh big{font-size:22px}#sqb{position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:6;display:none}#sqs{position:fixed;inset:0;z-index:9;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.8);color:#fff;gap:6px}#sqs button:disabled{opacity:.4}#sqg{display:flex;flex-wrap:wrap;justify-content:center;max-width:520px}';document.head.appendChild(s);
  const q=document.createElement('div');q.id='qo';q.innerHTML='<div class="spin"></div><b id="qt" style="font-size:20px"></b><p id="qc"></p><button id="qx">Cancelar</button>';document.body.appendChild(q);
  const h=document.createElement('div');h.id='sqh';document.body.appendChild(h);
@@ -81,7 +81,7 @@ function clRx(m){if(clRx2(m))return;const e=CL[m.f];if(m.t==='hit'){if(m.to===mp
  if(m.t==='s'){if(!e.vis&&m.v){e.x=m.x;e.z=m.z}e.tx=m.x;e.tz=m.z;e.ty=m.r;e.py=m.y;e.gy=m.gy||0;e.mv=m.mv;e.vis=m.v&&!m.d;ghArm(e,m.w);if(m.d&&!e.dead){e.dead=1;e.dt=0;alive--;e.vis=m.v}}}
 setInterval(()=>{if(mode==='dead'&&N&&N.mode==='classic'&&!N.sd){N.sd=1;feedKill(lastHit?nmId(lastHit):'','Você','');gp({t:'kl',k:lastHit},1)}},300);
 
-// ---- Contra Squad 4v4 (host simula bots; todos veem jogadores reais)
+// ---- Confronto 4v4 (host simula bots; todos veem jogadores reais)
 let SQ=null;const ME={get x(){return P.x},get z(){return P.z},py:0,me:1};
 const SP=[['pistol','Pistola',200],['shotgun','Escopeta',1100],['rifle','M4A1',1800],['sniper','Sniper',2500],['gren','Granada',300],['gel','Gel',250],['med','Kit médico',300]];
 const sqAl=t=>SQ.B.filter(b=>b.team===t&&!b.dead).length+(SQ.mt===t&&!SQ.meDead?1:0);
@@ -159,6 +159,6 @@ setInterval(()=>{const S=SQ;if(!S||MPDONE)return;const dt=.05,A=AR;S.n2=(S.n2||0
  $('sqh').innerHTML='<big style="color:#ff5050">'+S.rs+'</big> &nbsp; 4v4 &nbsp; <big style="color:#58a6ff">'+S.bs+'</big><br><small>🔴 '+sqAl(0)+' · 🔵 '+sqAl(1)+' · 💰 '+S.m+(S.st==='buy'?' · compras '+Math.ceil(S.t)+'s':'')+'</small>'},50);
 
 // ---- lobby: modos e botão iniciar
-MODES[2]=['squad','Contra Squad 4v4'];
+MODES[2]=['squad','Confronto 4v4'];
 renderMp=function(){$('mpm').innerHTML=MODES.map(m=>'<button data-m="'+m[0]+'"'+(m[0]===GMODE?' class="sel"':'')+'>'+m[1]+'</button>').join('');$('mpc').innerHTML=CITIES.map(c=>'<button data-c="'+c.n+'"'+(c.n===GMAP?' class="sel"':'')+'>'+c.n+'</button>').join('');mapLbl()};
 go.onclick=()=>{if(GMODE==='pvp')autoPvp();else if(GMODE==='squad')queue('squad',8,sqStart);else queue('classic',100,clStart)};

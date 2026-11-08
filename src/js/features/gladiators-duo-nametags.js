@@ -1,5 +1,5 @@
 /* Deadzone · features/gladiators-duo-nametags.js
- * Gladiadores em dupla e nomes dos aliados.
+ * Arena em dupla e nomes dos aliados.
  */
 (()=>{
  const $=id=>document.getElementById(id);
@@ -12,7 +12,7 @@
    if(e&&e.id)return 'Parceiro '+String(e.id).slice(0,4).toUpperCase();
    return pickName();
  };
- // Make the lobby's INICIAR button honor the saved Gladiadores size.
+ // Make the lobby's INICIAR button honor the saved Arena size.
  const go=$('go');
  if(go)go.addEventListener('click',e=>{
    const m=localStorage.getItem('dzSelectedMode')||localStorage.getItem('dzMode')||'classic';
@@ -27,7 +27,7 @@
      queue('squad',size==='2v2'?4:2,window.sqStart);
    }else if(typeof window.startGame==='function')window.startGame();
  },true);
- // Make sure the selected size is reflected in the Gladiadores arena setup.
+ // Make sure the selected size is reflected in the Arena arena setup.
  const originalSqStart=window.sqStart;
  if(typeof originalSqStart==='function'){
    window.sqStart=function(ids,mid,seed,city,playerNames){
@@ -99,7 +99,7 @@
    }
    for(const [key,el] of tags){if(!liveKeys.has(key)){el.remove();tags.delete(key)}}
    list.style.display=allies.length?'block':'none';
-   list.innerHTML='<div style="color:#7debdc;font-weight:800;margin-bottom:3px">'+(S.matchSize==='2v2'?'GLADIADORES · DUO':'GLADIADORES · SOLO')+'</div>'+rows.map((n,i)=>'<div>• '+String(n).replace(/[&<>"]/g,'')+'</div>').join('');
+   list.innerHTML='<div style="color:#7debdc;font-weight:800;margin-bottom:3px">'+(S.matchSize==='2v2'?'ARENA · DUO':'ARENA · SOLO')+'</div>'+rows.map((n,i)=>'<div>• '+String(n).replace(/[&<>"]/g,'')+'</div>').join('');
  }
  setInterval(sync,80);
 })();

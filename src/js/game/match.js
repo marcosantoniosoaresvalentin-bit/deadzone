@@ -5,7 +5,7 @@ function setLabel(){const g=mode==='ground';bj.textContent=mode==='plane'?'Salta
 // BOTS_ON: bots na partida clássica. Completam a partida quando não há jogadores reais suficientes.
 // Quantidade: Configurações > Bots na partida (Poucos 15 · Normal 30 · Muitos 50).
 const BOTS_ON=true;
-const botCount=()=>[15,30,50][Math.max(0,Math.min(2,(typeof CFG!=='undefined'&&CFG.bots!=null)?CFG.bots:1))];
+const botCount=()=>99; // sempre 100 na partida (você + 99 bots); jogadores reais ocupam o lugar dos bots
 // ponto de pouso em TERRA perto do caminho do avião (nunca no mar entre as ilhas)
 function botLand(px,pz){const L=(window.DZLS||LS);let best=null,bd=1e9;for(let k=0;k<12;k++){const s=L[Math.floor(Math.random()*L.length)];if(!s)break;const d=Math.hypot(s.x-px,s.z-pz)+Math.random()*80;if(d<bd){bd=d;best=s}}
  if(best)return{x:best.x+R(-6,6),z:best.z+R(-6,6)};for(let k=0;k<30;k++){const x=px+R(-120,120),z=pz+R(-120,120);if(TERH(x,z)>1)return{x,z}}return{x:MCX,z:MCZ}}
