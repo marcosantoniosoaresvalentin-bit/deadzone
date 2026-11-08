@@ -101,11 +101,11 @@ const _rh = new T.Vector3();
 function ropePose() {
   const R = RIDE; if (!R) return; const r = R.r, k = Math.min(1, R.t / .25);
   try { CH.loco = { w: 0, sp: 0, arm: false, fw: 1 }; for (const q of DZR.rigs) if (q.pl === pl && q.av) q.av.lw = 0; } catch (e) { }
-  pl.rotation.set(0, Math.atan2(-r.ex, -r.ez), 0); pl.position.set(P.x, P.y, P.z); pl.updateMatrixWorld(true);
+  pl.rotation.set(0, Math.atan2(r.ex, r.ez), 0); // de frente para a corda pl.position.set(P.x, P.y, P.z); pl.updateMatrixWorld(true);
   const sw = Math.sin(R.t * 3) * .08 * k;
   hips.position.set(0, .95, 0); hips.rotation.set(0, 0, sw); tor.rotation.set(-.1 * k, 0, 0); head.rotation.set(-.35 * k, 0, 0);
   lg1.th.rotation.set(-.35 * k, 0, .05); lg1.kn.rotation.x = .6 * k; lg2.th.rotation.set(-.15 * k, 0, -.05); lg2.kn.rotation.x = .3 * k;
   // mãos na corda: uma acima da outra
-  for (const [arm, s, dy] of [[aR, 1, 2.05], [aL, -1, 1.8]]) { _rh.set(r.x, P.y + dy * k + (1 - k) * 1.2, r.z); tor.worldToLocal(_rh); ik(arm, s, _rh.x, _rh.y, _rh.z); }
+  for (const [arm, s, dy] of [[aR, 1, 2.0], [aL, -1, 1.72]]) { _rh.set(r.x + s * .04 * r.ez, P.y + dy * k + (1 - k) * 1.3, r.z - s * .04 * r.ex); tor.worldToLocal(_rh); ik(arm, s, _rh.x, _rh.y, _rh.z); }
   try { rf.visible = false; } catch (e) { }
 }

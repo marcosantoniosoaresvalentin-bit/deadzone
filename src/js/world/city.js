@@ -580,10 +580,9 @@
       // paredes do poço: fundo + 2 lados (frente aberta, virada para o centro)
       box(MC, cx - 2, H, Math.min(zb, zb - sg * t), cx + 2, H + LH, Math.max(zb, zb - sg * t), 0x9aa0a6); col(cx - 2, Math.min(zb, zb - sg * t), cx + 2, Math.max(zb, zb - sg * t), H - 1, H + LH);
       for (const sx of [-2, 2 - t]) { box(MC, cx + sx, H, Math.min(zf, zb), cx + sx + t, H + LH, Math.max(zf, zb), 0x9aa0a6); col(cx + sx, Math.min(zf, zb), cx + sx + t, Math.max(zf, zb), H - 1, H + LH); }
-      box(MPLAIN, cx - 1.7, H + .13, Math.min(zf, zb), cx + 1.7, H + .15, Math.max(zf, zb), 0xf0c419);      // piso amarelo do poço
       box(MM, cx - 2, H + LH - .5, Math.min(zf, zf + sg * .2), cx + 2, H + LH, Math.max(zf, zf + sg * .2), 0x2b2f33);
       // corda do saguão (some no teto) e corda dentro da casinha do topo
-      for (const [ya, yb] of [[H + .13, H + LH], [RY, RY + 2.5]]) { const cg = new T.CylinderGeometry(.04, .04, yb - ya, 6); cg.translate(cx, (ya + yb) / 2, rz); loose(cg.toNonIndexed(), MPLAIN, 0x3a2a1a); }
+      for (const [ya, yb] of [[H + .13, RY + 2.5]]) { /* corda inteira, do saguão até a roldana da casinha */ const cg = new T.CylinderGeometry(.04, .04, yb - ya, 6); cg.translate(cx, (ya + yb) / 2, rz); loose(cg.toNonIndexed(), MPLAIN, 0x3a2a1a); }
       { const kg = new T.CylinderGeometry(.09, .09, .35, 8); kg.translate(cx, H + 1.05, rz); loose(kg.toNonIndexed(), MPLAIN, 0xc8241c); }
       ROPES.push({ x: cx, z: rz, y0: H + .13, y1: RY, ex: 0, ez: -sg }); // ex/ez: lado de sair (para o centro)
       // CASINHA no topo, em cima do poço: porta virada para o heliponto
@@ -594,17 +593,30 @@
       box(MC, cx - .8, RY + 2.25, Math.min(fz, fz + sg * t), cx + .8, RY + HH, Math.max(fz, fz + sg * t), cl);
       box(MC, cx - 2.4, RY + HH, lo - .3, cx + 2.4, RY + HH + .25, hi + .3, 0xa8a398); box(MM, cx - .3, RY + HH - .35, rz - .3, cx + .3, RY + HH, rz + .3, 0x55595d);
       (window.DZCEIL || []).push({ x0: cx - 2.1, x1: cx + 2.1, z0: lo, z1: hi, y: RY + HH - .02 }); LAMPS.push({ x: cx, y: RY + 2.3, z: rz });
-      (window.DZCEIL || []).push({ x0: cx - 2, x1: cx + 2, z0: Math.min(zf, zb), z1: Math.max(zf, zb), y: H + LH - .52 }); }
+    }
     // corpo da torre (vidro), faixas de laje e aletas verticais; colisão do corpo inteiro
-    box(MGL, x0 + .2, H + LH, z0 + .2, x1 - .2, TOP - .3, z1 - .2, 0xffffff); col(x0, z0, x1, z1, H + LH - .02, TOP);
-    for (let y = H + LH + 3.6 * 4; y < TOP - 2; y += 3.6 * 6) box(MC, x0 - .1, y, z0 - .1, x1 + .1, y + .5, z1 + .1, 0xd9d5cc);
+    // POÇOS ABERTOS do saguão até o topo (a corda sobe por dentro; a câmera acompanha)
+    const HOLES = [[cx - 2, cz + 8, cx + 2, cz + 12.2], [cx - 2, cz - 12.2, cx + 2, cz - 8]];
+    const minus = (ax0, az0, ax1, az1) => { const zs = [az0, az1]; for (const h of HOLES) for (const v of [h[1], h[3]]) if (v > az0 && v < az1) zs.push(v); zs.sort((a, b) => a - b); const out = [];
+      for (let i = 0; i < zs.length - 1; i++) { const za = zs[i], zb_ = zs[i + 1], zm = (za + zb_) / 2; let xs = [[ax0, ax1]];
+        for (const h of HOLES) if (zm > h[1] && zm < h[3]) xs = xs.flatMap(([a, c]) => (h[2] <= a || h[0] >= c) ? [[a, c]] : [[a, h[0]], [h[2], c]].filter(q => q[1] - q[0] > .01));
+        for (const [a, c] of xs) out.push([a, za, c, zb_]); } return out; };
+    for (const q of minus(x0 + .2, z0 + .2, x1 - .2, z1 - .2)) box(MGL, q[0], H + LH, q[1], q[2], TOP - .3, q[3], 0xffffff);
+    for (const q of minus(x0, z0, x1, z1)) col(q[0], q[1], q[2], q[3], H + LH - .02, TOP);
+    for (let y = H + LH + 3.6 * 4; y < TOP - 2; y += 3.6 * 6) for (const q of minus(x0 - .1, z0 - .1, x1 + .1, z1 + .1)) box(MC, q[0], y, q[1], q[2], y + .5, q[3], 0xd9d5cc);
+    // revestimento de concreto dentro dos poços, com luzes a cada andar (dá para ver que está subindo)
+    for (const h of HOLES) { const [a, b_, c, d] = h, t = .12;
+      box(MC, a, H + LH - .5, b_, a + t, TOP, d, 0x8e949a); box(MC, c - t, H + LH - .5, b_, c, TOP, d, 0x8e949a); box(MC, a, H + LH - .5, b_, c, TOP, b_ + t, 0x8e949a); box(MC, a, H + LH - .5, d - t, c, TOP, d, 0x8e949a);
+      for (let y = H + LH + 1.8; y < TOP - 1; y += 3.6) { box(MPLAIN, a + t, y, b_ + 1.4, a + t + .04, y + .12, d - 1.4, 0xfff4cf); box(MPLAIN, c - t - .04, y, b_ + 1.4, c - t, y + .12, d - 1.4, 0xfff4cf); box(MM, a + t, y - 1.8, b_ + t, c - t, y - 1.74, b_ + t + .05, 0x5a6066); } }
     for (const k of [-1, 1]) for (const a of [-hw + .2, -hw / 2, 0, hw / 2, hw - .2]) { box(MC, cx + a - .18, H + LH, cz + k * hw - .35, cx + a + .18, TOP, cz + k * hw + .35, 0xe1ddd4); box(MC, cx + k * hw - .35, H + LH, cz + a - .18, cx + k * hw + .35, TOP, cz + a + .18, 0xe1ddd4); }
-    box(MC, x0 - .3, H + LH - .1, z0 - .3, x1 + .3, H + LH + .4, z1 + .3, 0xd9d5cc);
+    for (const q of minus(x0 - .3, z0 - .3, x1 + .3, z1 + .3)) box(MC, q[0], H + LH - .1, q[1], q[2], H + LH + .4, q[3], 0xd9d5cc);
     // teto do saguão (câmera não sobe) e área (grama não nasce)
     (window.DZCEIL || []).push({ x0, x1, z0, z1, y: H + LH - .9 }); FP.push({ x0, x1, z0, z1 });
     LAMPS.push({ x: cx - 5, y: H + LH - 1, z: cz }); LAMPS.push({ x: cx + 5, y: H + LH - 1, z: cz });
     // topo: laje, mureta com faixa, mastro de antena num canto
-    box(MC, x0 - .3, TOP - .3, z0 - .3, x1 + .3, RY, z1 + .3, 0xb9b4aa); floor(x0, z0, x1, z1, RY);
+    for (const q of minus(x0 - .3, z0 - .3, x1 + .3, z1 + .3)) box(MC, q[0], TOP - .3, q[1], q[2], RY, q[3], 0xb9b4aa); floor(x0, z0, x1, z1, RY);
+    // grade de metal por cima de cada poço (dá para ver o buraco; dá para pisar)
+    for (const h of HOLES) box(MFEN, h[0], RY - .03, h[1], h[2], RY, h[3], 0xd0d4d8);
     for (const q of [[x0 - .3, z0 - .3, x1 + .3, z0 + .2], [x0 - .3, z1 - .2, x1 + .3, z1 + .3], [x0 - .3, z0 - .3, x0 + .2, z1 + .3], [x1 - .2, z0 - .3, x1 + .3, z1 + .3]]) { box(MC, q[0], RY, q[1], q[2], RY + 1.2, q[3], 0xd9d5cc); box(MPLAIN, q[0], RY + 1.2, q[1], q[2], RY + 1.3, q[3], 0xc8241c); col(q[0], q[1], q[2], q[3], RY, RY + 1.3); }
     box(MM, x0 + 1, RY, z0 + 1, x0 + 1.4, RY + 14, z0 + 1.4, 0x9aa0a6); box(MPLAIN, x0 + .95, RY + 14, z0 + .95, x0 + 1.45, RY + 14.4, z0 + 1.45, 0xff2a2a);
   }

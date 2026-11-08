@@ -83,7 +83,17 @@ const TER=(()=>{
    const R={pts:pts.map((p,k)=>[p.x,p.z,hs[k]])};ROADS.push(R);for(const q of R.pts)ALL.push(q);
    pts.forEach((p,k)=>{const i0=Math.floor((p.x-22-OX)/S),i1=Math.ceil((p.x+22-OX)/S),j0=Math.floor((p.z-22-OZ)/S),j1=Math.ceil((p.z+22-OZ)/S);
     for(let j=Math.max(0,j0);j<=Math.min(NZ-1,j1);j++)for(let i=Math.max(0,i0);i<=Math.min(NX-1,i1);i++){const d=Math.hypot(OX+i*S-p.x,OZ+j*S-p.z),q=idx(i,j);if(d<bD[q]){bD[q]=d;bH[q]=hs[k]}}})}
-  for(let q=0;q<NX*NZ;q++){const d=bD[q];if(d>22)continue;if(inFlat(OX+(q%NX)*S,OZ+Math.floor(q/NX)*S))continue;/* não mexe no chão plano de cidade/local */const k=d<=10?1:1-ss(10,22,d);H[q]=H[q]*(1-k)+(bH[q]-.02)*k}}
+  for(let q=0;q<NX*NZ;q++){const d=bD[q];if(d>22)continue;if(inFlat(OX+(q%NX)*S,OZ+Math.floor(q/NX)*S))continue;/* não mexe no chão plano de cidade/local */const k=d<=10?1:1-ss(10,22,d);H[q]=H[q]*(1-k)+(bH[q]-.02)*k}
+  // garantia final: embaixo de QUALQUER pista (inclusive cruzamentos e chegadas nas cidades) o terreno fica
+  // sempre um pouco abaixo do asfalto — a terra nunca aparece por cima da estrada
+  for(const R of ROADS)for(const q of R.pts){const i0=Math.floor((q[0]-8-OX)/S),i1=Math.ceil((q[0]+8-OX)/S),j0=Math.floor((q[1]-8-OZ)/S),j1=Math.ceil((q[1]+8-OZ)/S);
+   for(let j=Math.max(0,j0);j<=Math.min(NZ-1,j1);j++)for(let i=Math.max(0,i0);i<=Math.min(NX-1,i1);i++){const d=Math.hypot(OX+i*S-q[0],OZ+j*S-q[1]);if(d>7.5)continue;const m=idx(i,j),lim=q[2]-.2;if(H[m]>lim)H[m]=lim}}}
+ // ALTURA DA PISTA (para pés e rodas pisarem no asfalto, não no terreno rebaixado embaixo dele)
+ const RG=new Map(),rk=(x,z)=>Math.floor(x/8)*100003+Math.floor(z/8);
+ if(window.ROADS)ROADS.forEach((R,ri)=>R.pts.forEach((q,k)=>{for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const key=(Math.floor(q[0]/8)+a)*100003+Math.floor(q[1]/8)+b;let L=RG.get(key);if(!L)RG.set(key,L=[]);L.push(ri*100000+k)}}));
+ window.ROADH=function(x,z){const L=RG.get(rk(x,z));if(!L)return null;let best=null,bd=3.65;
+  for(const id of L){const R=ROADS[Math.floor(id/100000)].pts,k=id%100000;for(const m of [k-1,k]){if(m<0||m+1>=R.length)continue;const a=R[m],b=R[m+1],dx=b[0]-a[0],dz=b[1]-a[1],l2=dx*dx+dz*dz||1;let t=((x-a[0])*dx+(z-a[1])*dz)/l2;t=Math.max(0,Math.min(1,t));const px=a[0]+dx*t,pz=a[1]+dz*t,d=Math.hypot(x-px,z-pz);if(d<bd){bd=d;best=a[2]+(b[2]-a[2])*t+.03}}}
+  return best};
  // mesma triangulação do PlaneGeometry: altura idêntica à malha
  function terh(x,z){
   const fx=(x-OX)/S,fz=(z-OZ)/S;if(fx<0||fz<0||fx>=NX-1||fz>=NZ-1)return -14;

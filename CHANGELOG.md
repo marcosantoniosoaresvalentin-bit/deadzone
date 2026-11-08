@@ -1,5 +1,15 @@
 # Histórico de versões
 
+## 3.15.1 — corda do arranha-céu e estradas sem terra por cima
+- **Corda**: o personagem fica **de frente para a corda**, com as duas mãos nela na frente do
+  corpo (antes ficava de costas, com as mãos para trás).
+- **Poço aberto até o topo**: sem teto no saguão nem laje no caminho — a corda vai inteira do
+  térreo até a casinha do topo e **a câmera acompanha a subida** por dentro do poço (paredes de
+  concreto com luzes a cada andar). Em cima, uma grade de metal cobre o poço (dá para pisar).
+- Chão do poço na cor do saguão (sem o piso amarelo).
+- **Estradas**: medição em 29 mil pontos das pistas — antes 10,7% tinham terra acima do asfalto
+  (até 1,75 m); agora **0%**. Personagem e buggy pisam na superfície do asfalto.
+
 ## 3.15.0 — Ilha Zênite, arranha-céu com cordas e nova capa
 - **Nova capa do Deadzone** como ícone do aplicativo (e do site).
 - **Nomes novos, inventados**, em todo o mapa: Zonária (cidade principal), Vila Rubra, Cerraluz,

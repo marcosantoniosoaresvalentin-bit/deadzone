@@ -16,6 +16,7 @@
   const _GY = GY;
   GY = function (x, z, y) {
     let h = TERH(x, z); const lim = (y == null ? 1e9 : y) + .55;
+    if (window.ROADH) { const r = ROADH(x, z); if (r != null && r > h && r <= lim) h = r; } // pisa no asfalto da estrada
     const cell = FG.get(fk(Math.floor(x / 16), Math.floor(z / 16))); if (!cell) return h;
     for (const f of cell) {
       if (x < f.x0 || x > f.x1 || z < f.z0 || z > f.z1) continue;
