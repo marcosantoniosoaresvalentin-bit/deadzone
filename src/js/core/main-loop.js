@@ -37,7 +37,7 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;try{d
  if(mode==='ground'){
   const spd=(6-cr*3-pr*4.8)*(1-.4*adk)*(cast?.5:1)*(mpMove()?1:0);mvp(dx*spd*l*dt,dz*spd*l*dt);
   P.vy-=20*dt;P.y+=P.vy*dt;{const gy_=GY(P.x,P.z,P.y+.01);if(P.y<=gy_||(P.vy<=0&&P.y-gy_<.4&&P.y-gy_>0&&(Math.abs(gy_-TERH(P.x,P.z))<.01||P.y-gy_<.25))){P.y=gy_;P.vy=0}else if(P.vy<-22&&P.y-gy_>6)openChute()}
-  air+=((P.y>GY(P.x,P.z,P.y)+.02?1:0)-air)*Math.min(1,dt*12);cr+=((st===1?1:0)-cr)*k;pr+=((st===2?1:0)-pr)*Math.min(1,dt*3);
+  air+=((P.y>GY(P.x,P.z,P.y)+.02?1:0)-air)*Math.min(1,dt*12);if(window.DZW&&DZW.touch&&(l>.05||P.vy))DZW.touch(P.x,P.y,P.z,dx,dz);{/* caindo de lugar alto (prédio): o botão de pulo vira "Abrir" paraquedas */const hi_=P.vy<-1&&P.y-GY(P.x,P.z,P.y)>3;if(hi_!==!!window.__hiF){window.__hiF=hi_;bj.textContent=hi_?'Abrir':'Pular';if(hi_)say('Toque em Abrir para usar o paraquedas',2)}}cr+=((st===1?1:0)-cr)*k;pr+=((st===2?1:0)-pr)*Math.min(1,dt*3);
   if(firing||keys.f||ads){pl.rotation.y+=(((yaw-pl.rotation.y+Math.PI*3)%(Math.PI*2))-Math.PI)*Math.min(1,dt*14)}
   else if(l>.05){const g=Math.atan2(dx,dz),d=((g-pl.rotation.y+Math.PI*3)%(Math.PI*2))-Math.PI;pl.rotation.y+=d*Math.min(1,dt*12)}
   ph+=dt*l*(11-cr*4);cw+=dt*l*4.5;amt+=(l-amt)*k;
@@ -50,7 +50,7 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;try{d
    // não entra no mar fundo (só na água rasa da beira)
    const nh_=TERH(P.x,P.z);if(nh_<-.9&&nh_<TERH(ox_,oz_)){P.x=ox_;P.z=oz_}}
   const tv=ch_?-(5+9*fw-2.2*bk):-(40+25*fw-10*bk);P.vy+=(tv-P.vy)*Math.min(1,dt*(ch_?2.5:3));
-  P.y+=P.vy*dt;if(mode==='sky'&&P.y<GY(P.x,P.z,1e9)+130)openChute();if(P.y<=GY(P.x,P.z,P.y))land();
+  P.y+=P.vy*dt;if(ch_)mvp(0,0);if(mode==='sky'&&P.y<GY(P.x,P.z,1e9)+130)openChute();if(P.y<=GY(P.x,P.z,P.y))land();
   pl.rotation.y=yaw;amt+=(0-amt)*k;
  }
  updCars(dt,ix,iy);updAim(dt);updGren(dt);updExpl(dt);if(mode!=='lobby'&&mode!=='dead'&&!MP)zoneUpd(dt);if(MP)mpTick(dt);
@@ -134,7 +134,7 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;try{d
  {const fv=lp(lp(65,58,insK),scp===3?9:wp==='pistol'?44:52,adk);if(Math.abs(cam.fov-fv)>.05){cam.fov=fv;cam.updateProjectionMatrix()}}
  {let nd=null,bd=2.6;if(mode==='ground')for(const d of doors){const q=Math.hypot(d.x-P.x,d.z-P.z);if(q<bd){bd=q;nd=d}}bf2.style.display=mode==='ground'?'flex':'none';{const cn_=mode==='drive'||(mode==='ground'&&nearCar);$('bv').style.display=cn_?'flex':'none';$('bv').textContent=mode==='drive'?'Sair':'Entrar';{const hv=(mode==='drive'&&drv&&drv.heli)?'flex':'none';if(hv==='none')HK.u=HK.d=0;$('bhu').style.display=$('bhd').style.display=hv}$('bu').style.display=(cn_&&bag.fuel>0)?'flex':'none';$('bg').style.display=(mode==='ground'&&bag.gren>0)?'flex':'none';$('bg').textContent='💣x'+bag.gren;$('bgl').style.display=(mode==='ground'&&bag.gel>0)?'flex':'none';$('bgl').textContent='🧊x'+bag.gel;bf.textContent=TS?'Lançar':wp?'Atirar':'Atacar'}nearDoor=nd;if(CFG.autoDoor&&nd&&!nd.open&&bd<1.9&&performance.now()-(nd.mc||0)>4000){nd.open=1;sfx(220,.3,.18,0)}bo.style.display=nd?'flex':'none';if(nd)bo.textContent=nd.open?'Fechar':'Abrir';
   for(const d of doors){const tg=d.open?1.7:0;if(Math.abs(d.a-tg)>.003){d.a+=(tg-d.a)*Math.min(1,dt*6);d.piv.rotation.y=d.a;d.bx.off=d.a>.5?1:0}}
-  updLights(dt);if(mode==='ground'){const cc=CITIES.find(c=>Math.hypot(c.x-P.x,c.z-P.z)<170)||null;if(cc!==curCity){curCity=cc;if(cc)say('📍 '+cc.n,3)}}}
+  updLights(dt);if(mode==='ground'){const cc=nearestCity(P.x,P.z),cn=cc&&cc.t==='city'?cc.n:null;if(cn!==curCity){curCity=cn;if(cn)say('📍 '+cn,3)}}}
  sky.position.copy(cam.position);sky.scale.setScalar(cam.far*.92/540);sky.material.uniforms.uT.value+=dt;{const sy_=(mode==='ground'||mode==='chute'||mode==='sky')?GY(P.x,P.z,P.y):0;sun.position.set(P.x+55,90+sy_,P.z+30);sun.target.position.set(P.x,sy_,P.z)};
  mm.style.display=(mode==='lobby'||mode==='dead')?'none':'block';if(mm.style.display==='block')drawMM(dt);if(bmap.style.display==='flex'&&(bmT-=dt)<=0){bmT=.2;drawBig()}
  {const mk=$('mkd');if(MK.length&&mode!=='lobby'&&mode!=='dead'){const c=mode==='plane'?plane.position:P;mk.textContent='📍 '+Math.round(Math.min(...MK.map(m=>Math.hypot(m.x-c.x,m.z-c.z))))+' m'}else mk.textContent=''}

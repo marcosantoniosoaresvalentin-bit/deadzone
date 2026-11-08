@@ -8,14 +8,16 @@
 (function () {
   if (typeof STRS === 'undefined') return;
   const FH = 3.2, T_ = .25, SLAB = .22, STEP_L = 5.2, LANE = 1.25, LAND = 1.3;
-  const FLR = window.DZFLR = [];
+  const FLR = window.DZFLR = [], FG = new Map(), fk = (i, j) => i * 4096 + j;
+  FLR.add = f => { FLR.push(f); for (let i = Math.floor(f.x0 / 16); i <= Math.floor(f.x1 / 16); i++) for (let j = Math.floor(f.z0 / 16); j <= Math.floor(f.z1 / 16); j++) { const k = fk(i, j); let a = FG.get(k); if (!a) FG.set(k, a = []); a.push(f); } };
   const CEIL = window.DZCEIL = [];  // fundo das lajes (a câmera não passa para o andar de cima)   // pisos: {x0,x1,z0,z1,y} ou rampa {.., ax:'x'|'z', a0,a1,y0,y1}
 
   // ---------- a física passa a reconhecer pisos, escadas e terraços ----------
   const _GY = GY;
   GY = function (x, z, y) {
     let h = TERH(x, z); const lim = (y == null ? 1e9 : y) + .55;
-    for (const f of FLR) {
+    const cell = FG.get(fk(Math.floor(x / 16), Math.floor(z / 16))); if (!cell) return h;
+    for (const f of cell) {
       if (x < f.x0 || x > f.x1 || z < f.z0 || z > f.z1) continue;
       let fy = f.y;
       if (f.ax) { const a = f.ax === 'x' ? x : z, t = Math.max(0, Math.min(1, (a - f.a0) / (f.a1 - f.a0))); fy = f.y0 + (f.y1 - f.y0) * t; }
@@ -55,6 +57,18 @@
     dark: new T.MeshStandardMaterial({ color: lin(0x111214), roughness: 1 })
   };
 
+  // ---------- junta geometria por quarteirão + material ----------
+  const STORE = new Map(), MID = new Map();
+  function push(key, m, ge) { if (!MID.has(m)) MID.set(m, MID.size); const k = key + '|' + MID.get(m); let e = STORE.get(k); if (!e) STORE.set(k, e = { m, geos: [] }); e.geos.push(ge); }
+  function flush() {
+    for (const [, e] of STORE) { let n = 0; for (const g of e.geos) n += g.attributes.position.count;
+      const P = new Float32Array(n * 3), N = new Float32Array(n * 3), C = new Float32Array(n * 3), U = new Float32Array(n * 2); let o = 0;
+      for (const g of e.geos) { const c = g.attributes.position.count; P.set(g.attributes.position.array, o * 3); N.set(g.attributes.normal.array, o * 3); C.set(g.attributes.color.array, o * 3); if (g.attributes.uv) U.set(g.attributes.uv.array, o * 2); o += c; }
+      const ge = new T.BufferGeometry(); ge.setAttribute('position', new T.BufferAttribute(P, 3)); ge.setAttribute('normal', new T.BufferAttribute(N, 3)); ge.setAttribute('color', new T.BufferAttribute(C, 3)); ge.setAttribute('uv', new T.BufferAttribute(U, 2)); ge.computeBoundingSphere();
+      const me = new T.Mesh(ge, e.m); me.castShadow = true; me.receiveShadow = true; sc.add(me); }
+    STORE.clear();
+  }
+  window.DZSTRB = { build: S => build(S), flush };
   // ---------- construtor ----------
   function build(S) {
     const W = S.w, D = S.d, NF = S.floors, rot = S.rot || 0, gy = TERH(S.x, S.z) + .02;
@@ -66,13 +80,13 @@
     const box = (m, x0, y0, z0, x1, y1, z1, col) => { if (x1 - x0 < .001 || y1 - y0 < .001 || z1 - z0 < .001) return; if (!BK.has(m)) BK.set(m, []); BK.get(m).push([x0, y0, z0, x1, y1, z1, col == null ? 0xffffff : col]); };
     // colisão (local -> mundo, alturas relativas ao chão do prédio)
     const col = (x0, z0, x1, z1, yb, yt) => { const p = L2W(x0, z0), q = L2W(x1, z1); return addBox({ x0: Math.min(p[0], q[0]), x1: Math.max(p[0], q[0]), z0: Math.min(p[1], q[1]), z1: Math.max(p[1], q[1]), w: 1, yb: gy + yb, yt: gy + yt }); };
-    const floor = (x0, z0, x1, z1, y) => { const p = L2W(x0, z0), q = L2W(x1, z1); FLR.push({ x0: Math.min(p[0], q[0]), x1: Math.max(p[0], q[0]), z0: Math.min(p[1], q[1]), z1: Math.max(p[1], q[1]), y: gy + y }); };
+    const floor = (x0, z0, x1, z1, y) => { const p = L2W(x0, z0), q = L2W(x1, z1); FLR.add({ x0: Math.min(p[0], q[0]), x1: Math.max(p[0], q[0]), z0: Math.min(p[1], q[1]), z1: Math.max(p[1], q[1]), y: gy + y }); };
     const ramp = (x0, z0, x1, z1, y0, y1, alongX, rev) => {
       const p = L2W(x0, z0), q = L2W(x1, z1), r = { x0: Math.min(p[0], q[0]), x1: Math.max(p[0], q[0]), z0: Math.min(p[1], q[1]), z1: Math.max(p[1], q[1]), y0: gy + y0, y1: gy + y1 };
       // eixo da rampa no mundo (rotação em 90°): x local vira x ou z do mundo
       const lx = L2W(rev ? x1 : x0, z0), lx2 = L2W(rev ? x0 : x1, z0);
       if (alongX) { if (Math.abs(lx2[0] - lx[0]) > Math.abs(lx2[1] - lx[1])) { r.ax = 'x'; r.a0 = lx[0]; r.a1 = lx2[0]; } else { r.ax = 'z'; r.a0 = lx[1]; r.a1 = lx2[1]; } }
-      FLR.push(r);
+      FLR.add(r);
     };
     const glass = [];
     // parede ao longo de X (em z, espessura T_) ou de Z; aberturas: [u0,u1,v0,v1] (u ao longo, v altura relativa ao andar)
@@ -84,12 +98,16 @@
       // trechos cheios entre aberturas
       let u = a0;
       const sorted = opens.slice().sort((a, b) => a[0] - b[0]);
-      for (const o of sorted) { if (o[0] > u) { P(u, o[0], 0, h, mExt); C(u, o[0], 0, h); } P(o[0], o[1], 0, o[2], mExt); if (o[2] > .05) C(o[0], o[1], 0, o[2]); P(o[0], o[1], o[3], h, mExt); if (o[3] < h) C(o[0], o[1], o[3], h); u = o[1]; }
+      for (const o of sorted) { if (o[0] > u) { P(u, o[0], 0, h, mExt); C(u, o[0], 0, h); } P(o[0], o[1], 0, o[2], mExt); if (o[2] > .05) C(o[0], o[1], 0, o[2]); P(o[0], o[1], o[3], h, mExt); if (o[3] < h) { const lb = C(o[0], o[1], o[3], h); if (lb) lb.lint = 1; } u = o[1]; }
       if (a1 > u) { P(u, a1, 0, h, mExt); C(u, a1, 0, h); }
       if (colBase && y0 < .1) { // barra de tijolo na base (externa)
         const bt = th + .02; let uu = a0; for (const o of sorted) { if (o[2] < .05) { if (o[0] > uu) (alongX ? box(MAT.brick, uu, 0, f - bt, o[0], .9, f + bt) : box(MAT.brick, f - bt, 0, uu, f + bt, .9, o[0])); uu = o[1]; } }
         if (a1 > uu) (alongX ? box(MAT.brick, uu, 0, f - bt, a1, .9, f + bt) : box(MAT.brick, f - bt, 0, uu, f + bt, .9, a1));
       }
+      // batentes das portas (tapam a fresta em volta da folha)
+      for (const o of sorted) if (o[2] < .05) { const d = th + .03, tw = .08, tp = y0 + o[3];
+        if (alongX) { box(MAT.wood, o[0] - tw, y0, f - d, o[0], tp + tw, f + d, 0x8a6a4a); box(MAT.wood, o[1], y0, f - d, o[1] + tw, tp + tw, f + d, 0x8a6a4a); box(MAT.wood, o[0], tp, f - d, o[1], tp + tw, f + d, 0x8a6a4a); }
+        else { box(MAT.wood, f - d, y0, o[0] - tw, f + d, tp + tw, o[0], 0x8a6a4a); box(MAT.wood, f - d, y0, o[1], f + d, tp + tw, o[1] + tw, 0x8a6a4a); box(MAT.wood, f - d, tp, o[0], f + d, tp + tw, o[1], 0x8a6a4a); } }
       // molduras e vidros das janelas
       for (const o of sorted) if (o[2] > .3) {
         const cu = (o[0] + o[1]) / 2, cv = y0 + (o[2] + o[3]) / 2, ww = o[1] - o[0], hh = o[3] - o[2], d = th + .03;
@@ -98,17 +116,18 @@
       }
     }
     // portas com folha que abre
-    function door(alongX, u0, u1, f, y0) {
+    const inner = new T.Group(); g.add(inner); S.inner = inner;
+    function door(alongX, u0, u1, f, y0, inn) {
       const piv = new T.Group(), w = u1 - u0; if (alongX) piv.position.set(u0, y0, f); else piv.position.set(f, y0, u0);
-      const leaf = new T.Mesh(new T.BoxGeometry(alongX ? w - .04 : .05, 2.12, alongX ? .05 : w - .04), MAT.door); leaf.position.set(alongX ? w / 2 : 0, 1.06, alongX ? 0 : w / 2); leaf.castShadow = true; piv.add(leaf);
-      const kn = new T.Mesh(new T.BoxGeometry(.05, .05, .05), MAT.frame); kn.position.set(alongX ? w - .12 : .06, 1.0, alongX ? .06 : w - .12); piv.add(kn);
-      g.add(piv);
+      const LH = 2.16, leaf = new T.Mesh(new T.BoxGeometry(alongX ? w - .04 : .05, LH, alongX ? .05 : w - .04), MAT.door); leaf.position.set(alongX ? w / 2 : 0, LH / 2 + .01, alongX ? 0 : w / 2); leaf.castShadow = true; piv.add(leaf);
+      if (!inn) { const kn = new T.Mesh(new T.BoxGeometry(.05, .05, .05), MAT.frame); kn.position.set(alongX ? w - .12 : .06, 1.0, alongX ? .06 : w - .12); piv.add(kn); }
+      (inn ? inner : g).add(piv);
       const bx = alongX ? col(u0 + .05, f - .1, u1 - .05, f + .1, y0, y0 + 2.2) : col(f - .1, u0 + .05, f + .1, u1 - .05, y0, y0 + 2.2);
       const c = alongX ? L2W((u0 + u1) / 2, f) : L2W(f, (u0 + u1) / 2);
       const Dd = { piv, x: c[0], z: c[1], open: 0, a: 0, bx, y: gy + y0 }; bx.door = Dd; doors.push(Dd); return Dd;
     }
     // janelas distribuídas numa parede (evita a porta)
-    const winsOn = (a0, a1, skip, sill, wh) => { const out = [], n = Math.max(1, Math.floor((a1 - a0) / 2.6)), stp = (a1 - a0) / n; for (let i = 0; i < n; i++) { const c = a0 + stp * (i + .5); if (skip && Math.abs(c - skip) < 1.4) continue; out.push([c - .6, c + .6, sill, sill + wh]); } return out; };
+    const winsOn = (a0, a1, skip, sill, wh) => { const out = [], n = Math.max(1, Math.floor((a1 - a0) / 2.6)), stp = (a1 - a0) / n; for (let i = 0; i < n; i++) { const c = a0 + stp * (i + .5); if (skip != null && Math.abs(c - skip) < 1.5) continue; out.push([c - .6, c + .6, sill, sill + wh]); } return out; };
 
     const x0 = -W / 2, x1 = W / 2, z0 = -D / 2, z1 = D / 2, ix0 = x0 + T_ / 2, ix1 = x1 - T_ / 2, iz0 = z0 + T_ / 2, iz1 = z1 - T_ / 2;
     // poço da escada no fundo, à esquerda: patamar | rampa | patamar, duas faixas (vai e volta)
@@ -146,10 +165,10 @@
       if (lane === 0) { box(MAT.int, sxa + .8, y, lz1 - .06, sxb - .8, y + 1, lz1 + .06, 0xf2f0ea); col(sxa + .8, lz1 - .08, sxb - .8, lz1 + .08, y, y + 1); }
       }
       // ---------- paredes do andar ----------
-      const front = winsOn(x0 + .6, x1 - .6, k === 0 ? 0 : null, 1.0, 1.3), back = winsOn(sx1 + .3, x1 - .6, null, 1.1, 1.2), side = winsOn(z0 + .6, z1 - .6, null, 1.0, 1.3);
-      const balc = S.balcony && k > 0;
-      if (k === 0) front.push([-.6, .6, 0, 2.25]);
-      else if (balc) { for (let i = front.length - 1; i >= 0; i--) if (Math.abs((front[i][0] + front[i][1]) / 2) < 1.4) front.splice(i, 1); front.push([-.6, .6, 0, 2.2]);
+      const front = winsOn(x0 + .6, x1 - .6, k === 0 || S.balcony ? 0 : null, .9, 1.4), back = winsOn(sx1 + .3, x1 - .6, null, .9, 1.3), side = winsOn(z0 + .6, z1 - .6, null, .9, 1.4);
+      const balc = S.balcony && k > 0; let balDoor = 0;
+      if (k === 0) front.push([-.6, .6, 0, 2.2]);
+      else if (balc) { for (let i = front.length - 1; i >= 0; i--) if (Math.abs((front[i][0] + front[i][1]) / 2) < 1.4) front.splice(i, 1); front.push([-.6, .6, 0, 2.2]); balDoor = 1;
         // varanda: piso, mureta e corrimão
         const bw = 1.9, bd = 1.3; box(MAT.conc, -bw, y - .2, z1, bw, y + .02, z1 + bd, 0xb9b5ad); floor(-bw, z1, bw, z1 + bd, y + .02);
         for (const q of [[-bw, z1 + bd - .12, bw, z1 + bd], [-bw, z1, -bw + .12, z1 + bd], [bw - .12, z1, bw, z1 + bd]]) { box(MAT.ext, q[0], y, q[1], q[2], y + .95, q[3], exterior); col(q[0], q[1], q[2], q[3], y, y + 1.05); }
@@ -160,9 +179,14 @@
       wall(false, z0 + T_ / 2, z1 - T_ / 2, x1, y, FH, side, MAT.ext, MAT.int, true);
       if (k === 0) door(true, -.6, .6, z1, 0);
       // parede interna: corredor da escada | cômodos (porta), e divisão dos cômodos (porta)
-      const cz = lz2 + .1, xm = (sx1 + x1) / 2 + .6;
-      wall(true, ix0, ix1, cz, y, FH - SLAB, [[sx0 + .1, sx0 + 1.15, 0, 2.15], [sx1 - 1.2, sx1 - .1, 0, 2.15], [x1 - 2.4, x1 - 1.4, 0, 2.15]], MAT.int, MAT.int, false);
-      wall(false, cz + T_ / 2, iz1, xm, y, FH - SLAB, [[(cz + iz1) / 2 - .5, (cz + iz1) / 2 + .5, 0, 2.15]], MAT.int, MAT.int, false);
+      const cz = lz2 + .1, xm = 1.3;
+      const dA = [[sx0 + .1, sx0 + 1.1, 0, 2.2], [sx1 - 1.15, sx1 - .15, 0, 2.2], [x1 - 2.4, x1 - 1.4, 0, 2.2]], dB = [[(cz + iz1) / 2 - .5, (cz + iz1) / 2 + .5, 0, 2.2]];
+      wall(true, ix0, ix1, cz, y, FH - SLAB, dA, MAT.int, MAT.int, false);
+      wall(false, cz + T_ / 2, iz1, xm, y, FH - SLAB, dB, MAT.int, MAT.int, false);
+      for (const o of dA) door(true, o[0], o[1], cz, y, 1); for (const o of dB) door(false, o[0], o[1], xm, y, 1);
+      if (balDoor) door(true, -.6, .6, z1, y);
+      // cômodos (para os móveis): esquerda e direita da divisória
+      (S.rooms || (S.rooms = [])).push({ k, y: gy + y, a: [ix0 + .2, cz + T_ / 2 + .2, xm - .2, iz1 - .2], b: [xm + .2, cz + T_ / 2 + .2, ix1 - .2, iz1 - .2] });
       // detalhes de cada andar: rodapé escuro e lâmpada
       box(MAT.dark, ix0, y + .02, iz1 - .03, ix1, y + .12, iz1, 0x333333);
       LAMPS.push({ x: L2W(0, (cz + iz1) / 2)[0], y: gy + y + 2.6, z: L2W(0, (cz + iz1) / 2)[1] });
@@ -171,23 +195,25 @@
     function roofGable(y) {
       const rh = D * .26, hz = D / 2 + .45, a = Math.atan(rh / (D / 2)), Lr = hz / Math.cos(a);
       const tint = (geo, c) => { const n = geo.attributes.position.count, cc = new Float32Array(n * 3), t = new T.Color(c).convertSRGBToLinear(); for (let i = 0; i < n; i++) { cc[i * 3] = t.r; cc[i * 3 + 1] = t.g; cc[i * 3 + 2] = t.b; } geo.setAttribute('color', new T.BufferAttribute(cc, 3)); return geo; };
-      for (const sg of [1, -1]) { const m = new T.Mesh(tint(new T.BoxGeometry(W + .7, .12, Lr), 0xffffff), MAT.roof); m.position.set(0, y + rh - (hz / 2) * Math.tan(a) + .08, sg * hz / 2); m.rotation.x = sg * a; m.castShadow = m.receiveShadow = true; g.add(m); }
+      const put = (geo, m, o) => { o.updateMatrix(); const ge = tint(geo.toNonIndexed(), m === MAT.roof ? 0xffffff : exterior); ge.applyMatrix4(o.matrix); ge.applyMatrix4(g.matrixWorld); push(S.mg || ('_' + S.id), m, ge); };
+      for (const sg of [1, -1]) { const o = new T.Object3D(); o.position.set(0, y + rh - (hz / 2) * Math.tan(a) + .08, sg * hz / 2); o.rotation.x = sg * a; put(new T.BoxGeometry(W + .7, .12, Lr), MAT.roof, o); }
       const sh = new T.Shape(); sh.moveTo(-D / 2, 0); sh.lineTo(D / 2, 0); sh.lineTo(0, rh); sh.lineTo(-D / 2, 0);
-      for (const [sx, ry] of [[x0 + T_ / 2 - .02, -Math.PI / 2], [x1 - T_ / 2 + .02, Math.PI / 2]]) { const m = new T.Mesh(tint(new T.ShapeGeometry(sh), exterior), MAT.ext); m.position.set(sx, y, 0); m.rotation.y = ry; m.castShadow = true; g.add(m); }
+      for (const [sx, ry] of [[x0 + T_ / 2 - .02, -Math.PI / 2], [x1 - T_ / 2 + .02, Math.PI / 2]]) { const o = new T.Object3D(); o.position.set(sx, y, 0); o.rotation.y = ry; put(new T.ShapeGeometry(sh), MAT.ext, o); }
       box(MAT.frame, x0 - .35, y + rh + .02, -.1, x1 + .35, y + rh + .2, .1, 0x5a2a1c);
     }
+    S.L2W = L2W;
     // marquise sobre a entrada
     box(MAT.conc, -1.2, 2.45, z1, 1.2, 2.6, z1 + 1.1, 0xb8b4ac); box(MAT.brick, -1.3, 0, z1 - .05, -1.15, .12, z1 + 1.2); box(MAT.conc, -1.3, 0, z1, 1.3, .12, z1 + 1.2, 0xa9a59d); floor(-1.3, z1, 1.3, z1 + 1.2, .12);
 
     // ---------- junta tudo por material (poucos "desenhos" por prédio) ----------
-    const v = new T.Vector3();
+    const v = new T.Vector3(), MK = S.mg || ('_' + S.id);
     for (const [m, list] of BK) {
       const P = new Float32Array(list.length * 108), N = new Float32Array(list.length * 108), C = new Float32Array(list.length * 108), U = new Float32Array(list.length * 72);
       const bg = new T.BoxGeometry(1, 1, 1).toNonIndexed(), bp = bg.attributes.position.array, bn = bg.attributes.normal.array, bu = bg.attributes.uv.array;
       list.forEach((q, i) => { tint.set(q[6]).convertSRGBToLinear(); const sx = q[3] - q[0], sy = q[4] - q[1], sz = q[5] - q[2], cx = (q[0] + q[3]) / 2, cy = (q[1] + q[4]) / 2, czz = (q[2] + q[5]) / 2;
         for (let j = 0; j < 36; j++) { const o = i * 108 + j * 3; P[o] = bp[j * 3] * sx + cx; P[o + 1] = bp[j * 3 + 1] * sy + cy; P[o + 2] = bp[j * 3 + 2] * sz + czz; N[o] = bn[j * 3]; N[o + 1] = bn[j * 3 + 1]; N[o + 2] = bn[j * 3 + 2]; C[o] = tint.r; C[o + 1] = tint.g; C[o + 2] = tint.b; U[i * 72 + j * 2] = bu[j * 2]; U[i * 72 + j * 2 + 1] = bu[j * 2 + 1]; } });
       const ge = new T.BufferGeometry(); ge.setAttribute('position', new T.BufferAttribute(P, 3)); ge.setAttribute('normal', new T.BufferAttribute(N, 3)); ge.setAttribute('color', new T.BufferAttribute(C, 3)); ge.setAttribute('uv', new T.BufferAttribute(U, 2)); ge.computeBoundingSphere();
-      const me = new T.Mesh(ge, m); me.castShadow = true; me.receiveShadow = true; g.add(me);
+      ge.applyMatrix4(g.matrixWorld); push(MK, m, ge);
     }
     // vidros (quebram com tiro, como no resto do jogo)
     if (window.DZW && glass.length) { const bySize = new Map(); for (const q of glass) { const k = q[4].toFixed(2) + 'x' + q[5].toFixed(2); if (!bySize.has(k)) bySize.set(k, []); bySize.get(k).push(q); }
@@ -200,4 +226,5 @@
   }
   window.DZSTR = STRS;
   for (const S of STRS) try { build(S); } catch (e) { console.warn('prédio', S.id, e); }
+  flush();
 })();

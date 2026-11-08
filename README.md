@@ -112,6 +112,9 @@ Detalhes técnicos em [docs/ARQUITETURA.md](docs/ARQUITETURA.md).
   [Sketchfab](https://sketchfab.com/3d-models/yc-130prototype-of-c-130-11d237757851434ab5cb853db80376bb),
   licença [CC-BY 4.0](http://creativecommons.org/licenses/by/4.0/) (texturas reduzidas e convertidas para WebP).
 - Prédios e casas com interior: gerados por código (`src/js/world/structures.js`).
+- Construções de fora, móveis e carro destruído da cidade: biblioteca Microsoft Remix 3D (CC0), via
+  [Ethereal Engine Open Asset Kit](https://github.com/ir-engine/ir-engine-assets-basic) (malhas e texturas reduzidas).
+- Cidade (ruas, calçadas, muretas, praças): gerada por código (`src/js/world/city.js`).
 - Paraquedas: velame e linhas do parapente "paraglider-red-ridge" da
   [SwissAirfields](https://github.com/SwissAirfields/SwissAirfieldsFS2020) (CC0).
 - Veículos (buggy e helicóptero): biblioteca Microsoft Remix 3D

@@ -434,6 +434,12 @@
     try { if (typeof blocked === 'function' && blocked(o.x, o.y, o.z, o.x + d.x * q, o.y + d.y * q, o.z + d.z * q)) return 0; } catch (e) { }
     DZW.breakPane(best, d); return 1;
   };
+  // corpo do jogador passando pela janela (pulando por ela): quebra o vidro
+  DZW.touch = function (x, y, z, vx, vz) {
+    const a = DZW.cells.get(wkey(x, z)); if (!a) return;
+    for (const p of a) { if (p.br) continue; const dx = x - p.c.x, dz = z - p.c.z, dn = dx * p.n.x + dz * p.n.z, du = dx * p.u.x + dz * p.u.z;
+      if (Math.abs(dn) < .5 && Math.abs(du) < p.hw + .15 && y + 1.75 > p.c.y - p.hh && y + .3 < p.c.y + p.hh) DZW.breakPane(p, new T.Vector3(vx || p.n.x, 0, vz || p.n.z).normalize()); }
+  };
   DZW.blast = function (x, y, z, r) {
     near3(x, z, p => { if (!p.br && Math.hypot(p.c.x - x, p.c.y - y, p.c.z - z) < r) DZW.breakPane(p, new T.Vector3(p.c.x - x, p.c.y - y, p.c.z - z).normalize()); return false; });
   };

@@ -10,8 +10,16 @@
   // caminhos escritos por extenso: o build de arquivo único embute cada um
   // len: maior medida da construção em metros (o modelo é escalado para isso)
   // glass: materiais que não bloqueiam a passagem; wall: material das paredes principais (para achar a porta)
-  // ex.: casa: { url: <caminho do .glb>, len: 14 }  (nenhum modelo em uso agora)
-  const MODELS = {};
+  // solid: construção só por fora (colisão = caixa do corpo do prédio); face: giro extra para a frente dar na rua
+  const MODELS = {
+    apartment: { url: 'assets/models/city/city-apartment-building.glb', len: 15, solid: 1, face: 0 },
+    tower: { url: 'assets/models/city/small-city-building1.glb', len: 12, solid: 1, face: 0 },
+    townhouse: { url: 'assets/models/city/small-city-building2.glb', len: 10, solid: 1, face: 0 },
+    store: { url: 'assets/models/city/convenience-store.glb', len: 16, solid: 1, face: 0 },
+    office: { url: 'assets/models/city/office-building.glb', len: 17, solid: 1, face: 0 },
+    house: { url: 'assets/models/city/residential-house.glb', len: 14, solid: 1, face: 0 },
+    police: { url: 'assets/models/city/police-station.glb', len: 17, solid: 1, face: 0 }
+  };
   const SRC = {};
   const DZB = window.DZB = { list: [] };
 
@@ -116,6 +124,14 @@
     // lugares para o loot no futuro: cantos internos
     b.spots = [[ix0 + .8, iz0 + .8], [ix1 - .8, iz1 - .8], [ix0 + .8, iz1 - .8]].map(p => L2W(b, p[0], p[1]));
   }
+  // construção só por fora: caixa do corpo (sem a base/calçada do modelo) bloqueia passagem e tiros
+  function solid(b, g) {
+    g.updateMatrixWorld(true); const bb = new T.Box3(), tb = new T.Box3();
+    g.traverse(o => { if (!o.isMesh || !o.geometry) return; tb.setFromObject(o); if (tb.max.y - tb.min.y > 1.2 && tb.max.y - g.position.y > 2) bb.union(tb); });
+    if (bb.isEmpty()) return; const m = .15;
+    addBox({ x0: bb.min.x + m, x1: bb.max.x - m, z0: bb.min.z + m, z1: bb.max.z - m, w: 1, yb: g.position.y - 1, yt: bb.max.y });
+    const fp = { x0: bb.min.x, x1: bb.max.x, z0: bb.min.z, z1: bb.max.z, solid: 1 }; FP.push(fp); b.fp = fp; b.spots = [];
+  }
   let _fm = null;
   function floorMat() {
     if (_fm) return _fm; const c = document.createElement('canvas'); c.width = 256; c.height = 256; const x = c.getContext('2d');
@@ -131,6 +147,7 @@
     const cfg = MODELS[b.model] || {};
     // escala para o tamanho real
     if (cfg.len) { s.updateMatrixWorld(true); const b0 = new T.Box3().setFromObject(s), sz = b0.getSize(new T.Vector3()); s.scale.multiplyScalar(cfg.len / Math.max(sz.x, sz.z)); }
+    if (cfg.solid) b.align = 0;
     if (b.align == null) {
       const occ = scan(al, .3, 1.2, o => !!(cfg.glass && cfg.glass.test(o.material && o.material.name))), pts = [...occ.keys()].map(k => k.split(',').map(Number));
       let best = 0, bestA = 1e18; for (let a = 0; a < 90; a += .5) { const r = a * Math.PI / 180, c = Math.cos(r), sn = Math.sin(r); let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9;
@@ -143,9 +160,10 @@
     al.updateMatrixWorld(true); const bb = new T.Box3().setFromObject(al), c = bb.getCenter(new T.Vector3());
     al.position.set(-c.x, -bb.min.y, -c.z);
     s.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; if (o.material) o.material.side = T.DoubleSide; } });
-    g.position.set(b.x, TERH(b.x, b.z), b.z); g.rotation.y = b.rot || 0; sc.add(g);
+    g.position.set(b.x, TERH(b.x, b.z), b.z); g.rotation.y = (b.rot || 0) + (cfg.face || 0); sc.add(g);
     b.g = g; b.size = bb.getSize(new T.Vector3()); DZB.list.push(b);
-    try { furnish(b, s); } catch (e) { console.warn('construção: interior/colisão', e); }
+    if (cfg.solid) try { solid(b, g); } catch (e) { console.warn('construção: colisão', e); }
+    else try { furnish(b, s); } catch (e) { console.warn('construção: interior/colisão', e); }
     if (typeof b.onPlace === 'function') b.onPlace(b);
   }
   for (const k in MODELS) if ((typeof BLDS !== 'undefined' ? BLDS : []).some(b => b.model === k)) new T.GLTFLoader().load(MODELS[k].url, gl => {

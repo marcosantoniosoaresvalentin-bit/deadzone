@@ -1,5 +1,20 @@
 # Histórico de versões
 
+## 3.10.0 — cidade "Porto Velho"
+- **Cidade nova** no norte da ilha (~210 x 130 m): ruas de **asfalto** com faixa tracejada e
+  cruzamentos, **calçadas** com meio-fio, **postes de luz**, 7 quarteirões e um quarteirão com o
+  **heliponto**.
+- **Lotes variados**: prédios com interior de 1 a 4 andares (terraço, telhado de telha ou
+  varandas, cores diferentes), construções de modelo pronto (prédio de tijolo, torre, loja de
+  conveniência, sobrado, escritório, casa, delegacia) e praças de concreto.
+- **Muretas** de tijolo/concreto (0,9 m) em volta dos lotes e nas praças: **dá para pular por cima**
+  e usar de cobertura. **Carros destruídos** nas ruas como cobertura.
+- **Móveis** dentro dos prédios (sofá, mesa, cama, escrivaninha, cadeira).
+- Prédios: a porta da frente ficava "subida" com parede embaixo (uma janela caía em cima dela) —
+  corrigido; batentes em todas as portas (sem fresta em cima); **portas internas** com folha.
+- **Pular pela janela**: o personagem passa pelo vão e **o vidro quebra**.
+- **Paraquedas ao pular de lugar alto** (terraço/prédio): o botão de pulo vira "Abrir" durante a queda.
+
 ## 3.9.1 — mais construções e câmera dentro dos prédios
 - Vila com **6 construções com interior**: 2 prédios (3 e 4 andares), sobrados com
   **telhado de telha** e casas/prédio com **varandas** (dá para sair nelas pelo andar).

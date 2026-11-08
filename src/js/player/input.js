@@ -3,7 +3,7 @@
  */
 let ISL_=1;function GY(x,z,y){return TERH(x,z)}
 function mvp(dx,dz){for(const ax of[0,1]){if(ax)P.z+=dz;else P.x+=dx;
- for(const b of near(P.x,P.z)){if(b.off||(b.yt!==undefined&&(P.y>=b.yt-.05||P.y+1.9<=b.yb)))continue;const cx=Math.max(b.x0,Math.min(P.x,b.x1)),cz=Math.max(b.z0,Math.min(P.z,b.z1)),ex=P.x-cx,ez=P.z-cz,d=Math.hypot(ex,ez);
+ for(const b of near(P.x,P.z)){if(b.off||(b.yt!==undefined&&(P.y>=b.yt-.05||P.y+(b.lint?.9:1.9)<=b.yb)))continue;/* lint: parte de cima de janela/porta (dá para passar pulando pela janela) */const cx=Math.max(b.x0,Math.min(P.x,b.x1)),cz=Math.max(b.z0,Math.min(P.z,b.z1)),ex=P.x-cx,ez=P.z-cz,d=Math.hypot(ex,ez);
   if(d<.45){if(d>0){P.x+=ex/d*(.45-d);P.z+=ez/d*(.45-d)}else P.x=b.x0-.45}}}
  for(const c of CARS){if(c.heli||MP||Math.abs(c.x-P.x)>4.5||Math.abs(c.z-P.z)>4.5)continue;const sx=Math.sin(c.yaw),cz=Math.cos(c.yaw);for(const o of[-1.4,0,1.4]){const ex=P.x-(c.x+sx*o),ez=P.z-(c.z+cz*o),d=Math.hypot(ex,ez);if(d<1.55&&d>0){P.x+=ex/d*(1.55-d);P.z+=ez/d*(1.55-d)}}}
  if(MP&&AR){P.x=Math.max(AR.x0,Math.min(AR.x1,P.x));P.z=Math.max(AR.z0,Math.min(AR.z1,P.z))}
