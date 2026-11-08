@@ -51,7 +51,7 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;try{d
   const fc=fw+.6*bk,sp=(ch_?12:26)*(1+.5*fw);
   {const ox_=P.x,oz_=P.z;P.x=MCLX(P.x+(fx*fc-fz*sd)*sp*dt,5);P.z=MCLZ(P.z+(fz*fc+fx*sd)*sp*dt,5);
    // não entra no mar fundo (só na água rasa da beira)
-   const nh_=TERH(P.x,P.z);if(nh_<-.9&&nh_<TERH(ox_,oz_)){P.x=ox_;P.z=oz_}}
+   /* alto no céu pode atravessar o mar (ex.: ir para a Ilha Zênite); só perto da água é que não deixa cair no mar */const nh_=TERH(P.x,P.z);if(nh_<-.9&&nh_<TERH(ox_,oz_)&&P.y-Math.max(0,nh_)<14){P.x=ox_;P.z=oz_}}
   const tv=ch_?-(5+9*fw-2.2*bk):-(40+25*fw-10*bk);P.vy+=(tv-P.vy)*Math.min(1,dt*(ch_?2.5:3));
   P.y+=P.vy*dt;if(ch_)mvp(0,0);if(mode==='sky'&&P.y<GY(P.x,P.z,1e9)+130)openChute();if(P.y<=GY(P.x,P.z,P.y))land();
   pl.rotation.y=yaw;amt+=(0-amt)*k;

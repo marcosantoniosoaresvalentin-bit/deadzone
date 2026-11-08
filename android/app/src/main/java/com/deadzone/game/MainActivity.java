@@ -48,6 +48,8 @@ public class MainActivity extends Activity {
         s.setAllowContentAccess(false);
         s.setLoadWithOverviewMode(true);
         s.setUseWideViewPort(true);
+        s.setCacheMode(WebSettings.LOAD_NO_CACHE);   // sempre os arquivos da versão instalada (nunca a versão antiga em cache)
+        webView.clearCache(true);
 
         webView.setWebChromeClient(new WebChromeClient());
         webView.setWebViewClient(new WebViewClient() {

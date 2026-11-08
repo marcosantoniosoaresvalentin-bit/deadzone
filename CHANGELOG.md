@@ -1,5 +1,13 @@
 # Histórico de versões
 
+## 3.17.2 — ilha Zênite pelo céu, dupla na mesma partida e nome do parceiro
+- **Parede invisível no céu**: em queda livre/paraquedas não dava para atravessar o mar até a Ilha
+  Zênite. Agora alto no céu passa por cima do mar; só bem perto da água é que não deixa cair no mar.
+- **Dupla na mesma partida**: quem foi convidado e estava com Arena/Confronto selecionado ia para outro
+  modo. Agora todos entram no Clássico, na mesma partida do líder (testado com 2 aparelhos).
+- **Nome do parceiro** aparece em azul em cima da cabeça dele durante a partida.
+- **App sempre com a versão nova**: o aplicativo não usa mais arquivos antigos guardados em cache.
+
 ## 3.17.1 — correção da câmera travada e dos bots presos no céu
 - **Câmera travada / personagem longe / bots parados de paraquedas no céu**: um erro na navegação dos
   bots (porta inexistente em muros e guaritas) travava o quadro inteiro. Corrigido, e agora um bot com
