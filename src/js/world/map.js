@@ -2,10 +2,10 @@
  * MAPA EM BRANCO: ilha pequena e plana (sem cidades, casas, estradas, árvores ou loot).
  * Base para construir o mapa do zero, peça por peça.
  *
- * Tamanho: MAPH é a metade do lado (MAPH=250 -> ilha de 500 x 500 m).
+ * Tamanho: MAPH é a metade do lado da área do mapa (MAPH=290 -> 580 x 580 m; a ilha é arredondada dentro dela).
  * Tudo que depende do tamanho do mapa (limites, zona, rota do avião, mapa grande) lê MAPH.
  */
-const MAPH=250;          // metade do lado do mapa, em metros
+const MAPH=290;          // metade do lado do mapa, em metros (a ilha tem forma orgânica dentro deste quadrado)
 const PLV=30;            // velocidade do avião (m/s)
 const PLT=(2*(MAPH+60))/PLV; // tempo até o avião atravessar o mapa (s)
 

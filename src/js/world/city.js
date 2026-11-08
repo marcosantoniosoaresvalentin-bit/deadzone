@@ -129,6 +129,9 @@
   // ---------- ESTÁDIO DE FUTEBOL (helicóptero no meio do campo) ----------
   const TXG = canvasT(256, 256, (g, w, h) => { for (let i = 0; i < 8; i++) { g.fillStyle = i % 2 ? '#3f8a3a' : '#4a9a42'; g.fillRect(0, i * 32, w, 32); } noise(g, w, h, 9000, .08); });
   const MG = new T.MeshStandardMaterial({ map: TXG, roughness: .95 }), MSEAT = new T.MeshStandardMaterial({ vertexColors: true, roughness: .7 }), MW = new T.MeshStandardMaterial({ vertexColors: true, roughness: .6 });
+  const NETS = [];
+  const MNET = (() => { const t = canvasT(64, 64, (g, w, h) => { g.clearRect(0, 0, w, h); g.strokeStyle = '#f4f4f4'; g.lineWidth = 3; for (let i = 0; i <= 64; i += 16) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i, 64); g.stroke(); g.beginPath(); g.moveTo(0, i); g.lineTo(64, i); g.stroke(); } }); return triMat(t, 1.2); })();
+  MNET.alphaTest = .5; MNET.transparent = false; MNET.side = T.DoubleSide;
   function stadium(b) {
     const SD = 7.2, NT = 9, TD = SD / NT, TH = .46, WT2 = .5, ENT = 5; // arquibancada: 9 degraus de 80 cm x 46 cm
     const ix0 = b.x0 + SD + WT2, ix1 = b.x1 - SD - WT2, iz0 = b.z0 + SD + WT2, iz1 = b.z1 - SD - WT2, cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2;
@@ -145,7 +148,9 @@
       const gw = 3.66, gh = 2.44, gb = 1.6, bx0 = sx - gx * gb;
       for (const z of [cz - gw, cz + gw]) { box(MW, sx - .06, H, z - .06, sx + .06, H + gh, z + .06, 0xffffff); col(sx - .08, z - .08, sx + .08, z + .08, H - 1, H + gh); }
       box(MW, sx - .06, H + gh - .12, cz - gw, sx + .06, H + gh, cz + gw, 0xffffff);
-      box(MM, Math.min(sx, bx0), H + gh - .04, cz - gw, Math.max(sx, bx0), H + gh, cz + gw, 0xdcdcdc); box(MM, bx0 - .02, H, cz - gw, bx0 + .02, H + gh, cz + gw, 0xdcdcdc); }
+      { // rede: malha branca vazada (fundo, teto e laterais) e travessões de apoio
+        const x0n = Math.min(sx, bx0), x1n = Math.max(sx, bx0); NETS.push([x0n, H + gh - .02, cz - gw, x1n, H + gh, cz + gw], [bx0 - .01, H, cz - gw, bx0 + .01, H + gh, cz + gw], [x0n, H, cz - gw - .01, x1n, H + gh, cz - gw + .01], [x0n, H, cz + gw - .01, x1n, H + gh, cz + gw + .01]);
+        for (const z of [cz - gw, cz + gw]) { box(MPLAIN, bx0 - .03, H, z - .03, bx0 + .03, H + gh, z + .03, 0xe8e8e8); box(MPLAIN, x0n, H + gh - .03, z - .03, x1n, H + gh + .03, z + .03, 0xe8e8e8); } col(x0n, cz - gw, x1n, cz + gw, H - 1, H + gh); } }
     // arquibancadas nos 4 lados (com entradas no meio de cada lado); degraus = pisos (dá para subir)
     const cols = [0x1f4fa0, 0xe8e8e8, 0xc23a2e];
     const side = (A0, A1, alongX, inner, dir) => { // dir: +1 a arquibancada cresce para +z/+x
@@ -194,7 +199,7 @@
     LAMPS.push({ x: G.x, y: H + 2.6, z: G.z }); FP.push({ x0, x1, z0, z1 }); (window.DZCEIL || []).push({ x0, x1, z0, z1, y: H + Hh - .01 });
     GAR.push(G);
   }
-  for (const b of C.blocks) if (b.stadium) stadium(b);
+  for (const b of C.blocks) if (b.stadium) { stadium(b); for (const q of NETS) box(MNET, ...q, 0xffffff); NETS.length = 0; }
   for (const L of C.lots) {
     const m = .5, x0 = L.x0 + (L.eL ? m : 0), x1 = L.x1 - (L.eR ? m : 0), z0 = L.z0 + m, z1 = L.z1 - m, front = L.rot ? z0 : z1, back = L.rot ? z1 : z0, brick = rnd() < .5;
     const sides = () => { if (L.eL) wallGate(x0, z0, x0, z1, (z0 + z1) / 2 + (L.rot ? 3 : -3), brick); if (L.eR) wallGate(x1, z0, x1, z1, (z0 + z1) / 2 + (L.rot ? -3 : 3), brick); };

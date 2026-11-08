@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 3.13.1 — ilha com forma natural e rede do gol
+- **A ilha não é mais quadrada**: litoral arredondado e irregular, com **península a nordeste**,
+  pontas e **baías** (o Cais do Sul fica dentro de uma baía, com os píeres entrando no mar).
+  Área do mapa um pouco maior (580 x 580 m) para caber tudo em terra.
+- **Rede dos gols** do estádio: era um bloco preto; agora é uma **malha branca vazada** (fundo,
+  teto e laterais) com travessões de apoio.
+
 ## 3.13.0 — estradas, base maior, posto e fazenda
 - **Estradas de asfalto** ligando tudo: Porto Velho ⇄ escola ⇄ base ⇄ galpões ⇄ Vila Serena ⇄
   porto ⇄ Monte Verde ⇄ Porto Velho, e ramal para a fazenda. Curvas suaves, bordas brancas e

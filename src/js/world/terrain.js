@@ -18,15 +18,18 @@ const TER=(()=>{
  const ss=(a,b,v)=>{const t=Math.max(0,Math.min(1,(v-a)/(b-a)));return t*t*(3-2*t)};
  const gau=(x,z,cx,cz,r)=>Math.exp(-((x-cx)**2+(z-cz)**2)/(r*r));
 
- // ---------- litoral: quadrado arredondado com recortes (baías e pontas) ----------
+ // ---------- litoral: forma orgânica (arredondada) com pontas, península e baías ----------
+ const lobe=(a,c,w)=>{let d=Math.abs(a-c);d=Math.min(d,2*Math.PI-d);return Math.exp(-(d*d)/(w*w))};
  function coastDist(x,z){
-  const p=8,d=Math.pow(Math.pow(Math.abs(x),p)+Math.pow(Math.abs(z),p),1/p),a=Math.atan2(z,x);
-  const cn=fbm(Math.cos(a)*2.2+7,Math.sin(a)*2.2+3)*.75+fbm(Math.cos(a)*6+1,Math.sin(a)*6+9)*.25;
-  const R=MAPH+6-cn*34;                 // raio do litoral varia ~34 m (baías)
+  const p=2.4,d=Math.pow(Math.pow(Math.abs(x),p)+Math.pow(Math.abs(z),p),1/p),a=Math.atan2(z,x);
+  const cn=fbm(Math.cos(a)*2.2+7,Math.sin(a)*2.2+3)*.7+fbm(Math.cos(a)*6+1,Math.sin(a)*6+9)*.3;
+  // pontas/península (+) e baías (-) em lugares sem construção; a baía do sul abriga o porto
+  const sh=48*lobe(a,.72,.32)+40*lobe(a,2.36,.3)-50*lobe(a,-2.85,.18)+30*lobe(a,-2.3,.35)-60*lobe(a,.05,.16)+22*lobe(a,-.85,.3)-35*lobe(a,1.62,.12)+20*lobe(a,-1.6,.4)-20*lobe(a,1.25,.2);
+  const R=MAPH-8+sh-cn*40;
   return R-d;                           // >0 dentro da ilha (m até a costa)
  }
  // ---------- relevo em terra ----------
- const M=MAPH/250;                     // escala (posições pensadas para MAPH=250)
+ const M=1;                            // relevo pensado para as posições atuais (não escala com MAPH)
  function landH(x,z){
   let h=1.6+Math.pow(fbm(x/150+3.1,z/150+7.7),1.4)*9+(fbm(x/42,z/42)-.5)*2.4;
   // montanha a noroeste com cristas rochosas
