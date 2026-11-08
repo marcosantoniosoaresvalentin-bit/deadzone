@@ -40,7 +40,8 @@ function carVsCars(c){if(c.dead&&!c.heli)return;const hh=!!c.heli;if(hh&&c.y-(c.
  if(hit){const sp=Math.abs(c.spd);if(!hh&&sp>6)hitCar(c,(sp-6)*1.6);if(drv===c&&sp>12)hp-=(sp-12)*.8;c.spd*=-.25;sfx(400,Math.min(.6,sp/30),.15,0)}}
 function collideCar(c){const sx=Math.sin(c.yaw),cz=Math.cos(c.yaw);let hit=0;
  for(const o of[-1.4,1.4]){const px=c.x+sx*o,pz=c.z+cz*o;let ax=0,az=0;
-  for(const b of near(px,pz)){if(b.off)continue;const qx=Math.max(b.x0,Math.min(px,b.x1)),qz=Math.max(b.z0,Math.min(pz,b.z1)),ex=px-qx,ez=pz-qz,d=Math.hypot(ex,ez);if(d<1.15){if(d>0){ax+=ex/d*(1.15-d);az+=ez/d*(1.15-d)}else ax+=b.x0-px-1.15;hit=1}}
+  const cy_=c.cy!=null?c.cy:TERH(c.x,c.z);
+  for(const b of near(px,pz)){if(b.off)continue;if(b.yt!==undefined&&(cy_-.35>=b.yt-.1||cy_+1.3<=b.yb))continue;/* altura: passa por cima/baixo (ponte, andares) */const qx=Math.max(b.x0,Math.min(px,b.x1)),qz=Math.max(b.z0,Math.min(pz,b.z1)),ex=px-qx,ez=pz-qz,d=Math.hypot(ex,ez);if(d<1.15){if(d>0){ax+=ex/d*(1.15-d);az+=ez/d*(1.15-d)}else ax+=b.x0-px-1.15;hit=1}}
   c.x+=ax;c.z+=az}
  if(hit){const s=Math.abs(c.spd);if(s>5)hitCar(c,(s-5)*2.4);if(drv===c&&s>12)hp-=(s-12)*1.2;c.spd*=-.25;sfx(400,Math.min(.6,s/30),.15,0)}
  carVsCars(c);c.x=MCLX(c.x,5);c.z=MCLZ(c.z,5)}

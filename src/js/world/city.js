@@ -325,27 +325,24 @@
     lbox(MCOR, x, z, r, -e - .45, H + P_ + 2.5, -e - .45, e + .45, H + P_ + 2.68, e + .45, OL); lbox(MM, x, z, r, -e - .45, H + P_ + 2.42, -e - .45, e + .45, H + P_ + 2.5, e + .45, DK);
     // holofote
     lbox(MM, x, z, r, -.25, H + P_ + 2.68, -.25, .25, H + P_ + 2.9, .25, 0x222222); lbox(MPLAIN, x, z, r, -.18, H + P_ + 2.72, -.27, .18, H + P_ + 2.86, -.25, 0xfff2c0);
-    // ESCADA DE METAL em zigue-zague no lado +x: lance 1 (faixa de fora) sobe de lz -0,3 até 4,5 (0 -> 3 m),
-    // patamar em lz 4,5..5,7; lance 2 (faixa de dentro) volta de lz 4,5 até -0,3 (3 -> 6 m) e entra na cabine pelo vão
-    const A0 = e + .2, A1 = A0 + 1.2, B0 = A1 + .15, B1 = B0 + 1.2, Z0 = -.3, Z1 = 4.5, HL = P_ / 2, TRD = 0x6b6f74, RL = 0x30353a;
-    const W2 = (lx, lz) => L2W(x, z, r, lx, lz);
-    const flight = (l0, l1, za, zb, ya, yb) => { // degraus vazados (chapa) + 2 longarinas + corrimão dos dois lados
-      const n = 10, dz = (zb - za) / n, dy = (yb - ya) / n;
-      for (let i = 0; i < n; i++) { const z0_ = za + dz * i, z1_ = za + dz * (i + 1), yy = ya + dy * (i + 1); lbox(MM, x, z, r, l0, yy - .05, Math.min(z0_, z1_), l1, yy, Math.max(z0_, z1_), TRD); }
-      for (const lx of [l0 - .03, l1 + .03]) { const a = W2(lx, za), b = W2(lx, zb); beam(a[0], ya - .2, a[1], b[0], yb - .1, b[1], .09, RL); beam(a[0], ya + .95, a[1], b[0], yb + .95, b[1], .05, RL);
-        for (let i = 0; i <= 10; i += 5) { const zz = za + (zb - za) * i / 10, yy = ya + (yb - ya) * i / 10, c = W2(lx, zz); beam(c[0], yy, c[1], c[0], yy + .97, c[1], .045, RL); } }
-      const a = W2(l0, Math.min(za, zb)), b = W2(l1, Math.max(za, zb)), rr = { x0: Math.min(a[0], b[0]), x1: Math.max(a[0], b[0]), z0: Math.min(a[1], b[1]), z1: Math.max(a[1], b[1]), y0: H + ya, y1: H + yb }, e0 = W2(0, za), e1 = W2(0, zb);
-      if (Math.abs(e1[0] - e0[0]) > Math.abs(e1[1] - e0[1])) { rr.ax = 'x'; rr.a0 = e0[0]; rr.a1 = e1[0]; } else { rr.ax = 'z'; rr.a0 = e0[1]; rr.a1 = e1[1]; } if (FLR && FLR.add) FLR.add(rr); };
-    flight(B0, B1, Z0, Z1, 0, HL); flight(A0, A1, Z1, Z0, HL, P_);
-    // patamar do meio e patamar de cima (chapa) com guarda-corpo
-    lbox(MM, x, z, r, A0, H + HL - .08, Z1, B1, H + HL, Z1 + 1.2, TRD); lfloor(x, z, r, A0, Z1, B1, Z1 + 1.2, H + HL);
-    lbox(MM, x, z, r, e - .05, H + P_ - .08, -1.5, A1, H + P_, Z0, TRD); lfloor(x, z, r, e - .05, -1.5, A1, Z0, H + P_);
-    const rail = (l0, z0_, l1, z1_, yb) => { lbox(MM, x, z, r, l0, yb + .93, z0_, l1, yb + .98, z1_, RL); lbox(MM, x, z, r, l0, yb + .45, z0_, l1, yb + .49, z1_, RL); lcol(x, z, r, l0, z0_, l1, z1_, yb, yb + 1); };
-    rail(A0, Z1 + 1.15, B1, Z1 + 1.2, H + HL); rail(B1 - .05, Z1, B1, Z1 + 1.2, H + HL); rail(A0, Z1, A0 + .05, Z1 + 1.2, H + HL);
-    rail(e, -1.55, A1, -1.5, H + P_); rail(A1, -1.5, A1 + .05, Z0, H + P_); lcol(x, z, r, A1 + .02, Z0, A1 + .08, Z1, H + HL, H + P_ + 1);
-    for (const [lx, lz, yb] of [[A0, Z1 + 1.2, HL], [B1, Z1 + 1.2, HL], [B1, Z1, HL], [A1, -1.5, P_]]) lbox(MM, x, z, r, lx - .03, H, lz - .03, lx + .03, H + yb + 1, lz + .03, RL);
-    // colisão dos lados das escadas: fora (lance 1) e entre os lances (só para quem está em cada lance)
-    lcol(x, z, r, B1 + .02, Z0, B1 + .08, Z1, H - 1, H + HL + 1); lcol(x, z, r, A1 + .02, Z0, B0 - .02, Z1, H + .2, H + HL + .9); lcol(x, z, r, A0 - .08, Z0, A0 - .02, Z1, H + HL, H + P_ + 1);
+    // ESCADA RETA de aço (como torre de vigia de verdade): sai pela abertura da cabine no lado +x e desce para fora.
+    // Degraus sólidos com borda amarela, 2 vigas laterais, corrimão dos dois lados e 2 pilares de apoio.
+    const W2 = (lx, lz) => L2W(x, z, r, lx, lz), RL = 0x30353a, ZA = -1.45, ZB = -.35, L = 7.4, NS = 20, X0 = e, X1 = e + L, run = L / NS, rise = P_ / NS;
+    for (let i = 0; i < NS; i++) { // i=0 no topo
+      const xa = X0 + i * run, ya = H + P_ - (i + 1) * rise;
+      lbox(MC, x, z, r, xa, ya - .06, ZA, xa + run + .02, ya + .06, ZB, 0x8f969c);
+      lbox(MPLAIN, x, z, r, xa + run - .05, ya + .061, ZA, xa + run + .02, ya + .07, ZB, 0xe3b51c);
+    }
+    for (const zz of [ZA - .06, ZB + .06]) { const a = W2(X0, zz), b = W2(X1, zz); beam(a[0], H + P_ - .02, a[1], b[0], H + .05, b[1], .18, RL);
+      // corrimão inclinado + postes
+      beam(a[0], H + P_ + .95, a[1], b[0], H + .95, b[1], .06, RL);
+      for (let k = 0; k <= 4; k++) { const xx = X0 + L * k / 4, yy = H + P_ * (1 - k / 4), c = W2(xx, zz); beam(c[0], yy, c[1], c[0], yy + .97, c[1], .05, RL); } }
+    // pilares de apoio sob a escada
+    for (const fx of [.35, .7]) for (const zz of [ZA, ZB]) { const xx = X0 + L * fx, top = H + P_ * (1 - fx) - .1, c = W2(xx, zz); beam(c[0], H, c[1], c[0], top, c[1], .12, RL); }
+    { const a = W2(X0, ZA), b = W2(X1, ZB), rr = { x0: Math.min(a[0], b[0]), x1: Math.max(a[0], b[0]), z0: Math.min(a[1], b[1]), z1: Math.max(a[1], b[1]), y0: H + P_, y1: H + .05 }, e0 = W2(X0, 0), e1 = W2(X1, 0);
+      if (Math.abs(e1[0] - e0[0]) > Math.abs(e1[1] - e0[1])) { rr.ax = 'x'; rr.a0 = e0[0]; rr.a1 = e1[0]; } else { rr.ax = 'z'; rr.a0 = e0[1]; rr.a1 = e1[1]; } if (FLR && FLR.add) FLR.add(rr); }
+    // corrimão também bloqueia (não cai pelo lado)
+    lcol(x, z, r, X0, ZA - .12, X1, ZA - .04, H - 1, H + P_ + 1); lcol(x, z, r, X0, ZB + .04, X1, ZB + .12, H - 1, H + P_ + 1);
     LAMPS.push({ x, y: H + P_ + 2.2, z });
   }
   // GUARITA: cabine 2,8 x 2,8 com porta, janelas e telhado
@@ -389,8 +386,9 @@
     RS.forEach((R, ri) => {
       const p = R.pts, n = p.length, P = [], U = [], M = [], Cm = [], wht = lin(0xe6e6e0), yel = lin(0xe2b83c); let dist = 0;
       const side = (k, o) => { const a = p[Math.max(0, k - 1)], b = p[Math.min(n - 1, k + 1)], dx = b[0] - a[0], dz = b[1] - a[1], l = Math.hypot(dx, dz) || 1, nx = -dz / l, nz = dx / l, x = p[k][0] + nx * o, z = p[k][1] + nz * o; return [x, p[k][2], z]; }; // seção plana na altura da pista
-      const strip = (o0, o1, dy, k0, k1, col_) => { for (let k = k0; k < k1; k++) { const a0 = side(k, o0), a1 = side(k, o1), b0 = side(k + 1, o0), b1 = side(k + 1, o1); for (const q of [a0, b1, b0, a0, a1, b1]) { M.push(q[0], q[1] + .045 + dy, q[2]); Cm.push(col_.r, col_.g, col_.b); } } };
+      const strip = (o0, o1, dy, k0, k1, col_) => { for (let k = k0; k < k1; k++) { if (p[k][3] && p[k + 1][3]) continue; const a0 = side(k, o0), a1 = side(k, o1), b0 = side(k + 1, o0), b1 = side(k + 1, o1); for (const q of [a0, b1, b0, a0, a1, b1]) { M.push(q[0], q[1] + .045 + dy, q[2]); Cm.push(col_.r, col_.g, col_.b); } } };
       for (let k = 0; k < n - 1; k++) { const l = Math.hypot(p[k + 1][0] - p[k][0], p[k + 1][1] - p[k][1]);
+        if (p[k][3] && p[k + 1][3]) { dist += l; continue; } // dentro de cidade/local: a pista não é desenhada (ficava enterrada no pátio)
         const a0 = side(k, -hw), a1 = side(k, hw), b0 = side(k + 1, -hw), b1 = side(k + 1, hw), v0 = dist / 7, v1 = (dist + l) / 7;
         for (const [q, u, v] of [[a0, 0, v0], [b1, 1, v1], [b0, 0, v1], [a0, 0, v0], [a1, 1, v0], [b1, 1, v1]]) { P.push(q[0], q[1] + .03, q[2]); U.push(u, v); }
         if (k % 3 === 0) RDS.push([p[k][0] - hw, p[k][1] - hw, p[k][0] + hw, p[k][1] + hw]);
@@ -662,8 +660,8 @@
   // na faixa da rua, longe das portas
   try {
     const C = CITY, AREAS = TOWNS.concat(typeof SITES !== 'undefined' ? SITES : []); for (let i = CARS.length - 1; i >= 0; i--) { const c = CARS[i]; if (c.heli) continue; if (AREAS.some(A => c.x > A.x0 - 6 && c.x < A.x1 + 6 && c.z > A.z0 - 6 && c.z < A.z1 + 6) || FP.some(b => c.x > b.x0 - 3 && c.x < b.x1 + 3 && c.z > b.z0 - 3 && c.z < b.z1 + 3)) { sc.remove(c.g); CARS.splice(i, 1); } }
-    if (typeof addCar === 'function') for (const [x, z, r] of [[C.XL[1] + 2, (C.ZL[1] + C.ZL[2]) / 2 + 3, 0], [C.XL[3] - 2, (C.ZL[0] + C.ZL[1]) / 2 - 3, Math.PI], [(C.XL[1] + C.XL[2]) / 2 + 3, C.ZL[2] + 2, Math.PI / 2]]) addCar(x, z, r);
-    { const keep = FP.splice(0); try { for (const [x, z, r] of [[-87.5, 63, 0], [-78.5, 63, 0], [33, 54, Math.PI / 2], [66, 30, Math.PI / 2], [-182, 46, 0], [160, 80, Math.PI / 2]]) addCar(x, z, r); } finally { FP.push(...keep); } }
+    if (typeof addCar === 'function') for (const [x, z, r] of [[C.XL[1] + 2, (C.ZL[1] + C.ZL[2]) / 2 + 3, 0]]) addCar(x, z, r);
+    { const keep = FP.splice(0); try { for (const [x, z, r] of [[-87.5, 63, 0], [66, 30, Math.PI / 2], [160, 80, Math.PI / 2]]) addCar(x, z, r); } finally { FP.push(...keep); } }
     // um buggy dentro de cada garagem, de frente para a rua (addCar recusa ponto dentro de construção: põe direto)
     for (const G of GAR) { const keep = FP.splice(0); try { addCar(G.x, G.z + (G.rot ? 1 : -1) * .4, G.rot ? Math.PI : 0); } finally { FP.push(...keep); } }
   } catch (e) { console.warn('cidade: buggies', e); }

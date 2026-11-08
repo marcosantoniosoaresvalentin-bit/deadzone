@@ -76,7 +76,7 @@ const SITES=[
  {id:'galpoes',t:'depot',n:'Galpões Vértice',x0:-215,x1:-150,z0:-15,z1:30,bl:18},
  {id:'posto',t:'gas',n:'Posto Z-1',x0:27,x1:47,z0:36,z1:58,bl:10},
  {id:'fazenda',t:'farm',n:'Fazenda Corvina',x0:55,x1:108,z0:8,z1:50,bl:18},
- {id:'pedreira',t:'quarry',n:'Pedreira Cinza',x0:-212,x1:-165,z0:-100,z1:-55,bl:24},
+ {id:'pedreira',t:'quarry',n:'Pedreira Cinza',x0:-212,x1:-165,z0:-100,z1:-55,bl:30,hFix:8.5},
  {id:'praia',t:'beach',n:'Praia Ermo',x0:-95,x1:10,z0:200,z1:222,bl:8},
  {id:'usina',t:'power',n:'Usina Volta',x0:180,x1:222,z0:-40,z1:10,bl:16}];
 for(const S_ of SITES){S_.x=(S_.x0+S_.x1)/2;S_.z=(S_.z0+S_.z1)/2}

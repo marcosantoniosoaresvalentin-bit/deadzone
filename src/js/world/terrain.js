@@ -76,23 +76,34 @@ const TER=(()=>{
  if(typeof ROADLINES!=='undefined'){const hAt=(x,z)=>{const fx=(x-OX)/S,fz=(z-OZ)/S,i=Math.max(0,Math.min(NX-2,Math.floor(fx))),j=Math.max(0,Math.min(NZ-2,Math.floor(fz))),u=fx-i,v=fz-j;return H[idx(i,j)]*(1-u)*(1-v)+H[idx(i+1,j)]*u*(1-v)+H[idx(i,j+1)]*(1-u)*v+H[idx(i+1,j+1)]*u*v};
   const bD=new Float32Array(NX*NZ).fill(1e9),bH=new Float32Array(NX*NZ);window.ROADS=[];const ALL=[];
   const FL_=(typeof FLATS!=='undefined'?FLATS:[]),flatAt=(x,z)=>{for(const A of FL_)if(x>=A.x0-12&&x<=A.x1+12&&z>=A.z0-12&&z<=A.z1+12)return A.h;return null},inFlat=(x,z)=>FL_.some(A=>x>=A.x0-5&&x<=A.x1+5&&z>=A.z0-5&&z<=A.z1+5);
+  const inFlatS=(x,z)=>{for(const A of FL_)if(x>=A.x0-3&&x<=A.x1+3&&z>=A.z0-3&&z<=A.z1+3)return A;return null};
+  const G_=.075;   // inclinação máxima da pista (7,5%)
   for(const L of ROADLINES){const cv=new T.CatmullRomCurve3(L.map(p=>new T.Vector3(p[0],0,p[1])),false,'centripetal'),len=cv.getLength(),n=Math.max(2,Math.round(len/2)),pts=cv.getSpacedPoints(n);
-   const pin=pts.map(p=>{const f=flatAt(p.x,p.z);if(f!=null)return f;let best=null,bd=6;for(const q of ALL){const d=Math.hypot(q[0]-p.x,q[1]-p.z);if(d<bd){bd=d;best=q[2]}}return best});
-   let hs=pts.map((p,k)=>pin[k]!=null?pin[k]:hAt(p.x,p.z));
-   for(let it=0;it<6;it++){const o=hs.slice();for(let k=0;k<hs.length;k++){if(pin[k]!=null){hs[k]=pin[k];continue}let a=0,c=0;for(let q=-6;q<=6;q++){const m=k+q;if(m<0||m>=hs.length)continue;a+=o[m];c++}hs[k]=a/c}}
-   const R={pts:pts.map((p,k)=>[p.x,p.z,hs[k]])};ROADS.push(R);for(const q of R.pts)ALL.push(q);
+   const ds=len/n,inF=pts.map(p=>inFlatS(p.x,p.z));
+   // pontos fixos: dentro de cidade/local (altura do chão de lá) e encontro com outra estrada
+   const pin=pts.map((p,k)=>{if(inF[k])return inF[k].h;let best=null,bd=5;for(const q of ALL){const d=Math.hypot(q[0]-p.x,q[1]-p.z);if(d<bd){bd=d;best=q[2]}}return best});
+   // base: terreno suavizado ao longo da pista
+   let hs=pts.map(p=>hAt(p.x,p.z));for(let it=0;it<4;it++){const o=hs.slice();for(let k=0;k<hs.length;k++){let a=0,c=0;for(let q=-8;q<=8;q++){const m=k+q;if(m<0||m>=hs.length)continue;a+=o[m];c++}hs[k]=a/c}}
+   // envelope de inclinação a partir dos pontos fixos: corta morro / aterra vale quando preciso
+   const P=[];pin.forEach((v,k)=>{if(v!=null)P.push([k,v])});
+   if(P.length){for(let k=0;k<hs.length;k++){let lo=-1e9,hi=1e9;for(const [m,v] of P){const d=Math.abs(k-m)*ds;lo=Math.max(lo,v-G_*d);hi=Math.min(hi,v+G_*d)}hs[k]=lo>hi?(lo+hi)/2:Math.max(lo,Math.min(hi,hs[k]))}}
+   // limita a inclinação entre pontos vizinhos também (ida e volta), sem mexer nos fixos
+   for(let it=0;it<3;it++){for(let k=1;k<hs.length;k++)if(pin[k]==null)hs[k]=Math.max(hs[k-1]-G_*ds,Math.min(hs[k-1]+G_*ds,hs[k]));for(let k=hs.length-2;k>=0;k--)if(pin[k]==null)hs[k]=Math.max(hs[k+1]-G_*ds,Math.min(hs[k+1]+G_*ds,hs[k]))}
+   // suaviza as quebras (mantém os fixos)
+   for(let it=0;it<3;it++){const o=hs.slice();for(let k=1;k<hs.length-1;k++)if(pin[k]==null)hs[k]=(o[k-1]+o[k]*2+o[k+1])/4}
+   const R={pts:pts.map((p,k)=>[p.x,p.z,hs[k],inF[k]?1:0])};ROADS.push(R);for(const q of R.pts)ALL.push(q);
    pts.forEach((p,k)=>{const i0=Math.floor((p.x-22-OX)/S),i1=Math.ceil((p.x+22-OX)/S),j0=Math.floor((p.z-22-OZ)/S),j1=Math.ceil((p.z+22-OZ)/S);
     for(let j=Math.max(0,j0);j<=Math.min(NZ-1,j1);j++)for(let i=Math.max(0,i0);i<=Math.min(NX-1,i1);i++){const d=Math.hypot(OX+i*S-p.x,OZ+j*S-p.z),q=idx(i,j);if(d<bD[q]){bD[q]=d;bH[q]=hs[k]}}})}
   for(let q=0;q<NX*NZ;q++){const d=bD[q];if(d>22)continue;if(inFlat(OX+(q%NX)*S,OZ+Math.floor(q/NX)*S))continue;/* não mexe no chão plano de cidade/local */const k=d<=10?1:1-ss(10,22,d);H[q]=H[q]*(1-k)+(bH[q]-.02)*k}
   // garantia final: embaixo de QUALQUER pista (inclusive cruzamentos e chegadas nas cidades) o terreno fica
   // sempre um pouco abaixo do asfalto — a terra nunca aparece por cima da estrada
-  for(const R of ROADS)for(const q of R.pts){const i0=Math.floor((q[0]-8-OX)/S),i1=Math.ceil((q[0]+8-OX)/S),j0=Math.floor((q[1]-8-OZ)/S),j1=Math.ceil((q[1]+8-OZ)/S);
+  for(const R of ROADS)for(const q of R.pts){if(q[3])continue;const i0=Math.floor((q[0]-8-OX)/S),i1=Math.ceil((q[0]+8-OX)/S),j0=Math.floor((q[1]-8-OZ)/S),j1=Math.ceil((q[1]+8-OZ)/S);
    for(let j=Math.max(0,j0);j<=Math.min(NZ-1,j1);j++)for(let i=Math.max(0,i0);i<=Math.min(NX-1,i1);i++){const d=Math.hypot(OX+i*S-q[0],OZ+j*S-q[1]);if(d>7.5)continue;const m=idx(i,j),lim=q[2]-.2;if(H[m]>lim)H[m]=lim}}}
  // ALTURA DA PISTA (para pés e rodas pisarem no asfalto, não no terreno rebaixado embaixo dele)
  const RG=new Map(),rk=(x,z)=>Math.floor(x/8)*100003+Math.floor(z/8);
  if(window.ROADS)ROADS.forEach((R,ri)=>R.pts.forEach((q,k)=>{for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const key=(Math.floor(q[0]/8)+a)*100003+Math.floor(q[1]/8)+b;let L=RG.get(key);if(!L)RG.set(key,L=[]);L.push(ri*100000+k)}}));
  window.ROADH=function(x,z){const L=RG.get(rk(x,z));if(!L)return null;let best=null,bd=3.65;
-  for(const id of L){const R=ROADS[Math.floor(id/100000)].pts,k=id%100000;for(const m of [k-1,k]){if(m<0||m+1>=R.length)continue;const a=R[m],b=R[m+1],dx=b[0]-a[0],dz=b[1]-a[1],l2=dx*dx+dz*dz||1;let t=((x-a[0])*dx+(z-a[1])*dz)/l2;t=Math.max(0,Math.min(1,t));const px=a[0]+dx*t,pz=a[1]+dz*t,d=Math.hypot(x-px,z-pz);if(d<bd){bd=d;best=a[2]+(b[2]-a[2])*t+.03}}}
+  for(const id of L){const R=ROADS[Math.floor(id/100000)].pts,k=id%100000;for(const m of [k-1,k]){if(m<0||m+1>=R.length)continue;const a=R[m],b=R[m+1];if(a[3]&&b[3])continue;const dx=b[0]-a[0],dz=b[1]-a[1],l2=dx*dx+dz*dz||1;let t=((x-a[0])*dx+(z-a[1])*dz)/l2;t=Math.max(0,Math.min(1,t));const px=a[0]+dx*t,pz=a[1]+dz*t,d=Math.hypot(x-px,z-pz);if(d<bd){bd=d;best=a[2]+(b[2]-a[2])*t+.03}}}
   return best};
  // mesma triangulação do PlaneGeometry: altura idêntica à malha
  function terh(x,z){
