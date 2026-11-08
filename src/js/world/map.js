@@ -2,10 +2,10 @@
  * MAPA EM BRANCO: ilha pequena e plana (sem cidades, casas, estradas, árvores ou loot).
  * Base para construir o mapa do zero, peça por peça.
  *
- * Tamanho: MAPH é a metade do lado da área do mapa (MAPH=290 -> 580 x 580 m; a ilha é arredondada dentro dela).
+ * Tamanho: MAPH é a metade do lado (MAPH=250 -> ilha de 500 x 500 m).
  * Tudo que depende do tamanho do mapa (limites, zona, rota do avião, mapa grande) lê MAPH.
  */
-const MAPH=290;          // metade do lado do mapa, em metros (a ilha tem forma orgânica dentro deste quadrado)
+const MAPH=250;          // metade do lado do mapa, em metros
 const PLV=30;            // velocidade do avião (m/s)
 const PLT=(2*(MAPH+60))/PLV; // tempo até o avião atravessar o mapa (s)
 
@@ -32,7 +32,7 @@ function genTown(cfg){
  const mkStr=(L,b,lw,ld,rt,wide)=>{
   const sr=rnd(),style=sr<.4?'plaster':sr<.66?'brick':sr<.84?'shop':'panel';
   const f=rnd();let floors=f<.1?1:f<.45?2:f<.75?3:4;if(style==='shop')floors=Math.max(2,Math.min(3,floors));if(style==='panel')floors=Math.max(3,floors);
-  const w=wide?Math.min(lw-2,16+rnd()*4):Math.min(lw-1.25,11.1),d=Math.min(ld-6,8.5+rnd()*3.5);
+  const w=wide?Math.min(lw-6,16+rnd()*4):Math.min(lw-5,11.1+rnd()*2.4),d=Math.min(ld-7.5,8.5+rnd()*3.5);
   const S={id:T_+'c'+C.lots.length,w:+w.toFixed(1),d:+d.toFixed(1),floors,rot:rt,color:pal[Math.floor(rnd()*pal.length)],mg:b.id,city:1,style};
   if(style==='panel')S.color=[0xb9b6ae,0xa7a59e,0xc6c0b4][Math.floor(rnd()*3)];
   if(style==='shop')S.awn=[0x2f5d3a,0x7a2e2a,0x2b4a6b,0x6b5a2b][Math.floor(rnd()*4)];
@@ -43,17 +43,17 @@ function genTown(cfg){
   const b={x0:C.XL[i]+e,x1:C.XL[i+1]-e,z0:C.ZL[j]+e,z1:C.ZL[j+1]-e,id:T_+'q'+i+j};C.blocks.push(b);
   const mz=(b.z0+b.z1)/2,W=b.x1-b.x0,u=W/3;
   for(const [lz0,lz1,rt] of [[b.z0,mz,Math.PI],[mz,b.z1,0]]){
-   // cada fileira: 3 lotes estreitos, ou 1 lote largo (casa com garagem / prédio largo) + 1 estreito
-   const pr=rnd(),pat=pr<.42?[1,1,1]:pr<.71?[2,1]:[1,2];let x=b.x0;
-   pat.forEach((n,k)=>{const L={x0:x,x1:x+u*n,z0:lz0,z1:lz1,rot:rt,blk:b.id,eL:k===0,eR:k===pat.length-1};x+=u*n;C.lots.push(L);
+   // cada fileira: 2 lotes (prédio com quintal dos lados) ou 1 lote inteiro (casa com garagem / prédio largo)
+   const pr=rnd(),pat=pr<.62?[1,1]:[2];let x=b.x0;const u2=W/2;
+   pat.forEach((n,k)=>{const L={x0:x,x1:x+u2*n,z0:lz0,z1:lz1,rot:rt,blk:b.id,eL:k===0,eR:k===pat.length-1};x+=u2*n;C.lots.push(L);
     const lw=L.x1-L.x0,ld=lz1-lz0;
-    if(n===2&&rnd()<.7){ // casa com garagem aberta (com um buggy dentro)
+    if(n===2&&rnd()<.6){ // casa com garagem aberta (com um buggy dentro)
      L.kind='home';const w=11,d=9,gw=5.2,gd=7,left=rnd()<.5;
      const S={id:T_+'c'+C.lots.length,w,d,floors:2,rot:rt,color:pal[Math.floor(rnd()*pal.length)],mg:b.id,city:1,style:rnd()<.6?'plaster':'brick',band:1};
      if(rnd()<.65)S.roof='gable';
      S.x=+(left?L.x0+2+w/2:L.x1-2-w/2).toFixed(2);S.z=+(rt?lz0+4.8+d/2:lz1-4.8-d/2).toFixed(2);L.S=S;
      L.G={x:+(left?L.x0+2+w+1.6+gw/2:L.x1-2-w-1.6-gw/2).toFixed(2),z:+(rt?lz0+3.2+gd/2:lz1-3.2-gd/2).toFixed(2),w:gw,d:gd,rot:rt};
-    } else mkStr(L,b,lw,ld,rt,n===2);
+    } else mkStr(L,b,lw,ld,rt,n===2&&rnd()<.6);
    });
   }}
  C.rnd=rnd;return C}
@@ -61,7 +61,8 @@ function genTown(cfg){
 const CITY=genTown({n:'Porto Velho',tag:'pv',seed:7331,x0:-36,x1:176,z0:-196,z1:-8,XL:[-28,22,72,122,168],ZL:[-188,-128,-72,-16],stadium:1});
 const TOWNS=[CITY,
  genTown({n:'Vila Serena',tag:'vs',seed:4242,x0:-218,x1:-102,z0:112,z1:188,XL:[-210,-160,-110],ZL:[120,180],bl:20}),
- genTown({n:'Monte Verde',tag:'mv',seed:9119,x0:133,x1:207,z0:143,z1:217,XL:[145,195],ZL:[155,205],bl:20})];
+ genTown({n:'Monte Verde',tag:'mv',seed:9119,x0:133,x1:207,z0:143,z1:217,XL:[145,195],ZL:[155,205],bl:20}),
+ genTown({n:'Alto da Serra',tag:'as',seed:5150,x0:52,x1:114,z0:58,z1:120,XL:[58,108],ZL:[64,114],bl:26,hFix:8.5})];
 // LOCAIS ESPECIAIS (world/city.js monta): base militar, escola, porto e galpões
 const SITES=[
  {id:'base',t:'military',n:'Base Sentinela',x0:-148,x1:-22,z0:15,z1:108,bl:22},
@@ -69,7 +70,10 @@ const SITES=[
  {id:'cais',t:'port',n:'Cais do Sul',x0:20,x1:110,z0:192,z1:222,bl:10},
  {id:'galpoes',t:'depot',n:'Galpões do Oeste',x0:-215,x1:-150,z0:-15,z1:30,bl:18},
  {id:'posto',t:'gas',n:'Posto Rota 1',x0:27,x1:47,z0:36,z1:58,bl:10},
- {id:'fazenda',t:'farm',n:'Fazenda Boa Vista',x0:55,x1:108,z0:8,z1:50,bl:18}];
+ {id:'fazenda',t:'farm',n:'Fazenda Boa Vista',x0:55,x1:108,z0:8,z1:50,bl:18},
+ {id:'pedreira',t:'quarry',n:'Pedreira',x0:-212,x1:-165,z0:-100,z1:-55,bl:24},
+ {id:'praia',t:'beach',n:'Praia Dourada',x0:-95,x1:10,z0:200,z1:222,bl:8},
+ {id:'usina',t:'power',n:'Usina Leste',x0:180,x1:222,z0:-40,z1:10,bl:16}];
 for(const S_ of SITES){S_.x=(S_.x0+S_.x1)/2;S_.z=(S_.z0+S_.z1)/2}
 // prédios com interior dos locais (entram na lista STRS: dá para entrar, subir, pular janela...)
 const SITE_STRS=[
@@ -77,6 +81,8 @@ const SITE_STRS=[
  {id:'base_aloj2',x:-100,z:52,w:16,d:9,floors:2,rot:0,style:'panel',color:0x8f9479,band:1,mg:'base',city:1},
  {id:'base_aloj3',x:-75,z:96,w:14,d:9,floors:1,rot:Math.PI,style:'panel',color:0x7f8a6a,band:1,mg:'base',city:1},
  {id:'posto_loja',x:42,z:52,w:10,d:7,floors:1,rot:-Math.PI/2,style:'shop',color:0xe6e1d6,awn:0xc0302a,mg:'posto',city:1},
+ {id:'usina_ctrl',x:211,z:-28,w:13,d:9,floors:2,rot:-Math.PI/2,style:'panel',color:0xb9b6ae,band:1,mg:'usina',city:1},
+ {id:'pedreira_esc',x:-200,z:-64,w:12,d:8.5,floors:2,rot:0,style:'brick',band:1,mg:'pedreira',city:1},
  {id:'faz_casa',x:96,z:18,w:11,d:9,floors:2,rot:-Math.PI/2,style:'plaster',color:0xe9e0c6,roof:'gable',band:1,balcony:1,mg:'fazenda',city:1},
  {id:'base_cmd',x:-58,z:30,w:12,d:9,floors:3,rot:Math.PI,style:'brick',band:1,mg:'base',city:1},
  {id:'escola1',x:15,z:111.5,w:24,d:11,floors:2,rot:Math.PI,style:'plaster',color:0xe8dcb8,band:1,balcony:1,mg:'escola',city:1},
@@ -91,7 +97,11 @@ const ROADLINES=[
  [[-106,180],[-50,184],[15,187],[64,191]],                         // Vila Serena -> porto
  [[111,206],[141,205]],                                            // porto -> Monte Verde
  [[145,151],[152,105],[172,45],[168,-12]],                         // Monte Verde -> Porto Velho
- [[22,26],[40,30],[55,30]]];                                       // -> fazenda
+ [[22,26],[40,30],[55,30]],                                        // -> fazenda
+ [[54,64],[34,63],[19,62]],                                        // Alto da Serra -> estrada da escola
+ [[-182,-16],[-186,-36],[-190,-54]],                               // galpões -> pedreira
+ [[170,-5],[181,-5]],                                              // -> usina
+ [[-40,185],[-40,201]]];                                           // -> praia
 // tudo que precisa de chão plano (o terreno lê esta lista)
 const FLATS=TOWNS.concat(SITES);
 // nomes no mapa grande (como no mapa antigo)

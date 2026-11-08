@@ -1,5 +1,25 @@
 # Histórico de versões
 
+## 3.14.0 — pente fino: estradas, interiores, torre, posto e mais lugares
+- **Ilha de volta ao formato quadrado** (o formato redondo foi desfeito).
+- **Estradas sem terra atravessando o asfalto**: pista com seção plana, terreno totalmente plano a
+  10 m do eixo, altura presa no chão das cidades/locais e nos cruzamentos (sem degraus nas
+  junções); o terreno das cidades e locais não é mais coberto pela estrada.
+- **Interiores revisados**: a divisória entre os cômodos ficava em cima de porta/janela — agora fica
+  sempre ao lado da porta do corredor e longe da porta da frente; prédio estreito tem 1 cômodo só.
+  **Verificação automática: 567 portas e 1246 janelas sem nada na frente.**
+- **Prédios afastados dos muros**: 2 lotes por fileira (ou 1 lote inteiro), quintal dos lados e
+  atrás; nenhum prédio a menos de 1,2 m de muro.
+- **Torre de vigia: escada de metal em zigue-zague** (2 lances com degraus vazados, patamar no meio,
+  corrimão e guarda-corpo), entrando pela lateral da cabine.
+- **Posto Rota 1 refeito**: cobertura grossa com faixa vermelha e luzes, ilhas com meio-fio e
+  faixas amarelas, bombas com visor e mangueira, totem com preço, pátio ligado à estrada.
+- **Placas** legíveis dos dois lados (antes apareciam espelhadas por trás).
+- **Lugares novos**: **Alto da Serra** (vila no pé do morro), **Pedreira** (montes de pedra,
+  britador com esteira, barracões, escritório), **Praia Dourada** (quiosques de palha, guarda-sóis,
+  cadeiras, posto de salva-vidas) e **Usina Leste** (torres de resfriamento, chaminé,
+  transformadores, torre de transmissão, sala de controle) — todos ligados por estrada.
+
 ## 3.13.1 — ilha com forma natural e rede do gol
 - **A ilha não é mais quadrada**: litoral arredondado e irregular, com **península a nordeste**,
   pontas e **baías** (o Cais do Sul fica dentro de uma baía, com os píeres entrando no mar).

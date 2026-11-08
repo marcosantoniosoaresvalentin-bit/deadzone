@@ -140,6 +140,9 @@
     const x0 = -W / 2, x1 = W / 2, z0 = -D / 2, z1 = D / 2, ix0 = x0 + T_ / 2, ix1 = x1 - T_ / 2, iz0 = z0 + T_ / 2, iz1 = z1 - T_ / 2;
     // poço da escada no fundo, à esquerda: patamar | rampa | patamar, duas faixas (vai e volta)
     const sx0 = ix0, sxa = sx0 + LAND, sxb = sxa + STEP_L, sx1 = sxb + LAND, lz0 = iz0, lz1 = lz0 + LANE, lz2 = lz1 + LANE;
+    // divisória entre os 2 cômodos: logo depois da porta B do corredor (nunca em cima de porta/janela); prédio estreito = 1 cômodo só
+    let XM = sx1 + .4; if (Math.abs(XM) < 1.1) XM = 1.2; // longe da porta da frente/varanda (x de -0,6 a 0,6)
+    if (ix1 - XM < 2.9) XM = null;
     const exterior = S.color || 0xe6dccb, ST = S.style || 'plaster';
     // acabamento de fora conforme o estilo: reboco colorido, tijolo aparente ou concreto
     const EXT = ST === 'brick' ? MAT.brick : ST === 'panel' ? MAT.conc : MAT.ext, EXC = ST === 'brick' ? 0xffffff : exterior;
@@ -182,7 +185,7 @@
         col(sxa + .3, rz - .05, sxb - .3, rz + .05, y, y + FH + 1); }
       }
       // ---------- paredes do andar ----------
-      const cz_ = lz2 + .1, front = winsOn(x0 + .6, x1 - .6, k === 0 || S.balcony ? 0 : null, .9, 1.4, [1.3]), back = winsOn(sx1 + .3, x1 - .6, null, .9, 1.3), side = winsOn(z0 + .6, z1 - .6, null, .9, 1.4, [cz_]);
+      const cz_ = lz2 + .1, front = winsOn(x0 + .6, x1 - .6, k === 0 || S.balcony ? 0 : null, .9, 1.4, XM != null ? [XM] : null), back = winsOn(sx1 + .3, x1 - .6, null, .9, 1.3), side = winsOn(z0 + .6, z1 - .6, null, .9, 1.4, [cz_]);
       const balc = S.balcony && k > 0; let balDoor = 0;
       if (k === 0 && ST === 'shop') { front.length = 0; front.push([x0 + .7, -1.0, .45, 2.45], [1.0, x1 - .7, .45, 2.45]); }
       if (k === 0) front.push([-.6, .6, 0, 2.2]);
@@ -199,15 +202,17 @@
       if (S.band && k > 0) { const e = .27, bc = ST === 'panel' ? 0x8f8c85 : 0xd9d5cc; box(MAT.conc, x0 - e, y - .3, z1 - .02, x1 + e, y - .06, z1 + e, bc); box(MAT.conc, x0 - e, y - .3, z0 - e, x1 + e, y - .06, z0 + .02, bc); box(MAT.conc, x0 - e, y - .3, z0 + .02, x0 + .02, y - .06, z1 - .02, bc); box(MAT.conc, x1 - .02, y - .3, z0 + .02, x1 + e, y - .06, z1 - .02, bc); }
       if (k === 0) door(true, -.6, .6, z1, 0);
       // parede interna: corredor da escada | cômodos (porta), e divisão dos cômodos (porta)
-      const cz = lz2 + .1, xm = 1.3;
-      const dA = [[sx0 + .1, sx0 + 1.1, 0, 2.2], [sx1 - 1.15, sx1 - .15, 0, 2.2], [x1 - 2.4, x1 - 1.4, 0, 2.2]], dB = [[(cz + iz1) / 2 - .5, (cz + iz1) / 2 + .5, 0, 2.2]];
+      const cz = lz2 + .1, xm = XM;
+      // portas do corredor da escada: A (lado do patamar esquerdo), B (lado do patamar direito), C (2º cômodo, no meio dele)
+      const dA = [[sx0 + .1, sx0 + 1.1, 0, 2.2], [sx1 - 1.15, sx1 - .15, 0, 2.2]]; if (xm != null) { const c = (xm + ix1) / 2; dA.push([c - .5, c + .5, 0, 2.2]); }
+      const dB = [[(cz + iz1) / 2 - .5, (cz + iz1) / 2 + .5, 0, 2.2]];
       wall(true, ix0, ix1, cz, y, FH - SLAB, dA, MAT.int, MAT.int, false);
       const openShop = ST === 'shop' && k === 0;
-      if (!openShop) wall(false, cz + T_ / 2, iz1, xm, y, FH - SLAB, dB, MAT.int, MAT.int, false);
-      for (const o of dA) door(true, o[0], o[1], cz, y, 1); if (!openShop) for (const o of dB) door(false, o[0], o[1], xm, y, 1);
+      if (!openShop && xm != null) wall(false, cz + T_ / 2, iz1, xm, y, FH - SLAB, dB, MAT.int, MAT.int, false);
+      for (const o of dA) door(true, o[0], o[1], cz, y, 1); if (!openShop && xm != null) for (const o of dB) door(false, o[0], o[1], xm, y, 1);
       if (balDoor) door(true, -.6, .6, z1, y);
       // cômodos (para os móveis): esquerda e direita da divisória
-      (S.rooms || (S.rooms = [])).push({ k, y: gy + y, a: [ix0 + .2, cz + T_ / 2 + .2, xm - .2, iz1 - .2], b: [xm + .2, cz + T_ / 2 + .2, ix1 - .2, iz1 - .2] });
+      (S.rooms || (S.rooms = [])).push({ k, y: gy + y, a: [ix0 + .2, cz + T_ / 2 + .2, (xm == null ? ix1 : xm) - .2, iz1 - .2], b: xm == null ? null : [xm + .2, cz + T_ / 2 + .2, ix1 - .2, iz1 - .2] });
       // detalhes de cada andar: rodapé escuro e lâmpada
       box(MAT.dark, ix0, y + .02, iz1 - .03, ix1, y + .12, iz1, 0x333333);
       LAMPS.push({ x: L2W(0, (cz + iz1) / 2)[0], y: gy + y + 2.6, z: L2W(0, (cz + iz1) / 2)[1] });

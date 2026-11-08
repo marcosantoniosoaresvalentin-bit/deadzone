@@ -18,18 +18,16 @@ const TER=(()=>{
  const ss=(a,b,v)=>{const t=Math.max(0,Math.min(1,(v-a)/(b-a)));return t*t*(3-2*t)};
  const gau=(x,z,cx,cz,r)=>Math.exp(-((x-cx)**2+(z-cz)**2)/(r*r));
 
- // ---------- litoral: forma orgânica (arredondada) com pontas, península e baías ----------
- const lobe=(a,c,w)=>{let d=Math.abs(a-c);d=Math.min(d,2*Math.PI-d);return Math.exp(-(d*d)/(w*w))};
+ // ---------- litoral: quadrado arredondado com recortes (baías e pontas) ----------
  function coastDist(x,z){
-  const p=2.4,d=Math.pow(Math.pow(Math.abs(x),p)+Math.pow(Math.abs(z),p),1/p),a=Math.atan2(z,x);
-  const cn=fbm(Math.cos(a)*2.2+7,Math.sin(a)*2.2+3)*.7+fbm(Math.cos(a)*6+1,Math.sin(a)*6+9)*.3;
-  // pontas/península (+) e baías (-) em lugares sem construção; a baía do sul abriga o porto
-  const sh=48*lobe(a,.72,.32)+40*lobe(a,2.36,.3)-50*lobe(a,-2.85,.18)+30*lobe(a,-2.3,.35)-60*lobe(a,.05,.16)+22*lobe(a,-.85,.3)-35*lobe(a,1.62,.12)+20*lobe(a,-1.6,.4)-20*lobe(a,1.25,.2);
-  const R=MAPH-8+sh-cn*40;
+  const p=8,d=Math.pow(Math.pow(Math.abs(x),p)+Math.pow(Math.abs(z),p),1/p),a=Math.atan2(z,x);
+  const cn=fbm(Math.cos(a)*2.2+7,Math.sin(a)*2.2+3)*.75+fbm(Math.cos(a)*6+1,Math.sin(a)*6+9)*.25;
+  const R=MAPH+6-cn*34;                 // raio do litoral varia ~34 m (baías)
   return R-d;                           // >0 dentro da ilha (m até a costa)
  }
+ window.DZCOAST=coastDist;
  // ---------- relevo em terra ----------
- const M=1;                            // relevo pensado para as posições atuais (não escala com MAPH)
+ const M=MAPH/250;                     // escala (posições pensadas para MAPH=250)
  function landH(x,z){
   let h=1.6+Math.pow(fbm(x/150+3.1,z/150+7.7),1.4)*9+(fbm(x/42,z/42)-.5)*2.4;
   // montanha a noroeste com cristas rochosas
@@ -62,18 +60,22 @@ const TER=(()=>{
  for(const b of (typeof STRS!=='undefined'?STRS:[])){if(b.city)continue;const cx=b.x,cz=b.z,h0=rawH(cx,cz),hw=Math.max(b.w,b.d)/2+3;
   for(let j=0;j<N;j++)for(let i=0;i<N;i++){const x=O+i*S,z=O+j*S,d=Math.max(0,Math.max(Math.abs(x-cx),Math.abs(z-cz))-hw);if(d>14)continue;const k=1-ss(0,14,d);H[idx(i,j)]=H[idx(i,j)]*(1-k)+h0*k}}
  // cidades e locais especiais: cada um vira um platô (nível médio do lugar) com borda suave
- for(const A of (typeof FLATS!=='undefined'?FLATS:[])){let sm=0,n=0;for(let x=A.x0;x<=A.x1;x+=6)for(let z=A.z0;z<=A.z1;z+=6){sm+=rawH(x,z);n++}const h0=A.h=Math.max(1.6,sm/n),bl=A.bl||30;
-  for(let j=0;j<N;j++)for(let i=0;i<N;i++){const x=O+i*S,z=O+j*S,d=Math.hypot(Math.max(0,A.x0-x,x-A.x1),Math.max(0,A.z0-z,z-A.z1));if(d>bl)continue;const k=1-ss(0,bl,d);H[idx(i,j)]=H[idx(i,j)]*(1-k)+h0*k}}
- // ESTRADAS: curva suave pelos pontos; altura da pista = terreno suavizado ao longo dela; faixa plana de 6,5 m + borda suave
+ for(const A of (typeof FLATS!=='undefined'?FLATS:[])){let sm=0,n=0;for(let x=A.x0;x<=A.x1;x+=6)for(let z=A.z0;z<=A.z1;z+=6){sm+=rawH(x,z);n++}const h0=A.h=A.hFix!=null?A.hFix:Math.max(1.6,sm/n),bl=A.bl||30;
+  for(let j=0;j<N;j++)for(let i=0;i<N;i++){const x=O+i*S,z=O+j*S,d=Math.hypot(Math.max(0,A.x0-x,x-A.x1),Math.max(0,A.z0-z,z-A.z1));if(d>bl+5)continue;const k=1-ss(5,bl+5,d);/* 5 m a mais totalmente plano em volta: piso e calçadas não ficam 'flutuando' */H[idx(i,j)]=H[idx(i,j)]*(1-k)+h0*k}}
+ // ESTRADAS: curva suave pelos pontos. Altura da pista = terreno suavizado ao longo dela, PRESA na altura do
+ // platô quando passa por cidade/local e na altura da outra estrada nos cruzamentos. Seção transversal plana:
+ // tudo a até 10 m do eixo fica exatamente na altura da pista (o terreno nunca atravessa o asfalto).
  if(typeof ROADLINES!=='undefined'){const hAt=(x,z)=>{const fx=(x-O)/S,fz=(z-O)/S,i=Math.max(0,Math.min(N-2,Math.floor(fx))),j=Math.max(0,Math.min(N-2,Math.floor(fz))),u=fx-i,v=fz-j;return H[idx(i,j)]*(1-u)*(1-v)+H[idx(i+1,j)]*u*(1-v)+H[idx(i,j+1)]*(1-u)*v+H[idx(i+1,j+1)]*u*v};
-  const bD=new Float32Array(N*N).fill(1e9),bH=new Float32Array(N*N);window.ROADS=[];
+  const bD=new Float32Array(N*N).fill(1e9),bH=new Float32Array(N*N);window.ROADS=[];const ALL=[];
+  const FL_=(typeof FLATS!=='undefined'?FLATS:[]),flatAt=(x,z)=>{for(const A of FL_)if(x>=A.x0-12&&x<=A.x1+12&&z>=A.z0-12&&z<=A.z1+12)return A.h;return null},inFlat=(x,z)=>FL_.some(A=>x>=A.x0-5&&x<=A.x1+5&&z>=A.z0-5&&z<=A.z1+5);
   for(const L of ROADLINES){const cv=new T.CatmullRomCurve3(L.map(p=>new T.Vector3(p[0],0,p[1])),false,'centripetal'),len=cv.getLength(),n=Math.max(2,Math.round(len/2)),pts=cv.getSpacedPoints(n);
-   let hs=pts.map(p=>hAt(p.x,p.z));for(let it=0;it<3;it++){const o=hs.slice();for(let k=0;k<hs.length;k++){let a=0,c=0;for(let q=-8;q<=8;q++){const m=k+q;if(m<0||m>=hs.length)continue;a+=o[m];c++}hs[k]=a/c}}
-   hs[0]=hAt(pts[0].x,pts[0].z);hs[hs.length-1]=hAt(pts[pts.length-1].x,pts[pts.length-1].z);
-   ROADS.push({pts:pts.map((p,k)=>[p.x,p.z,hs[k]])});
-   pts.forEach((p,k)=>{const i0=Math.floor((p.x-14-O)/S),i1=Math.ceil((p.x+14-O)/S),j0=Math.floor((p.z-14-O)/S),j1=Math.ceil((p.z+14-O)/S);
+   const pin=pts.map(p=>{const f=flatAt(p.x,p.z);if(f!=null)return f;let best=null,bd=6;for(const q of ALL){const d=Math.hypot(q[0]-p.x,q[1]-p.z);if(d<bd){bd=d;best=q[2]}}return best});
+   let hs=pts.map((p,k)=>pin[k]!=null?pin[k]:hAt(p.x,p.z));
+   for(let it=0;it<6;it++){const o=hs.slice();for(let k=0;k<hs.length;k++){if(pin[k]!=null){hs[k]=pin[k];continue}let a=0,c=0;for(let q=-6;q<=6;q++){const m=k+q;if(m<0||m>=hs.length)continue;a+=o[m];c++}hs[k]=a/c}}
+   const R={pts:pts.map((p,k)=>[p.x,p.z,hs[k]])};ROADS.push(R);for(const q of R.pts)ALL.push(q);
+   pts.forEach((p,k)=>{const i0=Math.floor((p.x-22-O)/S),i1=Math.ceil((p.x+22-O)/S),j0=Math.floor((p.z-22-O)/S),j1=Math.ceil((p.z+22-O)/S);
     for(let j=Math.max(0,j0);j<=Math.min(N-1,j1);j++)for(let i=Math.max(0,i0);i<=Math.min(N-1,i1);i++){const d=Math.hypot(O+i*S-p.x,O+j*S-p.z),q=idx(i,j);if(d<bD[q]){bD[q]=d;bH[q]=hs[k]}}})}
-  for(let q=0;q<N*N;q++){const d=bD[q];if(d>14)continue;const k=d<=6.5?1:1-ss(6.5,14,d);H[q]=H[q]*(1-k)+bH[q]*k}}
+  for(let q=0;q<N*N;q++){const d=bD[q];if(d>22)continue;if(inFlat(O+(q%N)*S,O+Math.floor(q/N)*S))continue;/* não mexe no chão plano de cidade/local */const k=d<=10?1:1-ss(10,22,d);H[q]=H[q]*(1-k)+(bH[q]-.02)*k}}
  // mesma triangulação do PlaneGeometry: altura idêntica à malha
  function terh(x,z){
   const fx=(x-O)/S,fz=(z-O)/S;if(fx<0||fz<0||fx>=N-1||fz>=N-1)return -14;
