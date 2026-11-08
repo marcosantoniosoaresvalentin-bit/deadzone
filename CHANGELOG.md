@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 3.8.1 — construções estilo battle royale
+- A casa de madeira saiu. No lugar, uma **vilinha** no campo ao norte da ilha:
+  2 **casas de tijolo** ("Countryside brick house", CC-BY 4.0) e um **prédio abandonado de
+  concreto com pichação** ("Old Building | Lowpoly", CC-BY 4.0).
+- Modelos escalados para o tamanho real e alinhados automaticamente; paredes sólidas em toda a
+  altura (bloqueiam passagem e tiros).
+
 ## 3.8.0 — primeira construção
 - **Casa de madeira** ("Old house", modelo pronto CC-BY 4.0) no campo ao norte da ilha
   (texturas reduzidas: 105 MB → 1,6 MB). Terreno nivelado embaixo dela.

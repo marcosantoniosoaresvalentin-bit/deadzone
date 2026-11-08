@@ -24,7 +24,10 @@ const HPS=[['Heliponto Norte',MAPH*.45,-MAPH*.5],['Heliponto Sul',-MAPH*.45,MAPH
 // o terreno (relevo, praia e mar) fica em world/terrain.js
 // construções colocadas no mapa (o terreno fica plano embaixo). Modelos em world/buildings.js
 // rot: só múltiplos de 90° (a colisão das paredes usa caixas alinhadas com os eixos)
-const BLDS=[{id:'casa1',model:'house',x:30,z:-135,rot:0,flat:11}];
+const BLDS=[
+ {id:'casa1',model:'brick',x:28,z:-134,rot:0,flat:10},
+ {id:'casa2',model:'brick',x:52,z:-150,rot:Math.PI/2,flat:10},
+ {id:'predio1',model:'ruin',x:8,z:-155,rot:Math.PI,flat:8}];
 
 // ---- dados do mapa (vazios) que outros sistemas consultam ----
 const CX=[],CZ=[],BP=42,LK=[];

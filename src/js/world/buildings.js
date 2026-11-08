@@ -2,12 +2,18 @@
  * CONSTRUÇÕES com modelos 3D prontos. A lista de onde ficam está em world/map.js (BLDS);
  * o terreno fica plano embaixo de cada uma (world/terrain.js).
  *
- * Modelos:
- *  - house: "Old house" por Ashkod (Sketchfab), licença CC-BY 4.0 — texturas reduzidas para WebP.
+ * Modelos (licença CC-BY 4.0, texturas reduzidas para WebP):
+ *  - brick: "Countryside brick house" por dannzjs (Sketchfab)
+ *  - ruin:  "Old Building | Lowpoly" por Fridqeir (Sketchfab)
  */
 (function () {
   // caminhos escritos por extenso: o build de arquivo único embute cada um
-  const MODELS = { house: 'assets/models/buildings/house.glb' };
+  // len: maior medida da construção em metros (o modelo é escalado para isso)
+  // glass: materiais que não bloqueiam a passagem; wall: material das paredes principais (para achar a porta)
+  const MODELS = {
+    brick: { url: 'assets/models/buildings/brick-house.glb', len: 14 },
+    ruin: { url: 'assets/models/buildings/ruin.glb', len: 11, glass: /Windows/i }
+  };
   const SRC = {};
   const DZB = window.DZB = { list: [] };
 
@@ -53,15 +59,15 @@
   // PORTA: acha o vão nas paredes principais (material "Corpus"), recorta a folha da porta do modelo
   // e monta uma porta que gira na dobradiça. Paredes viram caixas de colisão; o vão fica livre.
   function furnish(b, s) {
-    const g = b.g, isWall = o => /Corpus/i.test(o.material && o.material.name);
+    const g = b.g, cfg = MODELS[b.model] || {}, isGlass = o => !!(cfg.glass && cfg.glass.test(o.material && o.material.name)), isWall = o => cfg.wall ? cfg.wall.test(o.material && o.material.name) : !isGlass(o);
     const logs = scan(g, .15, .7, o => !isWall(o));
     let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9; for (const k of logs.keys()) { const [x, z] = k.split(',').map(Number); x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }
     // procura o maior vão em cada uma das 4 paredes (2 células de espessura)
-    let door = null;
+    let door = null; const findDoor = !!cfg.wall;
     const tryLine = (along, fixedA, fixedB, a0, a1, vert) => { let run = 0, start = 0;
       for (let a = a0 + 2; a <= a1 - 1; a++) { const has = [fixedA, fixedB].some(f => logs.has(vert ? f + ',' + a : a + ',' + f));
         if (!has) { if (!run) start = a; run++; } else { if (run >= 2 && (!door || run > door.n)) door = { n: run, a0: start, a1: start + run, f: fixedA, vert }; run = 0; } } };
-    tryLine(0, x0, x0 + 1, z0, z1, true); tryLine(0, x1, x1 - 1, z0, z1, true); tryLine(0, z0, z0 + 1, x0, x1, false); tryLine(0, z1, z1 - 1, x0, x1, false);
+    if (findDoor) { tryLine(0, x0, x0 + 1, z0, z1, true); tryLine(0, x1, x1 - 1, z0, z1, true); tryLine(0, z0, z0 + 1, x0, x1, false); tryLine(0, z1, z1 - 1, x0, x1, false); }
     const C = CELL, wallT = 2 * C;
     let D = null;
     if (door) {
@@ -95,14 +101,15 @@
       b.door = { vert: door.vert, w0, w1, f0, f1 };
     }
     // PAREDES (colisão): tudo que bloqueia na altura das pernas, menos vidros/portas e o vão da porta
-    const walls = scan(g, .2, 1.4, o => /Input/i.test(o.material && o.material.name) || o.parent === (D && D.piv));
+    const walls = scan(g, .2, 1.4, o => isGlass(o) || o.parent === (D && D.piv));
     // vão de passagem com pelo menos 1,1 m (o corpo do personagem tem 0,45 m de raio)
     if (b.door) { const q = b.door, m = (q.w0 + q.w1) / 2, hw = Math.max(.55, (q.w1 - q.w0) / 2) + C / 2;
       for (const k of [...walls.keys()]) { const [x, z] = k.split(',').map(Number), cx = (x + .5) * C, cz = (z + .5) * C; if (q.vert ? (cx > q.f0 && cx < q.f1 && Math.abs(cz - m) < hw) : (cz > q.f0 && cz < q.f1 && Math.abs(cx - m) < hw)) walls.delete(k); } }
-    for (const r of rects(walls)) boxW(b, r[0], r[1], r[2], r[3], 0, 3.2);
+    // paredes na altura toda da construção (bloqueiam tiros e visão)
+    for (const r of rects(walls)) boxW(b, r[0], r[1], r[2], r[3], 0, Math.max(3.2, b.size.y * .9));
     // PISO de madeira por dentro + área da construção (grama não nasce dentro, câmera não atravessa paredes, bots sabem entrar)
     const ix0 = (x0 + 2) * C, ix1 = (x1 - 1) * C, iz0 = (z0 + 2) * C, iz1 = (z1 - 1) * C;
-    const fl = new T.Mesh(new T.BoxGeometry(ix1 - ix0, .06, iz1 - iz0), floorMat()); fl.position.set((ix0 + ix1) / 2, .03, (iz0 + iz1) / 2); fl.receiveShadow = true; g.add(fl);
+    if (D) { const fl = new T.Mesh(new T.BoxGeometry(ix1 - ix0, .06, iz1 - iz0), floorMat()); fl.position.set((ix0 + ix1) / 2, .03, (iz0 + iz1) / 2); fl.receiveShadow = true; g.add(fl); }
     const a = L2W(b, x0 * C, z0 * C), c2 = L2W(b, (x1 + 1) * C, (z1 + 1) * C);
     const fp = { x0: Math.min(a[0], c2[0]), x1: Math.max(a[0], c2[0]), z0: Math.min(a[1], c2[1]), z1: Math.max(a[1], c2[1]), door: D };
     if (D && b.door) { const q = b.door, out = q.vert ? (q.f0 < (x0 + x1) / 2 * C ? -1.6 : 1.6) : (q.f0 < (z0 + z1) / 2 * C ? -1.6 : 1.6), m = (q.w0 + q.w1) / 2, f = (q.f0 + q.f1) / 2;
@@ -123,8 +130,11 @@
     const src = SRC[b.model]; if (!src) return;
     const s = src.clone(true), g = new T.Group(), al = new T.Group(); al.add(s); g.add(al);
     // 1) alinha as paredes com os eixos: testa ângulos e fica com o que dá a menor "caixa" em volta das paredes
+    const cfg = MODELS[b.model] || {};
+    // escala para o tamanho real
+    if (cfg.len) { s.updateMatrixWorld(true); const b0 = new T.Box3().setFromObject(s), sz = b0.getSize(new T.Vector3()); s.scale.multiplyScalar(cfg.len / Math.max(sz.x, sz.z)); }
     if (b.align == null) {
-      const occ = scan(al, .3, 1.2, o => /Input/i.test(o.material && o.material.name)), pts = [...occ.keys()].map(k => k.split(',').map(Number));
+      const occ = scan(al, .3, 1.2, o => !!(cfg.glass && cfg.glass.test(o.material && o.material.name))), pts = [...occ.keys()].map(k => k.split(',').map(Number));
       let best = 0, bestA = 1e18; for (let a = 0; a < 90; a += .5) { const r = a * Math.PI / 180, c = Math.cos(r), sn = Math.sin(r); let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9;
         for (const [x, z] of pts) { const X = x * c - z * sn, Z = x * sn + z * c; if (X < x0) x0 = X; if (X > x1) x1 = X; if (Z < z0) z0 = Z; if (Z > z1) z1 = Z; }
         const A_ = (x1 - x0) * (z1 - z0); if (A_ < bestA) { bestA = A_; best = r; } }
@@ -140,7 +150,7 @@
     try { furnish(b, s); } catch (e) { console.warn('construção: interior/colisão', e); }
     if (typeof b.onPlace === 'function') b.onPlace(b);
   }
-  for (const k in MODELS) new T.GLTFLoader().load(MODELS[k], gl => {
+  for (const k in MODELS) new T.GLTFLoader().load(MODELS[k].url, gl => {
     SRC[k] = gl.scene; for (const b of (typeof BLDS !== 'undefined' ? BLDS : [])) if (b.model === k) place(b);
   }, undefined, e => console.warn('construção', k, e));
 })();
