@@ -1,5 +1,25 @@
 # Histórico de versões
 
+## 3.15.0 — Ilha Zênite, arranha-céu com cordas e nova capa
+- **Nova capa do Deadzone** como ícone do aplicativo (e do site).
+- **Nomes novos, inventados**, em todo o mapa: Zonária (cidade principal), Vila Rubra, Cerraluz,
+  Altamorra, Forte Cinzento, Colégio Nébula, Cais Névoa, Galpões Vértice, Posto Z-1, Fazenda
+  Corvina, Pedreira Cinza, Praia Ermo, Usina Volta e **Zênite** (ilha nova).
+- **Sem placas** com o nome dos lugares: o nome aparece só no mapa.
+- **Ilha Zênite** (oeste, ao lado da montanha da pedreira), com metade do lado da ilha principal,
+  ligada por uma **ponte** de 135 m (tabuleiro com asfalto, muretas, postes e pilares no mar —
+  dá para atravessar a pé ou de buggy). Cidade com 8 quarteirões em volta da praça central.
+- **Torre Zênite (arranha-céu de 78 m)** no centro da ilha: só o **saguão** é aberto (fachada de
+  vidro que quebra, entradas a leste e oeste, colunas, balcão). Dois poços de elevador com uma
+  **corda** cada: perto dela o botão vira **Subir**/**Descer** e o personagem é puxado segurando a
+  corda (≈7 s). No topo: **heliponto com o único helicóptero do mapa** e **2 casinhas** onde as
+  cordas chegam, mureta com faixa vermelha e antena.
+- Helicópteros: só o do arranha-céu. Na base militar ficou um **helicóptero explodido**
+  (queimado, tombado, com destroços) e o estádio ficou sem helicóptero.
+- Mapa maior (ilha principal + Ilha Zênite): zona, rota do avião e mapa grande cobrem as duas
+  ilhas; a zona final cai sempre em terra, perto de uma cidade ou local.
+- Buggies passam a reconhecer pisos (ponte e calçadas).
+
 ## 3.14.0 — pente fino: estradas, interiores, torre, posto e mais lugares
 - **Ilha de volta ao formato quadrado** (o formato redondo foi desfeito).
 - **Estradas sem terra atravessando o asfalto**: pista com seção plana, terreno totalmente plano a

@@ -7,7 +7,7 @@ function mvp(dx,dz){for(const ax of[0,1]){if(ax)P.z+=dz;else P.x+=dx;
   if(d<.45){if(d>0){P.x+=ex/d*(.45-d);P.z+=ez/d*(.45-d)}else P.x=b.x0-.45}}}
  for(const c of CARS){if(c.heli||MP||Math.abs(c.x-P.x)>4.5||Math.abs(c.z-P.z)>4.5)continue;const sx=Math.sin(c.yaw),cz=Math.cos(c.yaw);for(const o of[-1.4,0,1.4]){const ex=P.x-(c.x+sx*o),ez=P.z-(c.z+cz*o),d=Math.hypot(ex,ez);if(d<1.55&&d>0){P.x+=ex/d*(1.55-d);P.z+=ez/d*(1.55-d)}}}
  if(MP&&AR){P.x=Math.max(AR.x0,Math.min(AR.x1,P.x));P.z=Math.max(AR.z0,Math.min(AR.z1,P.z))}
- P.x=Math.max(-(MAPH-5),Math.min(MAPH-5,P.x));P.z=Math.max(-(MAPH-5),Math.min(MAPH-5,P.z))}
+ P.x=MCLX(P.x,5);P.z=MCLZ(P.z,5)}
 let yaw=0,pit=.25,ph=0,amt=0,jx=0,jy=0,keys={},tm=null,tl=null,jo={x:0,y:0},lx=0,ly=0,drag=0;
 const jb=document.getElementById('jb'),jk=document.getElementById('jk');
 function look(dx,dy){if(mode==='plane'){oy-=dx*.008;op=Math.max(-1.3,Math.min(1.4,op+dy*.006));return}const s=(1-(scp===3?.88:.4)*adk)*CFG.sens;yaw-=dx*.006*s;pit=Math.max(-.25,Math.min(.85,pit+dy*.004*s))}

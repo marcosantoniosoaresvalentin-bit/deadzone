@@ -6,7 +6,7 @@ function enterCar(c){if(c.dead){say(c.heli?'Helicóptero destruído':'Carro dest
 function exitCar(){const c=drv;if(c.heli){if(c.y-(c.fb||0)<=2.5&&Math.abs(c.spd)<5){P.x=c.x+Math.cos(c.yaw)*3.6;P.z=c.z-Math.sin(c.yaw)*3.6;P.y=Math.max(GY(P.x,P.z,c.y+1.3),c.y);P.vy=0;drv=null;mode='ground';mvp(0,0);pl.visible=true;yaw=c.yaw;setLabel();HK.u=HK.d=0;return}
   if(c.y-(c.fb||0)>=15||(c.crash&&c.y-(c.fb||0)>=6)){P.x=c.x;P.z=c.z;P.y=c.y;P.vy=-6;drv=null;pl.visible=true;yaw=c.yaw;HK.u=HK.d=0;openChute();say('🪂 Você saltou do helicóptero!',3);return}
   say('Pouse para sair · ou suba acima de 15 m para saltar de paraquedas',2.5);return}
- if(Math.abs(c.spd)>5){say('Reduza a velocidade para sair',1.5);return}P.x=c.x+Math.cos(c.yaw)*2.6;P.z=c.z-Math.sin(c.yaw)*2.6;P.y=TERH(P.x,P.z);P.vy=0;drv=null;mode='ground';mvp(0,0);pl.visible=true;yaw=c.yaw;setLabel()}
+ if(Math.abs(c.spd)>5){say('Reduza a velocidade para sair',1.5);return}P.x=c.x+Math.cos(c.yaw)*2.6;P.z=c.z-Math.sin(c.yaw)*2.6;P.y=GY(P.x,P.z,(c.cy||TERH(c.x,c.z))+1);P.vy=0;drv=null;mode='ground';mvp(0,0);pl.visible=true;yaw=c.yaw;setLabel()}
 // personagem SENTADO no banco do motorista, com as mãos no volante (IK) girando para os lados
 const _seatV=new T.Vector3(),SEAT0={car:new T.Vector3(.38,.6,-.2),heli:new T.Vector3(0,1.5,1.25)};let steerA=0;
 function seatPose(dt_,ix_){const c=drv;if(!c||!c.g)return;const g=c.g,s=(g.userData&&g.userData.seat)||(c.heli?SEAT0.heli:SEAT0.car);g.updateMatrixWorld();
@@ -43,7 +43,7 @@ function collideCar(c){const sx=Math.sin(c.yaw),cz=Math.cos(c.yaw);let hit=0;
   for(const b of near(px,pz)){if(b.off)continue;const qx=Math.max(b.x0,Math.min(px,b.x1)),qz=Math.max(b.z0,Math.min(pz,b.z1)),ex=px-qx,ez=pz-qz,d=Math.hypot(ex,ez);if(d<1.15){if(d>0){ax+=ex/d*(1.15-d);az+=ez/d*(1.15-d)}else ax+=b.x0-px-1.15;hit=1}}
   c.x+=ax;c.z+=az}
  if(hit){const s=Math.abs(c.spd);if(s>5)hitCar(c,(s-5)*2.4);if(drv===c&&s>12)hp-=(s-12)*1.2;c.spd*=-.25;sfx(400,Math.min(.6,s/30),.15,0)}
- carVsCars(c);c.x=Math.max(-(MAPH-5),Math.min(MAPH-5,c.x));c.z=Math.max(-(MAPH-5),Math.min(MAPH-5,c.z))}
+ carVsCars(c);c.x=MCLX(c.x,5);c.z=MCLZ(c.z,5)}
 // FÍSICA DO CARRO (corpo rígido): 4 rodas com suspensão (mola + amortecedor) e 8 quinas da
 // carroceria que batem no chão. Gravidade, inércia de arfagem/rolagem e força da curva.
 // Nada "puxa" o carro de volta para ficar em pé: se passar do ponto de equilíbrio, ele tomba.
@@ -69,10 +69,10 @@ function carAir(c,dt){
   _cO.set(0,CPH.cm,0).applyQuaternion(_cQ);const ox=c.x-_cO.x,oy=c.cy-_cO.y,oz=c.z-_cO.z;
   let Fy=0,tx=0,tz=0;wn=0;
   const cyw=Math.cos(-c.yaw),syw=Math.sin(-c.yaw),hvx=Math.sin(c.yaw)*c.spd,hvz=Math.cos(c.yaw)*c.spd;
-  const contact=(q,K,D,isW)=>{_cV.set(q[0],q[1],q[2]).applyQuaternion(_cQ);const wx=ox+_cV.x,wy=oy+_cV.y,wz=oz+_cV.z,g=TERH(wx,wz),pen=g-wy;
+  const contact=(q,K,D,isW)=>{_cV.set(q[0],q[1],q[2]).applyQuaternion(_cQ);const wx=ox+_cV.x,wy=oy+_cV.y,wz=oz+_cV.z,g=GY(wx,wz,wy+.6),pen=g-wy;/* GY: terreno + pisos (ponte, calçadas) */
    if(pen<=0)return;
    // quanto o chão sobe/desce sob o ponto com o carro andando (o amortecedor usa a velocidade RELATIVA ao chão)
-   const gr=(TERH(wx+hvx*.08,wz+hvz*.08)-g)/.08;
+   const gr=(GY(wx+hvx*.08,wz+hvz*.08,wy+.6)-g)/.08;
    // velocidade vertical do ponto = vy + (w x r).y ; w em coordenadas "sem yaw"
    // braço a partir do CENTRO DE MASSA, girado para o referencial do carro sem a direção (yaw)
    const rx=_cV.x-_cO.x,rz=_cV.z-_cO.z,ax=rx*cyw+rz*syw,az=-rx*syw+rz*cyw;
@@ -90,7 +90,7 @@ function carAir(c,dt){
   // no ar: o bico acompanha a direção do voo e a rolagem estabiliza devagar (efeito do ar/peso), sem travar
   if(wn===0){const tp_=Math.max(-.45,Math.min(.45,-Math.atan2(c.vy,Math.abs(c.spd)+4)*.8));c.pv+=((tp_-c.p)*3.2-c.pv*1.6)*h;if(Math.abs(c.r)<1.3)c.rv+=(-c.r*2.2-c.rv*1.2)*h}
   c.p=wrapA(c.p+c.pv*h);c.r=wrapA(c.r+c.rv*h);
-  if(c.cy<TERH(c.x,c.z)-.5){c.cy=TERH(c.x,c.z)+CPH.cm;c.vy=0}}
+  {const g_=GY(c.x,c.z,c.cy+1.5);if(c.cy<g_-.5){c.cy=g_+CPH.cm;c.vy=0}}}
  c.wn=wn;c.air=wn===0&&!bodyHit;c.bImp=bImp;
  _cU.set(0,1,0).applyQuaternion(_cQ);const up=_cU.y;c.ok=up>.55&&wn>=2;
  // dano só quando o carro bate DE LADO ou DE TETO (inclinado mais de 45°) com força.

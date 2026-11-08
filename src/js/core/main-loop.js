@@ -35,9 +35,9 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;try{d
  let l=Math.hypot(ix,iy);if(l>1){ix/=l;iy/=l;l=1}
  const fx=Math.sin(yaw),fz=Math.cos(yaw),dx=fx*-iy-fz*ix,dz=fz*-iy+fx*ix,k=Math.min(1,dt*10);
  if(mode==='ground'){
-  if(VLT)vaultTick(dt);else{const spd=(6-cr*3-pr*4.8)*(1-.4*adk)*(cast?.5:1)*(mpMove()?1:0);mvp(dx*spd*l*dt,dz*spd*l*dt);
+  if(RIDE)ropeTick(dt);else if(VLT)vaultTick(dt);else{const spd=(6-cr*3-pr*4.8)*(1-.4*adk)*(cast?.5:1)*(mpMove()?1:0);mvp(dx*spd*l*dt,dz*spd*l*dt);
   P.vy-=20*dt;P.y+=P.vy*dt;{const gy_=GY(P.x,P.z,P.y+.01);if(P.y<=gy_||(P.vy<=0&&P.y-gy_<.4&&P.y-gy_>0&&(Math.abs(gy_-TERH(P.x,P.z))<.01||P.y-gy_<.25))){P.y=gy_;P.vy=0}else if(P.vy<-22&&P.y-gy_>6)openChute()}}
-  air+=((P.y>GY(P.x,P.z,P.y)+.02?1:0)-air)*Math.min(1,dt*12);if(window.DZW&&DZW.touch&&(l>.05||P.vy))DZW.touch(P.x,P.y,P.z,dx,dz);{/* caindo de lugar alto (prédio): o botão de pulo vira "Abrir" paraquedas */const hi_=P.vy<-1&&P.y-GY(P.x,P.z,P.y)>3;if(hi_!==!!window.__hiF){window.__hiF=hi_;bj.textContent=hi_?'Abrir':'Pular';if(hi_)say('Toque em Abrir para usar o paraquedas',2)}}cr+=((st===1?1:0)-cr)*k;pr+=((st===2?1:0)-pr)*Math.min(1,dt*3);
+  air+=((P.y>GY(P.x,P.z,P.y)+.02?1:0)-air)*Math.min(1,dt*12);if(window.DZW&&DZW.touch&&(l>.05||P.vy))DZW.touch(P.x,P.y,P.z,dx,dz);{/* caindo de lugar alto (prédio): o botão de pulo vira "Abrir" paraquedas */const hi_=!RIDE&&P.vy<-1&&P.y-GY(P.x,P.z,P.y)>3,rn_=hi_?null:ropeNear(),lb_=hi_?'Abrir':rn_?(rn_.up?'Subir':'Descer'):'Pular';if(lb_!==window.__bjL){window.__bjL=lb_;bj.textContent=lb_;if(hi_)say('Toque em Abrir para usar o paraquedas',2);if(rn_)say(rn_.up?'Toque em Subir para usar a corda':'Toque em Descer para usar a corda',2)}window.__hiF=hi_}cr+=((st===1?1:0)-cr)*k;pr+=((st===2?1:0)-pr)*Math.min(1,dt*3);
   if(firing||keys.f||ads){pl.rotation.y+=(((yaw-pl.rotation.y+Math.PI*3)%(Math.PI*2))-Math.PI)*Math.min(1,dt*14)}
   else if(l>.05){const g=Math.atan2(dx,dz),d=((g-pl.rotation.y+Math.PI*3)%(Math.PI*2))-Math.PI;pl.rotation.y+=d*Math.min(1,dt*12)}
   ph+=dt*l*(11-cr*4);cw+=dt*l*4.5;amt+=(l-amt)*k;
@@ -46,7 +46,7 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;try{d
  }else if(mode==='sky'||mode==='chute'){
   const ch_=mode==='chute',f_=-iy;fw+=((f_>0?f_:0)-fw)*k;bk+=((f_<0?-f_:0)-bk)*k;sd+=(ix-sd)*k;
   const fc=fw+.6*bk,sp=(ch_?12:26)*(1+.5*fw);
-  {const ox_=P.x,oz_=P.z;P.x=Math.max(-(MAPH-5),Math.min(MAPH-5,P.x+(fx*fc-fz*sd)*sp*dt));P.z=Math.max(-(MAPH-5),Math.min(MAPH-5,P.z+(fz*fc+fx*sd)*sp*dt));
+  {const ox_=P.x,oz_=P.z;P.x=MCLX(P.x+(fx*fc-fz*sd)*sp*dt,5);P.z=MCLZ(P.z+(fz*fc+fx*sd)*sp*dt,5);
    // não entra no mar fundo (só na água rasa da beira)
    const nh_=TERH(P.x,P.z);if(nh_<-.9&&nh_<TERH(ox_,oz_)){P.x=ox_;P.z=oz_}}
   const tv=ch_?-(5+9*fw-2.2*bk):-(40+25*fw-10*bk);P.vy+=(tv-P.vy)*Math.min(1,dt*(ch_?2.5:3));
@@ -78,7 +78,7 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;try{d
   lg1.kn.rotation.x+=.28*Math.max(0,c_)*k_;lg2.kn.rotation.x+=.28*Math.max(0,-c_)*k_;lg1.th.rotation.x-=.08*Math.max(0,c_)*k_;lg2.th.rotation.x-=.08*Math.max(0,-c_)*k_;lg1.th.rotation.z-=.18*Math.max(0,c_)*k_;lg2.th.rotation.z+=.18*Math.max(0,-c_)*k_;body.position.y-=.03*pp}
  if(ml>0){ml=Math.max(0,ml-dt);const q_=1-ml/.35,s_=Math.sin(Math.min(1,q_)*Math.PI);if(mode==='ground'){aR.sh.rotation.set(mlK?-1.2-.6*s_:-1.3-.9*s_,mlK?-.5*s_:0,mlK?-.4+.9*s_:.1);aR.el.rotation.x=-.25-(1-s_)*.7;tor.rotation.y=-.45*s_;tor.rotation.x+=.1*s_}}
  knf.visible=ml>0&&!!mlK&&mode==='ground';
- animExtra(dt);try{const g_=mode==='ground'&&ml<=0;CH.loco={w:mode==='lobby'?1:g_?(1-cr)*(1-Math.min(1,pr*3))*(1-air):0,sp:g_?amt*(6-cr*3)*(1-.4*adk)*(cast?.5:1):0,arm:!!(rf.visible||cast||GA||TH||ml>0),fw:l>.05?(dx*Math.sin(pl.rotation.y)+dz*Math.cos(pl.rotation.y))/l:1}}catch(e){}pl.position.set(P.x,P.y,P.z);if(mode==='drive'&&drv)seatPose(dt,typeof ix!=='undefined'?ix:0);else if(VLT&&mode==='ground')vaultPose();else if(pl.rotation.x||pl.rotation.z){pl.rotation.x=0;pl.rotation.z=0}shd.visible=mode==='ground'||mode==='lobby';shd.position.x=P.x;shd.position.z=P.z;{const g_=GY(P.x,P.z,P.y);shd.position.y=g_+.03;shd.scale.setScalar(Math.max(.4,1-(P.y-g_)*.2))};
+ animExtra(dt);try{const g_=mode==='ground'&&ml<=0;CH.loco={w:mode==='lobby'?1:g_?(1-cr)*(1-Math.min(1,pr*3))*(1-air):0,sp:g_?amt*(6-cr*3)*(1-.4*adk)*(cast?.5:1):0,arm:!!(rf.visible||cast||GA||TH||ml>0),fw:l>.05?(dx*Math.sin(pl.rotation.y)+dz*Math.cos(pl.rotation.y))/l:1}}catch(e){}pl.position.set(P.x,P.y,P.z);if(mode==='drive'&&drv)seatPose(dt,typeof ix!=='undefined'?ix:0);else if(RIDE&&mode==='ground')ropePose();else if(VLT&&mode==='ground')vaultPose();else if(pl.rotation.x||pl.rotation.z){pl.rotation.x=0;pl.rotation.z=0}shd.visible=mode==='ground'||mode==='lobby';shd.position.x=P.x;shd.position.z=P.z;{const g_=GY(P.x,P.z,P.y);shd.position.y=g_+.03;shd.scale.setScalar(Math.max(.4,1-(P.y-g_)*.2))};
  if(window.DZChute&&DZChute.ready)DZChute.update(dt,fw,bk,sd);else{canopy.position.set(P.x,P.y+1.6,P.z);canopy.rotation.set(.55*fw-.3*bk,yaw,sd*.3,'YXZ')}
  for(const o of loot){const vv=Math.abs(o.x-P.x)+Math.abs(o.z-P.z)<110&&!MP;o.top.visible=vv;}
  for(const b of bots){

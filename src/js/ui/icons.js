@@ -31,6 +31,8 @@
     brake: S('<rect x="3.5" y="7" width="17" height="10" rx="3"/><path d="M7.5 10v4M10.5 10v4M13.5 10v4M16.5 10v4"/>'),
     reverse: S('<path d="M18.5 7.5H9a5 5 0 0 0 0 10h7.5"/><path d="M12 3.5 8 7.5l4 4" transform="translate(-1.5 0)"/>'),
     up: S('<path d="M5 15.5 12 8.5l7 7"/>'),
+    ropeUp: S('<path d="M12 21V5"/><path d="M7.5 9.5 12 5l4.5 4.5"/><path d="M9 15h6M9 18h6"/>'),
+    ropeDown: S('<path d="M12 3v16"/><path d="M7.5 14.5 12 19l4.5-4.5"/><path d="M9 6h6M9 9h6"/>'),
     down: S('<path d="M5 8.5l7 7 7-7"/>'),
     // portas, mochila, itens
     doorOpen: S('<path d="M4 21h16M6 21V3.5h9.5V21"/><path d="M6 3.5 13 6v15"/><circle cx="11" cy="13" r=".9" fill="currentColor"/>'),
@@ -42,7 +44,7 @@
   };
   // texto que o jogo escreve -> ícone, por botão
   const MAP = {
-    bj: { Pular: 'jump', Saltar: 'leap', Abrir: 'chute' },
+    bj: { Pular: 'jump', Saltar: 'leap', Abrir: 'chute', Subir: 'ropeUp', Descer: 'ropeDown' },
     bv: { Entrar: 'wheel', Sair: 'exit' },
     bf: { Atirar: 'shoot', Atacar: 'punch', 'Lançar': 'throwIt' },
     bo: { Abrir: 'doorOpen', Fechar: 'doorClose' }

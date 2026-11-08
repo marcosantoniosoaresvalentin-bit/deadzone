@@ -69,7 +69,7 @@
   }
   // parede com vários portões: gates = [[centro, meia largura], ...]
   function wallGates(x0, z, x1, gates, brick) { const gs = gates.slice().sort((a, b) => a[0] - b[0]); let u = x0; for (const [c, h] of gs) { lowWall(u, z, c - h, z, brick); u = c + h; } lowWall(u, z, x1, z, brick); }
-  // ======================= CIDADE (Porto Velho, Vila Serena, Monte Verde...) =======================
+  // ======================= CIDADES (Zonária, Vila Rubra, Cerraluz, Altamorra, Zênite) =======================
   function buildTown(C) {
   H = C.h != null ? C.h : TERH(C.x, C.z);
   // ---------- ruas ----------
@@ -177,8 +177,6 @@
     for (const [x0, x1] of [[b.x0, ix0], [ix1, b.x1]]) for (const [z0, z1] of [[b.z0, iz0], [iz1, b.z1]]) { box(MC, x0, H, z0, x1, H + NT * TH + 3.2, z1, 0xd6d0c4); col(x0, z0, x1, z1, H - 1, H + NT * TH + 3.2); floor(x0, z0, x1, z1, H + NT * TH + 3.2); }
     // torres de iluminação nos cantos
     for (const [x, z] of [[b.x0 + 2, b.z0 + 2], [b.x1 - 2, b.z0 + 2], [b.x0 + 2, b.z1 - 2], [b.x1 - 2, b.z1 - 2]]) { const y0 = H + NT * TH + 3.2; box(MM, x - .3, y0, z - .3, x + .3, y0 + 18, z + .3, 0x7d8186); box(MM, x - 2, y0 + 18, z - .4, x + 2, y0 + 20.4, z + .4, 0x55595e); box(MW, x - 1.8, y0 + 18.2, z - .45, x + 1.8, y0 + 20.2, z - .4, 0xfff6d8); LAMPS.push({ x, y: y0 + 19, z }); }
-    // letreiro
-    box(MW, cx - 8, H + NT * TH + 3.4, b.z1 - .1, cx + 8, H + NT * TH + 5.2, b.z1 + .05, 0x1d3f7a);
   }
   // GARAGEM aberta (estilo battle royale): 3 paredes, laje, porta de enrolar levantada, piso de concreto
   // chapa ondulada da porta de enrolar (listras horizontais)
@@ -199,6 +197,7 @@
     LAMPS.push({ x: G.x, y: H + 2.6, z: G.z }); FP.push({ x0, x1, z0, z1 }); (window.DZCEIL || []).push({ x0, x1, z0, z1, y: H + Hh - .01 });
     GAR.push(G);
   }
+  for (const b of C.blocks) if (b.tower) skyscraper(b);
   for (const b of C.blocks) if (b.stadium) { stadium(b); for (const q of NETS) box(MNET, ...q, 0xffffff); NETS.length = 0; }
   for (const L of C.lots) {
     const m = .5, x0 = L.x0 + (L.eL ? m : 0), x1 = L.x1 - (L.eR ? m : 0), z0 = L.z0 + m, z1 = L.z1 - m, front = L.rot ? z0 : z1, back = L.rot ? z1 : z0, brick = rnd() < .5;
@@ -412,7 +411,7 @@
         // cerca com portão (lado norte, z0) e guaritas + cancela
         const gx = -80; fence(S.x0 + 1, S.z0 + 1, S.x1 - 1, S.z0 + 1, [[gx, 4]]); fence(S.x0 + 1, S.z1 - 1, S.x1 - 1, S.z1 - 1); fence(S.x0 + 1, S.z0 + 1, S.x0 + 1, S.z1 - 1); fence(S.x1 - 1, S.z0 + 1, S.x1 - 1, S.z1 - 1);
         booth(gx - 6, S.z0 + 4, Math.PI / 2); booth(gx + 6, S.z0 + 4, -Math.PI / 2); barrier(gx - 4, S.z0 + 1.3, gx + 3.5);
-        sign(gx, H + 4.2, S.z0 + .9, 7, 1, 'BASE SENTINELA', true, '#3b4a2c'); for (const sx of [-4.3, 4.3]) { box(MM, gx + sx - .12, H, S.z0 + .8, gx + sx + .12, H + 4.8, S.z0 + 1.0, 0x3b3f42); }
+        // (sem placa com o nome: o nome do lugar aparece só no mapa)
         // torres de vigia nos 4 cantos
         tower(S.x0 + 6, S.z0 + 6, 0); tower(S.x1 - 6, S.z0 + 6, 0); tower(S.x0 + 6, S.z1 - 6, Math.PI); tower(S.x1 - 6, S.z1 - 6, Math.PI);
         // 2 hangares, 2 barracões (garagem de viaturas e depósito)
@@ -435,6 +434,7 @@
           col(ax - w, az - w, ax + w, az + w, H - 1, H + hh); const dg = new T.CylinderGeometry(1.4, .4, .5, 16); dg.rotateX(Math.PI / 2); dg.translate(ax, H + 14, az - 1); loose(dg.toNonIndexed(), MM, 0xe8e8e8).material = MM; }
         // contêineres, sacos de areia e caixotes
         container(-112, 28, true, 0x4d5a3a); container(-112, 30.6, true, 0x5a5f48); container(-112, 28, true, 0x4d5a3a, 1); container(-98, 37, false, 0x6b6f52); container(-60, 100, true, 0x4d5a3a); container(-52, 100, true, 0x5a5f48);
+        heliWreck(-48, 88, .7);
         sandbags(-75, 40, -68, 40); sandbags(-88, 72, -82, 72); sandbags(-60, 82, -54, 82); sandbags(-112, 92, -106, 92); sandbags(-72, 24, -66, 24); sandbags(-130, 30, -130, 36);
         for (const [x, z] of [[-88, 22], [-70, 88], [-108, 64], [-30, 80], [-50, 70]]) { box(MWD, x - .6, H, z - .6, x + .6, H + 1.2, z + .6); col(x - .6, z - .6, x + .6, z + .6, H - 1, H + 1.2); }
       } else if (S.t === 'school') {
@@ -442,7 +442,6 @@
         const gx = 15; wallGates(S.x0 + .5, S.z0 + .5, S.x1 - .5, [[gx, 2.5]], 0); lowWall(S.x0 + .5, S.z1 - .5, S.x1 - .5, S.z1 - .5, 0); lowWall(S.x0 + .5, S.z0 + .5, S.x0 + .5, S.z1 - .5, 0); lowWall(S.x1 - .5, S.z0 + .5, S.x1 - .5, S.z1 - .5, 0);
         pad(S.x0 + 1, S.z0 + 1, S.x1 - 1, S.z0 + 6, 0xb9b4aa); pad(gx - 2, S.z0 + 1, gx + 2, S.z0 + 6.5, 0xb9b4aa); pad(-12, 118, 44, 123, 0xb9b4aa);
         for (const sx of [-2.9, 2.9]) box(MC, gx + sx - .2, H, S.z0 + .3, gx + sx + .2, H + 3.6, S.z0 + .7, 0xd7d1c2);
-        sign(gx, H + 3.2, S.z0 + .25, 5.4, .9, 'ESCOLA ESTADUAL', true, '#1d4f8a');
         box(MM, -14 - .06, H, 103 - .06, -14 + .06, H + 9, 103 + .06, 0xd0d0d0); box(MPLAIN, -14 + .06, H + 7.6, 103 - .02, -14 + 1.9, H + 8.8, 103 + .02, 0x2a6fd0);
         // quadra poliesportiva
         const qx0 = 16, qx1 = 44, qz0 = 126, qz1 = 144; pad(qx0, qz0, qx1, qz1, 0x5f7f9f, MPLAIN);
@@ -462,7 +461,6 @@
         // pilhas de contêineres (cobertura)
         let ci = 0; for (const [x, z, n] of [[92, 197, 2], [92, 200, 1], [100, 197, 2], [92, 210, 1], [100, 210, 2], [100, 213, 1]]) for (let lv = 0; lv < n; lv++) container(x, z, true, contCols[(ci++) % contCols.length], lv);
         for (const [x, z] of [[40, 216], [70, 218], [86, 205]]) { box(MWD, x - .55, H, z - .55, x + .55, H + 1.1, z + .55); col(x - .55, z - .55, x + .55, z + .55, H - 1, H + 1.1); }
-        sign(70, H + 16.5, 205, 6, 1, 'CAIS DO SUL', true, '#1d4f8a');
       } else if (S.t === 'gas') {
         // pátio de concreto com faixa de entrada/saída ligada à estrada e meio-fio
         pad(S.x0 - 6, S.z0, S.x1, S.z1, 0xb3aea6);
@@ -480,11 +478,9 @@
             box(MPLAIN, x - .3, H + .22, zz - .5, x + .3, H + 1.75, zz + .5, 0xf2f0ea); box(MPLAIN, x - .32, H + 1.75, zz - .52, x + .32, H + 2.05, zz + .52, 0xc8241c);
             for (const sx of [-1, 1]) { box(MPLAIN, x + sx * .31 - .01, H + 1.05, zz - .32, x + sx * .31 + .01, H + 1.5, zz + .32, 0x1b1d20); box(MPLAIN, x + sx * .31 - .01, H + .55, zz - .2, x + sx * .31 + .01, H + .85, zz + .2, 0x2a2c2f); box(MM, x + sx * .33, H + .6, zz + .25, x + sx * .38, H + .95, zz + .32, 0x111111); }
             col(x - .32, zz - .52, x + .32, zz + .52, H - 1, H + 2.05); } }
-        // calibrador e lixeiras, totem alto com preços
+        // calibrador e lixeiras
         box(MPLAIN, 38.6, H, 38.6, 39.0, H + 1.2, 39.0, 0x2a5fa8); box(MPLAIN, 26.2, H, 50.6, 26.8, H + .9, 51.2, 0x3f7f43);
-        { const tx = 25.5, tz = 55; box(MC, tx - .5, H, tz - .3, tx + .5, H + 1, tz + .3, 0xd8d4cc); box(MM, tx - .12, H + 1, tz - .12, tx + .12, H + 6, tz + .12, 0x55595d); col(tx - .5, tz - .3, tx + .5, tz + .3, H - 1, H + 6);
-          box(MPLAIN, tx - .05, H + 6, tz - 1.55, tx + .05, H + 6.1, tz + 1.55, 0x55595d); sign(tx, H + 8.2, tz, 3, 1.2, 'ROTA 1', false, '#c8241c');
-          sign(tx, H + 6.85, tz, 3, 1.4, 'GAS 5,89', false, '#1b1d20'); }
+        // (sem totem com nome/preço)
       } else if (S.t === 'farm') {
         // cerca de madeira baixa (1,1 m: dá para pular) com porteira a oeste
         const wf = (x0, z0, x1, z1, gates) => { const ax = Math.abs(x1 - x0) > Math.abs(z1 - z0), a = ax ? Math.min(x0, x1) : Math.min(z0, z1), b = ax ? Math.max(x0, x1) : Math.max(z0, z1), f = ax ? z0 : x0;
@@ -498,7 +494,6 @@
         tank(99, 41, 2.8, 13, 0xd8d8d2); tank(104.2, 33, 2.4, 11, 0xcfcfc8); for (const [x, z, r_] of [[99, 41, 2.8], [104.2, 33, 2.4]]) { const cg = new T.ConeGeometry(r_ + .15, 1.8, 18); cg.translate(x, H + (r_ > 2.5 ? 13 : 11) + .9, z); loose(cg.toNonIndexed(), MM, 0xa9adb2).material = MM; }
         pad(57, 26, 72, 34, 0x8a7558); pad(72, 22, 90, 28, 0x8a7558);
         for (const [x, z, rr] of [[62, 15, 0], [65, 15.5, 0], [63.5, 17.6, 0], [66, 44, Math.PI / 2], [69, 44, Math.PI / 2]]) { const cg = new T.CylinderGeometry(.75, .75, 1.3, 14); cg.rotateZ(Math.PI / 2); cg.rotateY(rr); cg.translate(x, H + .75, z); loose(cg.toNonIndexed(), MPLAIN, 0xd9b45a); col(x - .75, z - .75, x + .75, z + .75, H - 1, H + 1.5); }
-        sign(55.3, H + 2.4, 30, 4, .7, 'FAZENDA BOA VISTA', false, '#5a3b22'); for (const sz of [27.3, 32.7]) box(MWD, 55.2, H, sz - .12, 55.45, H + 2.8, sz + .12, 0x6b5238);
       } else if (S.t === 'quarry') {
         // PEDREIRA: chão de cascalho, montes de pedra (cobertura), britador com esteira, 2 barracões, escritório (com interior)
         pad(S.x0 + 1, S.z0 + 1, S.x1 - 1, S.z1 - 1, 0x9a8f80);
@@ -509,7 +504,6 @@
           box(MCOR, bx - 2.4, H + 5, bz - 2.4, bx + 2.4, H + 7, bz + 2.4, 0xc9a227); box(MM, bx - 1.6, H + 7, bz - 1.6, bx + 1.6, H + 8.2, bz + 1.6, 0x5a5d61); floor(bx - 2.4, bz - 2.4, bx + 2.4, bz + 2.4, H + 7);
           beam(bx + 2.4, H + 6, bz, bx + 13, H + .8, bz, .9, 0x3a3d41); }
         shed(-201, -78, Math.PI / 2, 12, 14, { color: 0xb79a6b, roof: 0x7a6a50, crates: 3 }); shed(-172, -66, Math.PI, 10, 12, { color: 0xc4c7cb, crates: 2, door: 6 });
-        sign(-190, H + 3.6, S.z1 - .9, 5, .9, 'PEDREIRA', true, '#6b4a22'); for (const sx of [-3.4, 3.4]) box(MM, -190 + sx - .1, H, S.z1 - 1, -190 + sx + .1, H + 4, S.z1 - .8, 0x3b3f42);
       } else if (S.t === 'beach') {
         // PRAIA: quiosques de palha abertos, guarda-sol, cadeiras de praia, posto de salva-vidas, calçadão
         box(MWD, S.x0, H - .1, S.z0, S.x1, H + .12, S.z0 + 3, 0xd2b48c); floor(S.x0, S.z0, S.x1, S.z0 + 3, H + .12);
@@ -538,19 +532,112 @@
         { const tx = 218, tz = 0, hh = 18, w = 1.6; for (const [dx, dz] of [[-w, -w], [w, -w], [-w, w], [w, w]]) beam(tx + dx, H, tz + dz, tx + dx * .3, H + hh, tz + dz * .3, .14, 0x8a8f95);
           for (let y = 0; y < hh - 3; y += 3) { const k = 1 - y / hh * .7, k2 = 1 - (y + 3) / hh * .7; beam(tx - w * k, H + y, tz - w * k, tx + w * k2, H + y + 3, tz - w * k2, .07, 0x8a8f95); beam(tx + w * k, H + y, tz + w * k, tx - w * k2, H + y + 3, tz + w * k2, .07, 0x8a8f95); }
           box(MM, tx - 4, H + hh - 2, tz - .15, tx + 4, H + hh - 1.7, tz + .15, 0x8a8f95); col(tx - w, tz - w, tx + w, tz + w, H - 1, H + hh); }
-        sign(181.5, H + 3.4, -5, 5, .9, 'USINA LESTE', false, '#2b4a6b');
       } else if (S.t === 'depot') {
         pad(S.x0 + 1, S.z0 + 1, S.x1 - 1, S.z1 - 1, 0x958f84);
         fence(S.x0 + 1, S.z0 + 1, S.x1 - 1, S.z0 + 1, [[-182, 4]]); fence(S.x0 + 1, S.z1 - 1, S.x1 - 1, S.z1 - 1, [[-182, 4]]); fence(S.x0 + 1, S.z0 + 1, S.x0 + 1, S.z1 - 1); fence(S.x1 - 1, S.z0 + 1, S.x1 - 1, S.z1 - 1, [[7, 4]]);
         shed(-200, 8, Math.PI / 2, 22, 16, { color: 0xc9cdd1, crates: 6, door: 8 }); shed(-170, 21, Math.PI, 16, 11, { color: 0xb5755a, roof: 0x8d5b45, crates: 4 }); shed(-168, -4, 0, 14, 10, { color: 0xd3cfc3, crates: 3 });
         tank(-156, 4, 2.2, 5); tank(-156, 11, 2.2, 5, 0xd6c78a);
         let ci = 0; for (const [x, z, ax, lv] of [[-188, -9, false, 0], [-185, -9, false, 0], [-185, -9, false, 1], [-160, 26, true, 0]]) container(x, z, ax, contCols[(ci++) % contCols.length], lv);
-        sign(-182, H + 3.6, S.z1 - .9, 6, .9, 'GALPÕES DO OESTE', true, '#5a3b22'); for (const sx of [-4.2, 4.2]) box(MM, -182 + sx - .1, H, S.z1 - 1, -182 + sx + .1, H + 4, S.z1 - .8, 0x3b3f42);
       }
     }
   }
+  // ======================= ARRANHA-CÉU (Torre Zênite) =======================
+  // só o térreo é aberto (saguão). Dois poços de elevador sem elevador: em cada um uma CORDA leva até o topo
+  // (e traz de volta). No topo: heliponto com o único helicóptero do mapa e 2 casinhas onde as cordas chegam.
+  window.ROPES = window.ROPES || [];
+  const TXGL = canvasT(128, 128, (g, w, h) => {
+    g.fillStyle = '#26323d'; g.fillRect(0, 0, w, h);
+    for (let c = 0; c < 2; c++) { const gr = g.createLinearGradient(c * 64, 0, c * 64 + 64, 128); gr.addColorStop(0, 'rgba(150,185,210,.55)'); gr.addColorStop(.45, 'rgba(60,85,105,.35)'); gr.addColorStop(1, 'rgba(120,160,190,.5)'); g.fillStyle = gr; g.fillRect(c * 64 + 3, 12, 58, 112); }
+    g.fillStyle = '#c9ced3'; g.fillRect(0, 0, w, 12); g.fillStyle = '#8d949b'; g.fillRect(0, 0, 3, h); g.fillRect(64, 0, 3, h); g.fillRect(0, 124, w, 4);
+    for (let i = 0; i < 6; i++) { g.fillStyle = 'rgba(255,240,200,' + (Math.random() * .25) + ')'; g.fillRect((Math.random() < .5 ? 3 : 67) + Math.random() * 30, 20 + Math.random() * 80, 20, 30); } });
+  const MGL = triMat(TXGL, 1 / 3.6); MGL.metalness = .55; MGL.roughness = .25;
+  function skyscraper(b) {
+    const TW = typeof TOWER !== 'undefined' ? TOWER : { x: (b.x0 + b.x1) / 2, z: (b.z0 + b.z1) / 2, w: 26, h: 78 };
+    const cx = TW.x, cz = TW.z, hw = TW.w / 2, LH = 5.6, TOP = H + TW.h, RY = TOP + .06, x0 = cx - hw, x1 = cx + hw, z0 = cz - hw, z1 = cz + hw;
+    // praça em volta (piso de pedra) e saguão (piso claro)
+    box(MS, b.x0, H - .2, b.z0, b.x1, H + .1, b.z1, 0xdedad2); floor(b.x0, b.z0, b.x1, b.z1, H + .1); RDS.push([b.x0, b.z0, b.x1, b.z1]);
+    box(MPLAIN, x0 + .3, H + .1, z0 + .3, x1 - .3, H + .13, z1 - .3, 0xe9e6df); floor(x0, z0, x1, z1, H + .13);
+    // fachada do saguão: montantes, vidros (quebram), entradas abertas no leste e no oeste
+    const bay = 2.6, panes = [];
+    const side = (alongX, f, out) => { const a0 = alongX ? x0 : z0, a1 = alongX ? x1 : z1, mid = (a0 + a1) / 2;
+      for (let u = a0; u < a1 - .01; u += bay) { const c = u + bay / 2, ent = !alongX && Math.abs(c - mid) < bay * 1.01;
+        // montante
+        alongX ? (box(MM, u - .08, H, f - .15, u + .08, H + LH, f + .15, 0x2b2f33), col(u - .1, f - .2, u + .1, f + .2, H - 1, H + LH)) : (box(MM, f - .15, H, u - .08, f + .15, H + LH, u + .08, 0x2b2f33), col(f - .2, u - .1, f + .2, u + .1, H - 1, H + LH));
+        if (ent) continue;
+        alongX ? box(MC, u, H, f - .12, u + bay, H + .35, f + .12, 0x8d8b86) : box(MC, f - .12, H, u, f + .12, H + .35, u + bay, 0x8d8b86);
+        panes.push(alongX ? [c, H + .35 + 2.1, f, 0] : [f, H + .35 + 2.1, c, Math.PI / 2]);
+        alongX ? col(u, f - .12, u + bay, f + .12, H - 1, H + LH) : col(f - .12, u, f + .12, u + bay, H - 1, H + LH); }
+      // faixa de concreto em cima do saguão
+      alongX ? box(MC, a0 - .2, H + LH - .9, f - .25, a1 + .2, H + LH, f + .25, 0xbdb8ae) : box(MC, f - .25, H + LH - .9, a0 - .2, f + .25, H + LH, a1 + .2, 0xbdb8ae); };
+    side(true, z0, -1); side(true, z1, 1); side(false, x0, -1); side(false, x1, 1);
+    if (window.DZW) { const gq = new T.Group(); sc.add(gq); DZW.add(gq, panes, bay - .2, 4.2 - .2); }
+    // marquises de vidro nas entradas
+    for (const f of [x0 - 3, x1]) { box(MM, f, H + LH - .3, cz - 4, f + 3, H + LH - .15, cz + 4, 0x2b2f33); }
+    // colunas, balcão e poços das cordas (abertos para o centro)
+    for (const [dx, dz] of [[-6.5, -4], [6.5, -4], [-6.5, 4], [6.5, 4]]) { box(MC, cx + dx - .45, H, cz + dz - .45, cx + dx + .45, H + LH, cz + dz + .45, 0xd6d1c7); col(cx + dx - .45, cz + dz - .45, cx + dx + .45, cz + dz + .45, H - 1, H + LH); }
+    box(MWD, cx - 2.2, H, cz - .6, cx + 2.2, H + 1.1, cz + .6, 0x6b4a33); box(MPLAIN, cx - 2.3, H + 1.1, cz - .7, cx + 2.3, H + 1.16, cz + .7, 0x22262a); col(cx - 2.2, cz - .6, cx + 2.2, cz + .6, H - 1, H + 1.1);
+    for (const sg of [-1, 1]) { const rz = cz + sg * 10, zb = cz + sg * 12.2, zf = cz + sg * 8, t = .3;
+      // paredes do poço: fundo + 2 lados (frente aberta, virada para o centro)
+      box(MC, cx - 2, H, Math.min(zb, zb - sg * t), cx + 2, H + LH, Math.max(zb, zb - sg * t), 0x9aa0a6); col(cx - 2, Math.min(zb, zb - sg * t), cx + 2, Math.max(zb, zb - sg * t), H - 1, H + LH);
+      for (const sx of [-2, 2 - t]) { box(MC, cx + sx, H, Math.min(zf, zb), cx + sx + t, H + LH, Math.max(zf, zb), 0x9aa0a6); col(cx + sx, Math.min(zf, zb), cx + sx + t, Math.max(zf, zb), H - 1, H + LH); }
+      box(MPLAIN, cx - 1.7, H + .13, Math.min(zf, zb), cx + 1.7, H + .15, Math.max(zf, zb), 0xf0c419);      // piso amarelo do poço
+      box(MM, cx - 2, H + LH - .5, Math.min(zf, zf + sg * .2), cx + 2, H + LH, Math.max(zf, zf + sg * .2), 0x2b2f33);
+      // corda do saguão (some no teto) e corda dentro da casinha do topo
+      for (const [ya, yb] of [[H + .13, H + LH], [RY, RY + 2.5]]) { const cg = new T.CylinderGeometry(.04, .04, yb - ya, 6); cg.translate(cx, (ya + yb) / 2, rz); loose(cg.toNonIndexed(), MPLAIN, 0x3a2a1a); }
+      { const kg = new T.CylinderGeometry(.09, .09, .35, 8); kg.translate(cx, H + 1.05, rz); loose(kg.toNonIndexed(), MPLAIN, 0xc8241c); }
+      ROPES.push({ x: cx, z: rz, y0: H + .13, y1: RY, ex: 0, ez: -sg }); // ex/ez: lado de sair (para o centro)
+      // CASINHA no topo, em cima do poço: porta virada para o heliponto
+      const hz0 = cz + sg * 8.3, hz1 = cz + sg * 11.9, HH = 2.8, cl = 0xc9c4b8, lo = Math.min(hz0, hz1), hi = Math.max(hz0, hz1);
+      box(MC, cx - 2.1, RY, sg > 0 ? hi - t : lo, cx + 2.1, RY + HH, sg > 0 ? hi : lo + t, cl); col(cx - 2.1, sg > 0 ? hi - t : lo, cx + 2.1, sg > 0 ? hi : lo + t, RY, RY + HH);
+      for (const sx of [-2.1, 2.1 - t]) { box(MC, cx + sx, RY, lo, cx + sx + t, RY + HH, hi, cl); col(cx + sx, lo, cx + sx + t, hi, RY, RY + HH); }
+      const fz = sg > 0 ? lo : hi; for (const [a, c] of [[-2.1, -.8], [.8, 2.1]]) { box(MC, cx + a, RY, Math.min(fz, fz + sg * t), cx + c, RY + HH, Math.max(fz, fz + sg * t), cl); col(cx + a, Math.min(fz, fz + sg * t), cx + c, Math.max(fz, fz + sg * t), RY, RY + HH); }
+      box(MC, cx - .8, RY + 2.25, Math.min(fz, fz + sg * t), cx + .8, RY + HH, Math.max(fz, fz + sg * t), cl);
+      box(MC, cx - 2.4, RY + HH, lo - .3, cx + 2.4, RY + HH + .25, hi + .3, 0xa8a398); box(MM, cx - .3, RY + HH - .35, rz - .3, cx + .3, RY + HH, rz + .3, 0x55595d);
+      (window.DZCEIL || []).push({ x0: cx - 2.1, x1: cx + 2.1, z0: lo, z1: hi, y: RY + HH - .02 }); LAMPS.push({ x: cx, y: RY + 2.3, z: rz });
+      (window.DZCEIL || []).push({ x0: cx - 2, x1: cx + 2, z0: Math.min(zf, zb), z1: Math.max(zf, zb), y: H + LH - .52 }); }
+    // corpo da torre (vidro), faixas de laje e aletas verticais; colisão do corpo inteiro
+    box(MGL, x0 + .2, H + LH, z0 + .2, x1 - .2, TOP - .3, z1 - .2, 0xffffff); col(x0, z0, x1, z1, H + LH - .02, TOP);
+    for (let y = H + LH + 3.6 * 4; y < TOP - 2; y += 3.6 * 6) box(MC, x0 - .1, y, z0 - .1, x1 + .1, y + .5, z1 + .1, 0xd9d5cc);
+    for (const k of [-1, 1]) for (const a of [-hw + .2, -hw / 2, 0, hw / 2, hw - .2]) { box(MC, cx + a - .18, H + LH, cz + k * hw - .35, cx + a + .18, TOP, cz + k * hw + .35, 0xe1ddd4); box(MC, cx + k * hw - .35, H + LH, cz + a - .18, cx + k * hw + .35, TOP, cz + a + .18, 0xe1ddd4); }
+    box(MC, x0 - .3, H + LH - .1, z0 - .3, x1 + .3, H + LH + .4, z1 + .3, 0xd9d5cc);
+    // teto do saguão (câmera não sobe) e área (grama não nasce)
+    (window.DZCEIL || []).push({ x0, x1, z0, z1, y: H + LH - .9 }); FP.push({ x0, x1, z0, z1 });
+    LAMPS.push({ x: cx - 5, y: H + LH - 1, z: cz }); LAMPS.push({ x: cx + 5, y: H + LH - 1, z: cz });
+    // topo: laje, mureta com faixa, mastro de antena num canto
+    box(MC, x0 - .3, TOP - .3, z0 - .3, x1 + .3, RY, z1 + .3, 0xb9b4aa); floor(x0, z0, x1, z1, RY);
+    for (const q of [[x0 - .3, z0 - .3, x1 + .3, z0 + .2], [x0 - .3, z1 - .2, x1 + .3, z1 + .3], [x0 - .3, z0 - .3, x0 + .2, z1 + .3], [x1 - .2, z0 - .3, x1 + .3, z1 + .3]]) { box(MC, q[0], RY, q[1], q[2], RY + 1.2, q[3], 0xd9d5cc); box(MPLAIN, q[0], RY + 1.2, q[1], q[2], RY + 1.3, q[3], 0xc8241c); col(q[0], q[1], q[2], q[3], RY, RY + 1.3); }
+    box(MM, x0 + 1, RY, z0 + 1, x0 + 1.4, RY + 14, z0 + 1.4, 0x9aa0a6); box(MPLAIN, x0 + .95, RY + 14, z0 + .95, x0 + 1.45, RY + 14.4, z0 + 1.45, 0xff2a2a);
+  }
+  // ======================= PONTE (pedreira -> Ilha Zênite) =======================
+  function bridge() {
+    if (typeof BRIDGE === 'undefined') return; const B = BRIDGE, a = Math.min(B.x0, B.x1) - 12, c = Math.max(B.x0, B.x1) + 12, zc = B.z, Y0 = B.y, hwz = 5;
+    H = Y0;
+    box(MC, a, Y0 - .9, zc - hwz, c, Y0, zc + hwz, 0xa9a59d);
+    { const L = c - a, ge = new T.PlaneGeometry(L, 8); ge.rotateX(-Math.PI / 2); ge.translate((a + c) / 2, Y0 + .04, zc); const U = ge.attributes.uv; for (let i = 0; i < U.count; i++) U.setXY(i, U.getY(i), U.getX(i) * L / 7); const mr = MR.clone(); mr.polygonOffset = true; mr.polygonOffsetFactor = -1; mr.polygonOffsetUnits = -2; const me = new T.Mesh(ge, mr); me.receiveShadow = true; sc.add(me); }
+    floor(a, zc - hwz, c, zc + hwz, Y0 + .04);
+    box(MPLAIN, a, Y0 + .05, zc - 3.75, c, Y0 + .055, zc - 3.6, 0xe6e6e0); box(MPLAIN, a, Y0 + .05, zc + 3.6, c, Y0 + .055, zc + 3.75, 0xe6e6e0);
+    for (let x = a + 2; x < c - 3; x += 6) box(MPLAIN, x, Y0 + .05, zc - .08, x + 3, Y0 + .055, zc + .08, 0xe2b83c);
+    // muretas laterais (1 m: dá para pular... e cair no mar) e postes
+    for (const s_ of [-1, 1]) { const z = zc + s_ * (hwz - .25); box(MC, a, Y0, z - .25, c, Y0 + 1, z + .25, 0xd2cdc3); col(a, z - .25, c, z + .25, Y0 - 1, Y0 + 1); }
+    for (let x = a + 8, i = 0; x < c - 4; x += 22, i++) { const s_ = i % 2 ? 1 : -1, z = zc + s_ * (hwz - .25);
+      box(MM, x - .08, Y0 + 1, z - .08, x + .08, Y0 + 7, z + .08, 0x3a3d42); box(MM, x - .08, Y0 + 6.9, Math.min(z, z - s_ * 1.4), x + .08, Y0 + 7, Math.max(z, z - s_ * 1.4), 0x3a3d42); box(MM, x - .25, Y0 + 6.75, z - s_ * 1.4 - .15, x + .25, Y0 + 6.9, z - s_ * 1.4 + .15, 0xe8e2c8); LAMPS.push({ x, y: Y0 + 6.6, z: z - s_ * 1.4 }); }
+    // pilares (só sobre o mar)
+    for (let x = a + 14; x < c - 10; x += 22) { if (TERH(x, zc) > 1) continue; box(MC, x - 1.1, -14, zc - 3.5, x + 1.1, Y0 - .9, zc + 3.5, 0x9c978e); box(MC, x - 1.4, Y0 - 1.6, zc - hwz, x + 1.4, Y0 - .9, zc + hwz, 0x9c978e); col(x - 1.1, zc - 3.5, x + 1.1, zc + 3.5, -20, Y0 - 1); }
+    RDS.push([a, zc - hwz, c, zc + hwz]);
+  }
+  // HELICÓPTERO EXPLODIDO (só enfeite, não voa) na base militar
+  function heliWreck(x, z, ry) {
+    if (typeof mkHeli !== 'function') return; const h = mkHeli(typeof HPAL !== 'undefined' ? HPAL[0] : undefined), burnt = new T.MeshStandardMaterial({ color: lin(0x221e1b), roughness: 1, metalness: .2 }), rust = new T.MeshStandardMaterial({ color: lin(0x4a2c1d), roughness: 1 });
+    let i = 0; h.traverse(o => { if (o.isMesh) { o.material = (i++ % 4) ? burnt : rust; o.castShadow = true; } });
+    const gy = TERH(x, z); h.position.set(x, gy - .25, z); h.rotation.set(.12, ry, .32); h.updateMatrixWorld(true); sc.add(h);
+    col(x - 3.5, z - 3.5, x + 3.5, z + 3.5, gy - 1, gy + 2.6);
+    // marca de queimado no chão e destroços
+    { const ge = new T.CircleGeometry(7, 20); ge.rotateX(-Math.PI / 2); ge.translate(x, gy + .07, z); const me = new T.Mesh(ge, new T.MeshStandardMaterial({ color: 0x1a1816, roughness: 1, transparent: true, opacity: .75, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3 })); sc.add(me); }
+    for (let k = 0; k < 7; k++) { const a = k * .9, r = 3 + (k % 3) * 1.7, px = x + Math.cos(a) * r, pz = z + Math.sin(a) * r; box(MM, px - .4, gy, pz - .3, px + .4, gy + .25 + (k % 2) * .3, pz + .3, 0x2a2724); }
+  }
   for (const C of TOWNS) buildTown(C);
   try { buildRoads(); } catch (e) { console.warn('estradas', e); }
+  try { bridge(); } catch (e) { console.warn('ponte', e); }
   try { buildSites(); } catch (e) { console.warn('locais', e); }
   flushBeams();
   flushBoxes();

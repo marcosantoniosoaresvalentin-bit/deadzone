@@ -8,8 +8,9 @@
  * Nível do mar = 0 m.
  */
 const TER=(()=>{
- const S=4, EXT=MAPH+150, N=Math.round(EXT*2/S)+1, O=-EXT;          // grade de 4 m
- const idx=(i,j)=>j*N+i;
+ // grade de 4 m, retangular: cobre o mapa todo (ilha principal + Ilha Zênite) com 150 m de mar em volta
+ const S=4, OX=MAPB.x0-150, OZ=MAPB.z0-150, NX=Math.round((MAPB.x1-MAPB.x0+300)/S)+1, NZ=Math.round((MAPB.z1-MAPB.z0+300)/S)+1, N=NX, O=OZ;
+ const idx=(i,j)=>j*NX+i;
  // ---------- ruído suave ----------
  const hh=(x,z)=>{const v=Math.sin(x*127.1+z*311.7)*43758.5453;return v-Math.floor(v)};
  const vn=(x,z)=>{const xi=Math.floor(x),zi=Math.floor(z),xf=x-xi,zf=z-zi,u=xf*xf*(3-2*xf),w=zf*zf*(3-2*zf);return(hh(xi,zi)*(1-u)+hh(xi+1,zi)*u)*(1-w)+(hh(xi,zi+1)*(1-u)+hh(xi+1,zi+1)*u)*w};
@@ -41,51 +42,58 @@ const TER=(()=>{
   const vy=z-(x*.35+20*M)+Math.sin(x/60)*18*M;h-=gau(0,vy,0,0,22*M)*3.2*(1-mt);
   return h;
  }
+ // ILHA ZÊNITE (oeste): quadrado arredondado com metade do lado da ilha principal, relevo baixo com um morro
+ const Z2={x:-490,z:-60,R:125};
+ function coast2(x,z){const dx=x-Z2.x,dz=z-Z2.z,p=6,d=Math.pow(Math.pow(Math.abs(dx),p)+Math.pow(Math.abs(dz),p),1/p),a=Math.atan2(dz,dx);
+  const cn=fbm(Math.cos(a)*2.4+3,Math.sin(a)*2.4+11)*.7+fbm(Math.cos(a)*7+5,Math.sin(a)*7+2)*.3;return Z2.R+8-cn*26-d}
+ function landH2(x,z){return 2+Math.pow(fbm(x/120+9.3,z/120+1.7),1.3)*6+gau(x,z,Z2.x-70,Z2.z+70,40)*14+(fbm(x/40,z/40)-.5)*2}
  function rawH(x,z){
-  const t=coastDist(x,z);
+  const t2=coast2(x,z),t1=coastDist(x,z);
+  if(t2>t1){const t=t2;if(t<=0)return Math.max(-14,.35+t*.09-Math.max(0,-t-30)*.05);const beach=.35+Math.min(t,22)*.085,k=ss(12,40,t);return beach+Math.max(0,landH2(x,z)-beach)*k}
+  const t=t1;
   if(t<=0)return Math.max(-14,.35+t*.09-Math.max(0,-t-30)*.05);           // fundo do mar (segue o litoral)
   const beach=.35+Math.min(t,22)*.085;                                    // praia sobe devagar
   const k=ss(12,48,t);return beach+Math.max(0,landH(x,z)-beach)*k;
  }
  // ---------- grade de alturas ----------
- const H=new Float32Array(N*N);
- for(let j=0;j<N;j++)for(let i=0;i<N;i++)H[idx(i,j)]=rawH(O+i*S,O+j*S);
+ const H=new Float32Array(NX*NZ);
+ for(let j=0;j<NZ;j++)for(let i=0;i<NX;i++)H[idx(i,j)]=rawH(OX+i*S,OZ+j*S);
  // heliportos: área plana com borda suave
  for(const hp of (typeof HPS!=='undefined'?HPS:[])){const cx=hp[1],cz=hp[2],h0=rawH(cx,cz);
-  for(let j=0;j<N;j++)for(let i=0;i<N;i++){const x=O+i*S,z=O+j*S,d=Math.hypot(x-cx,z-cz);if(d>34)continue;const k=1-ss(13,32,d);H[idx(i,j)]=H[idx(i,j)]*(1-k)+h0*k}}
+  for(let j=0;j<NZ;j++)for(let i=0;i<NX;i++){const x=OX+i*S,z=OZ+j*S,d=Math.hypot(x-cx,z-cz);if(d>34)continue;const k=1-ss(13,32,d);H[idx(i,j)]=H[idx(i,j)]*(1-k)+h0*k}}
  // construções: terreno plano embaixo (e borda suave em volta)
  for(const b of (typeof BLDS!=='undefined'?BLDS:[])){if(b.city)continue;const cx=b.x,cz=b.z,h0=rawH(cx,cz),r0=b.flat||12,r1=r0+14;
-  for(let j=0;j<N;j++)for(let i=0;i<N;i++){const x=O+i*S,z=O+j*S,d=Math.hypot(x-cx,z-cz);if(d>r1)continue;const k=1-ss(r0,r1,d);H[idx(i,j)]=H[idx(i,j)]*(1-k)+h0*k}}
+  for(let j=0;j<NZ;j++)for(let i=0;i<NX;i++){const x=OX+i*S,z=OZ+j*S,d=Math.hypot(x-cx,z-cz);if(d>r1)continue;const k=1-ss(r0,r1,d);H[idx(i,j)]=H[idx(i,j)]*(1-k)+h0*k}}
  // prédios com interior: retângulo plano (com folga) e borda suave
  for(const b of (typeof STRS!=='undefined'?STRS:[])){if(b.city)continue;const cx=b.x,cz=b.z,h0=rawH(cx,cz),hw=Math.max(b.w,b.d)/2+3;
-  for(let j=0;j<N;j++)for(let i=0;i<N;i++){const x=O+i*S,z=O+j*S,d=Math.max(0,Math.max(Math.abs(x-cx),Math.abs(z-cz))-hw);if(d>14)continue;const k=1-ss(0,14,d);H[idx(i,j)]=H[idx(i,j)]*(1-k)+h0*k}}
+  for(let j=0;j<NZ;j++)for(let i=0;i<NX;i++){const x=OX+i*S,z=OZ+j*S,d=Math.max(0,Math.max(Math.abs(x-cx),Math.abs(z-cz))-hw);if(d>14)continue;const k=1-ss(0,14,d);H[idx(i,j)]=H[idx(i,j)]*(1-k)+h0*k}}
  // cidades e locais especiais: cada um vira um platô (nível médio do lugar) com borda suave
  for(const A of (typeof FLATS!=='undefined'?FLATS:[])){let sm=0,n=0;for(let x=A.x0;x<=A.x1;x+=6)for(let z=A.z0;z<=A.z1;z+=6){sm+=rawH(x,z);n++}const h0=A.h=A.hFix!=null?A.hFix:Math.max(1.6,sm/n),bl=A.bl||30;
-  for(let j=0;j<N;j++)for(let i=0;i<N;i++){const x=O+i*S,z=O+j*S,d=Math.hypot(Math.max(0,A.x0-x,x-A.x1),Math.max(0,A.z0-z,z-A.z1));if(d>bl+5)continue;const k=1-ss(5,bl+5,d);/* 5 m a mais totalmente plano em volta: piso e calçadas não ficam 'flutuando' */H[idx(i,j)]=H[idx(i,j)]*(1-k)+h0*k}}
+  for(let j=0;j<NZ;j++)for(let i=0;i<NX;i++){const x=OX+i*S,z=OZ+j*S,d=Math.hypot(Math.max(0,A.x0-x,x-A.x1),Math.max(0,A.z0-z,z-A.z1));if(d>bl+5)continue;const k=1-ss(5,bl+5,d);/* 5 m a mais totalmente plano em volta: piso e calçadas não ficam 'flutuando' */H[idx(i,j)]=H[idx(i,j)]*(1-k)+h0*k}}
  // ESTRADAS: curva suave pelos pontos. Altura da pista = terreno suavizado ao longo dela, PRESA na altura do
  // platô quando passa por cidade/local e na altura da outra estrada nos cruzamentos. Seção transversal plana:
  // tudo a até 10 m do eixo fica exatamente na altura da pista (o terreno nunca atravessa o asfalto).
- if(typeof ROADLINES!=='undefined'){const hAt=(x,z)=>{const fx=(x-O)/S,fz=(z-O)/S,i=Math.max(0,Math.min(N-2,Math.floor(fx))),j=Math.max(0,Math.min(N-2,Math.floor(fz))),u=fx-i,v=fz-j;return H[idx(i,j)]*(1-u)*(1-v)+H[idx(i+1,j)]*u*(1-v)+H[idx(i,j+1)]*(1-u)*v+H[idx(i+1,j+1)]*u*v};
-  const bD=new Float32Array(N*N).fill(1e9),bH=new Float32Array(N*N);window.ROADS=[];const ALL=[];
+ if(typeof ROADLINES!=='undefined'){const hAt=(x,z)=>{const fx=(x-OX)/S,fz=(z-OZ)/S,i=Math.max(0,Math.min(NX-2,Math.floor(fx))),j=Math.max(0,Math.min(NZ-2,Math.floor(fz))),u=fx-i,v=fz-j;return H[idx(i,j)]*(1-u)*(1-v)+H[idx(i+1,j)]*u*(1-v)+H[idx(i,j+1)]*(1-u)*v+H[idx(i+1,j+1)]*u*v};
+  const bD=new Float32Array(NX*NZ).fill(1e9),bH=new Float32Array(NX*NZ);window.ROADS=[];const ALL=[];
   const FL_=(typeof FLATS!=='undefined'?FLATS:[]),flatAt=(x,z)=>{for(const A of FL_)if(x>=A.x0-12&&x<=A.x1+12&&z>=A.z0-12&&z<=A.z1+12)return A.h;return null},inFlat=(x,z)=>FL_.some(A=>x>=A.x0-5&&x<=A.x1+5&&z>=A.z0-5&&z<=A.z1+5);
   for(const L of ROADLINES){const cv=new T.CatmullRomCurve3(L.map(p=>new T.Vector3(p[0],0,p[1])),false,'centripetal'),len=cv.getLength(),n=Math.max(2,Math.round(len/2)),pts=cv.getSpacedPoints(n);
    const pin=pts.map(p=>{const f=flatAt(p.x,p.z);if(f!=null)return f;let best=null,bd=6;for(const q of ALL){const d=Math.hypot(q[0]-p.x,q[1]-p.z);if(d<bd){bd=d;best=q[2]}}return best});
    let hs=pts.map((p,k)=>pin[k]!=null?pin[k]:hAt(p.x,p.z));
    for(let it=0;it<6;it++){const o=hs.slice();for(let k=0;k<hs.length;k++){if(pin[k]!=null){hs[k]=pin[k];continue}let a=0,c=0;for(let q=-6;q<=6;q++){const m=k+q;if(m<0||m>=hs.length)continue;a+=o[m];c++}hs[k]=a/c}}
    const R={pts:pts.map((p,k)=>[p.x,p.z,hs[k]])};ROADS.push(R);for(const q of R.pts)ALL.push(q);
-   pts.forEach((p,k)=>{const i0=Math.floor((p.x-22-O)/S),i1=Math.ceil((p.x+22-O)/S),j0=Math.floor((p.z-22-O)/S),j1=Math.ceil((p.z+22-O)/S);
-    for(let j=Math.max(0,j0);j<=Math.min(N-1,j1);j++)for(let i=Math.max(0,i0);i<=Math.min(N-1,i1);i++){const d=Math.hypot(O+i*S-p.x,O+j*S-p.z),q=idx(i,j);if(d<bD[q]){bD[q]=d;bH[q]=hs[k]}}})}
-  for(let q=0;q<N*N;q++){const d=bD[q];if(d>22)continue;if(inFlat(O+(q%N)*S,O+Math.floor(q/N)*S))continue;/* não mexe no chão plano de cidade/local */const k=d<=10?1:1-ss(10,22,d);H[q]=H[q]*(1-k)+(bH[q]-.02)*k}}
+   pts.forEach((p,k)=>{const i0=Math.floor((p.x-22-OX)/S),i1=Math.ceil((p.x+22-OX)/S),j0=Math.floor((p.z-22-OZ)/S),j1=Math.ceil((p.z+22-OZ)/S);
+    for(let j=Math.max(0,j0);j<=Math.min(NZ-1,j1);j++)for(let i=Math.max(0,i0);i<=Math.min(NX-1,i1);i++){const d=Math.hypot(OX+i*S-p.x,OZ+j*S-p.z),q=idx(i,j);if(d<bD[q]){bD[q]=d;bH[q]=hs[k]}}})}
+  for(let q=0;q<NX*NZ;q++){const d=bD[q];if(d>22)continue;if(inFlat(OX+(q%NX)*S,OZ+Math.floor(q/NX)*S))continue;/* não mexe no chão plano de cidade/local */const k=d<=10?1:1-ss(10,22,d);H[q]=H[q]*(1-k)+(bH[q]-.02)*k}}
  // mesma triangulação do PlaneGeometry: altura idêntica à malha
  function terh(x,z){
-  const fx=(x-O)/S,fz=(z-O)/S;if(fx<0||fz<0||fx>=N-1||fz>=N-1)return -14;
+  const fx=(x-OX)/S,fz=(z-OZ)/S;if(fx<0||fz<0||fx>=NX-1||fz>=NZ-1)return -14;
   const i=Math.floor(fx),j=Math.floor(fz),u=fx-i,v=fz-j,a=H[idx(i,j)],b=H[idx(i,j+1)],c=H[idx(i+1,j+1)],d=H[idx(i+1,j)];
   return u+v<=1?a+(d-a)*u+(b-a)*v:c+(b-c)*(1-u)+(d-c)*(1-v);
  }
  // ---------- malha ----------
- const g=new T.PlaneGeometry(EXT*2,EXT*2,N-1,N-1),P=g.attributes.position;
+ const GW_=(NX-1)*S,GH_=(NZ-1)*S,g=new T.PlaneGeometry(GW_,GH_,NX-1,NZ-1),P=g.attributes.position;
  for(let k=0;k<P.count;k++)P.setZ(k,H[k]);
- g.rotateX(-Math.PI/2);g.computeVertexNormals();
+ g.rotateX(-Math.PI/2);g.translate(OX+GW_/2,0,OZ+GH_/2);g.computeVertexNormals();
  // ---------- mistura de solos por vértice: grama, terra, rocha, areia ----------
  const NR=g.attributes.normal,SPL=new Float32Array(P.count*4),GW=new Float32Array(P.count);
  for(let k=0;k<P.count;k++){
@@ -99,8 +107,8 @@ const TER=(()=>{
   SPL[k*4]=grass/t;SPL[k*4+1]=dirt/t;SPL[k*4+2]=rock/t;SPL[k*4+3]=sand/t;GW[k]=grass/t;
  }
  g.setAttribute('spl',new T.BufferAttribute(SPL,4));g.computeBoundingSphere();
- function terg(x,z){const i=Math.round((x-O)/S),j=Math.round((z-O)/S);if(i<0||j<0||i>=N||j>=N)return 0;return GW[idx(i,j)]}
- return {H,N,S,O,EXT,g,SPL,terh,terg,fbm};
+ function terg(x,z){const i=Math.round((x-OX)/S),j=Math.round((z-OZ)/S);if(i<0||j<0||i>=NX||j>=NZ)return 0;return GW[idx(i,j)]}
+ return {H,N:NX,NX,NZ,S,O:OX,OX,OZ,g,SPL,terh,terg,fbm};
 })();
 window.TERH=TER.terh;window.TERG=TER.terg;
 
@@ -154,13 +162,13 @@ window.TERH=TER.terh;window.TERG=TER.terg;
  const deep=new T.Mesh(new T.PlaneGeometry(6000,6000),new T.MeshStandardMaterial({color:lin(0x0d3550),roughness:.97,metalness:0}));deep.rotation.x=-Math.PI/2;deep.position.y=-14.05;deep.renderOrder=-3;sc.add(deep)}
 
 // ---------- imagem do terreno vista de cima (minimapa e mapa grande) ----------
-const TERMAP=(()=>{const W=1024,E=MAPH+30,c=document.createElement('canvas');c.width=c.height=W;const g=c.getContext('2d'),im=g.createImageData(W,W),d=im.data;
+const TERMAP=(()=>{const W=1024,E=MAPR+30,c=document.createElement('canvas');c.width=c.height=W;const g=c.getContext('2d'),im=g.createImageData(W,W),d=im.data;
  const col=[[78,118,52],[118,92,62],[128,124,116],[214,198,156]];
- for(let py=0;py<W;py++)for(let px=0;px<W;px++){const x=-E+(px+.5)/W*2*E,z=-E+(py+.5)/W*2*E,h=TERH(x,z),o=(py*W+px)*4;
+ for(let py=0;py<W;py++)for(let px=0;px<W;px++){const x=MCX-E+(px+.5)/W*2*E,z=MCZ-E+(py+.5)/W*2*E,h=TERH(x,z),o=(py*W+px)*4;
   if(h<0){const k=Math.max(0,Math.min(1,-h/3.5));d[o]=58-28*k;d[o+1]=128-50*k;d[o+2]=170-40*k;d[o+3]=255;continue}
-  const i=Math.round((x-TER.O)/TER.S),j=Math.round((z-TER.O)/TER.S),q=(j*TER.N+i)*4,w=TER.SPL;
+  const i=Math.max(0,Math.min(TER.NX-1,Math.round((x-TER.OX)/TER.S))),j=Math.max(0,Math.min(TER.NZ-1,Math.round((z-TER.OZ)/TER.S))),q=(j*TER.NX+i)*4,w=TER.SPL;
   let r=0,gg=0,b=0;for(let s=0;s<4;s++){r+=col[s][0]*w[q+s];gg+=col[s][1]*w[q+s];b+=col[s][2]*w[q+s]}
   // sombreamento do relevo (luz vinda do noroeste) e leve clareamento com a altura
   const sh=Math.max(.55,Math.min(1.35,1+(TERH(x-3,z-3)-TERH(x+3,z+3))*.09)),ah=1+Math.min(h,40)*.004;
   d[o]=Math.min(255,r*sh*ah);d[o+1]=Math.min(255,gg*sh*ah);d[o+2]=Math.min(255,b*sh*ah);d[o+3]=255}
- g.putImageData(im,0,0);c.E=E;return c})();
+ g.putImageData(im,0,0);c.E=E;c.x0=MCX-E;c.z0=MCZ-E;return c})();

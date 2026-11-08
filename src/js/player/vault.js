@@ -70,3 +70,42 @@ function vaultPose() {
   }
   try { rf.visible = false; } catch (e) { }
 }
+
+/* ======================= CORDA DO ARRANHA-CÉU =======================
+ * No poço do saguão (ou na casinha do topo), perto da corda, o botão de pulo vira "Subir"/"Descer".
+ * O personagem segura a corda com as duas mãos acima da cabeça e é puxado até o outro andar.
+ */
+let RIDE = null;
+const ROPE_V = 11; // m/s
+function ropeNear() {
+  if (mode !== 'ground' || VLT || RIDE || !window.ROPES) return null;
+  for (const r of ROPES) { if (Math.hypot(P.x - r.x, P.z - r.z) > 1.6) continue;
+    if (Math.abs(P.y - r.y0) < 1.2) return { r, up: 1 }; if (Math.abs(P.y - r.y1) < 1.2) return { r, up: 0 }; }
+  return null;
+}
+function ropeStart(n) {
+  const r = n.r; st = 0; try { ui(); } catch (e) { }
+  RIDE = { r, up: n.up, y: n.up ? r.y0 : r.y1, x0: P.x, z0: P.z, t: 0 };
+  try { sfx(300, .25, .2, 0); } catch (e) { } say(n.up ? 'Subindo pela corda...' : 'Descendo pela corda...', 2);
+}
+function ropeTick(dt) {
+  const R = RIDE, r = R.r; R.t += dt;
+  // primeiro encosta na corda (0,25 s), depois sobe/desce
+  const k = Math.min(1, R.t / .25); P.x = R.x0 + (r.x - .32 * r.ex - R.x0) * k; P.z = R.z0 + (r.z - .32 * r.ez - R.z0) * k;
+  if (R.t > .25) R.y += (R.up ? 1 : -1) * ROPE_V * dt * Math.min(1, (R.t - .25) * 2);
+  const end = R.up ? r.y1 : r.y0; if (R.up ? R.y >= end : R.y <= end) R.y = end;
+  P.y = R.y - (R.t > .25 && R.y !== end ? 1.0 : 0); P.vy = 0;
+  if (R.y === end) { P.x = r.x + r.ex * 1.3; P.z = r.z + r.ez * 1.3; P.y = end; RIDE = null; vaultReset(); try { sfx(180, .2, .1, 0); } catch (e) { } }
+}
+const _rh = new T.Vector3();
+function ropePose() {
+  const R = RIDE; if (!R) return; const r = R.r, k = Math.min(1, R.t / .25);
+  try { CH.loco = { w: 0, sp: 0, arm: false, fw: 1 }; for (const q of DZR.rigs) if (q.pl === pl && q.av) q.av.lw = 0; } catch (e) { }
+  pl.rotation.set(0, Math.atan2(-r.ex, -r.ez), 0); pl.position.set(P.x, P.y, P.z); pl.updateMatrixWorld(true);
+  const sw = Math.sin(R.t * 3) * .08 * k;
+  hips.position.set(0, .95, 0); hips.rotation.set(0, 0, sw); tor.rotation.set(-.1 * k, 0, 0); head.rotation.set(-.35 * k, 0, 0);
+  lg1.th.rotation.set(-.35 * k, 0, .05); lg1.kn.rotation.x = .6 * k; lg2.th.rotation.set(-.15 * k, 0, -.05); lg2.kn.rotation.x = .3 * k;
+  // mãos na corda: uma acima da outra
+  for (const [arm, s, dy] of [[aR, 1, 2.05], [aL, -1, 1.8]]) { _rh.set(r.x, P.y + dy * k + (1 - k) * 1.2, r.z); tor.worldToLocal(_rh); ik(arm, s, _rh.x, _rh.y, _rh.z); }
+  try { rf.visible = false; } catch (e) { }
+}

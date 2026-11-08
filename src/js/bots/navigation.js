@@ -2,7 +2,7 @@
  * Navegação dos bots e linha de visão (paredes, relevo, janelas).
  */
 function res(e){for(const b of near(e.x,e.z)){if(b.off||(b.yt!==undefined&&((e.y||0)>=b.yt-.05||(e.y||0)+1.9<=b.yb)))continue;const cx=Math.max(b.x0,Math.min(e.x,b.x1)),cz=Math.max(b.z0,Math.min(e.z,b.z1)),ex=e.x-cx,ez=e.z-cz,d=Math.hypot(ex,ez);if(b.door&&d<1.3&&!b.door.open)b.door.open=1;if(d<.45){if(d>0){e.x+=ex/d*(.45-d);e.z+=ez/d*(.45-d)}else{const dl=e.x-b.x0,dr_=b.x1-e.x,dn=e.z-b.z0,df=b.z1-e.z,m=Math.min(dl,dr_,dn,df);if(m===dl)e.x=b.x0-.45;else if(m===dr_)e.x=b.x1+.45;else if(m===dn)e.z=b.z0-.45;else e.z=b.z1+.45}}}}
-function mvE(e,dx,dz){e.x+=dx;res(e);e.z+=dz;res(e);e.x=Math.max(-(MAPH-5),Math.min(MAPH-5,e.x));e.z=Math.max(-(MAPH-5),Math.min(MAPH-5,e.z))}
+function mvE(e,dx,dz){e.x+=dx;res(e);e.z+=dz;res(e);e.x=MCLX(e.x,5);e.z=MCLZ(e.z,5)}
 // Navegação de bots: contorna fachadas, usa portas e evita insistir contra paredes.
 function botInside(q,x,z){return x>q.x0+.55&&x<q.x1-.55&&z>q.z0+.55&&z<q.z1-.55}
 // Teste exato segmento/retângulo (sem amostragem): mais leve e não deixa a rota cortar fachadas.

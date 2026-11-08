@@ -75,8 +75,8 @@
    const baseX=pS.x+pD.x*PLV*(gt+12),baseZ=pS.z+pD.z*PLV*(gt+12);
    roster.forEach((r,i)=>{
     const ang=(i/Math.max(1,count))*Math.PI*2+Math.PI/4;
-    const tx=Math.max(-(MAPH-20),Math.min(MAPH-20,baseX+Math.cos(ang)*18));
-    const tz=Math.max(-(MAPH-20),Math.min(MAPH-20,baseZ+Math.sin(ang)*18));
+    const tx=MCLX(baseX+Math.cos(ang)*18,20);
+    const tz=MCLZ(baseZ+Math.sin(ang)*18,20);
     const b=spawnBot({x:tx,z:tz});
     b.team=1;b.nm=r.name;b.lv=r.lv;b.squadSlot=i+2;b.hp=100;b.isCompanion=true;
     b.waitForPlayer=true;b.waitOffsetX=Math.cos(ang)*5;b.waitOffsetZ=Math.sin(ang)*5;
