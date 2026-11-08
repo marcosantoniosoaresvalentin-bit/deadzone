@@ -10,10 +10,8 @@
   // caminhos escritos por extenso: o build de arquivo único embute cada um
   // len: maior medida da construção em metros (o modelo é escalado para isso)
   // glass: materiais que não bloqueiam a passagem; wall: material das paredes principais (para achar a porta)
-  const MODELS = {
-    brick: { url: 'assets/models/buildings/brick-house.glb', len: 14 },
-    ruin: { url: 'assets/models/buildings/ruin.glb', len: 11, glass: /Windows/i }
-  };
+  // ex.: casa: { url: <caminho do .glb>, len: 14 }  (nenhum modelo em uso agora)
+  const MODELS = {};
   const SRC = {};
   const DZB = window.DZB = { list: [] };
 
