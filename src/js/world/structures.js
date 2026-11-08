@@ -57,7 +57,8 @@
       for (let i = 0; i < 70; i++) { g.strokeStyle = 'rgba(50,28,12,' + (.08 + Math.random() * .12) + ')'; g.beginPath(); const x = Math.random() * w; g.moveTo(x, 0); g.bezierCurveTo(x + 6, h * .3, x - 6, h * .7, x + 3, h); g.stroke(); }
       const pnl = (x, y, ww, hh) => { g.fillStyle = 'rgba(40,20,8,.35)'; g.fillRect(x, y, ww, hh); g.fillStyle = 'rgba(255,220,180,.12)'; g.fillRect(x + 3, y + 3, ww - 6, hh - 6); g.strokeStyle = 'rgba(30,15,5,.6)'; g.lineWidth = 2; g.strokeRect(x + 5, y + 5, ww - 10, hh - 10); };
       pnl(16, 18, 42, 96); pnl(70, 18, 42, 96); pnl(16, 136, 42, 100); pnl(70, 136, 42, 100); g.fillStyle = 'rgba(0,0,0,.5)'; g.fillRect(0, 0, w, 3); g.fillRect(0, h - 3, w, 3); }) }),
-    dark: new T.MeshStandardMaterial({ color: lin(0x111214), roughness: 1 })
+    dark: new T.MeshStandardMaterial({ color: lin(0x111214), roughness: 1 }),
+    awn: new T.MeshStandardMaterial({ vertexColors: true, roughness: .85 })
   };
 
   // ---------- junta geometria por quarteirão + material ----------
@@ -93,17 +94,19 @@
     };
     const glass = [];
     // parede ao longo de X (em z, espessura T_) ou de Z; aberturas: [u0,u1,v0,v1] (u ao longo, v altura relativa ao andar)
-    function wall(alongX, a0, a1, f, y0, h, opens, mExt, mInt, colBase) {
+    function wall(alongX, a0, a1, f, y0, h, opens, mExt, mInt, colBase, out) {
       const th = T_ / 2, cuts = [a0];
       for (const o of opens) cuts.push(o[0], o[1]); cuts.push(a1); cuts.sort((a, b) => a - b);
-      const tc = mExt === MAT.ext ? exterior : 0xf2f0ea, P = (u0, u1, v0, v1, m) => alongX ? box(m, u0, y0 + v0, f - th, u1, y0 + v1, f + th, tc) : box(m, f - th, y0 + v0, u0, f + th, y0 + v1, u1, tc);
+      const tc = mExt === EXT ? EXC : mExt === MAT.ext ? exterior : 0xf2f0ea, sk = out ? [Math.min(f + out * th, f + out * (th + .03)), Math.max(f + out * th, f + out * (th + .03))] : null;
+      const P = (u0, u1, v0, v1, m) => { if (sk) { alongX ? box(MAT.int, u0, y0 + v0, f - th, u1, y0 + v1, f + th, 0xf2f0ea) : box(MAT.int, f - th, y0 + v0, u0, f + th, y0 + v1, u1, 0xf2f0ea); alongX ? box(m, u0, y0 + v0, sk[0], u1, y0 + v1, sk[1], tc) : box(m, sk[0], y0 + v0, u0, sk[1], y0 + v1, u1, tc); }
+        else alongX ? box(m, u0, y0 + v0, f - th, u1, y0 + v1, f + th, tc) : box(m, f - th, y0 + v0, u0, f + th, y0 + v1, u1, tc); };
       const C = (u0, u1, v0, v1) => alongX ? col(u0, f - th, u1, f + th, y0 + v0, y0 + v1) : col(f - th, u0, f + th, u1, y0 + v0, y0 + v1);
       // trechos cheios entre aberturas
       let u = a0;
       const sorted = opens.slice().sort((a, b) => a[0] - b[0]);
       for (const o of sorted) { if (o[0] > u) { P(u, o[0], 0, h, mExt); C(u, o[0], 0, h); } P(o[0], o[1], 0, o[2], mExt); if (o[2] > .05) C(o[0], o[1], 0, o[2]); P(o[0], o[1], o[3], h, mExt); if (o[3] < h) { const lb = C(o[0], o[1], o[3], h); if (lb) lb.lint = 1; } u = o[1]; }
       if (a1 > u) { P(u, a1, 0, h, mExt); C(u, a1, 0, h); }
-      if (colBase && y0 < .1) { // barra de tijolo na base (externa)
+      if (colBase && y0 < .1 && (ST === 'plaster' || ST === 'shop')) { // barra de tijolo na base (externa)
         const bt = th + .02; let uu = a0; for (const o of sorted) { if (o[2] < .05) { if (o[0] > uu) (alongX ? box(MAT.brick, uu, 0, f - bt, o[0], .9, f + bt) : box(MAT.brick, f - bt, 0, uu, f + bt, .9, o[0])); uu = o[1]; } }
         if (a1 > uu) (alongX ? box(MAT.brick, uu, 0, f - bt, a1, .9, f + bt) : box(MAT.brick, f - bt, 0, uu, f + bt, .9, a1));
       }
@@ -135,7 +138,9 @@
     const x0 = -W / 2, x1 = W / 2, z0 = -D / 2, z1 = D / 2, ix0 = x0 + T_ / 2, ix1 = x1 - T_ / 2, iz0 = z0 + T_ / 2, iz1 = z1 - T_ / 2;
     // poço da escada no fundo, à esquerda: patamar | rampa | patamar, duas faixas (vai e volta)
     const sx0 = ix0, sxa = sx0 + LAND, sxb = sxa + STEP_L, sx1 = sxb + LAND, lz0 = iz0, lz1 = lz0 + LANE, lz2 = lz1 + LANE;
-    const exterior = S.color || 0xe6dccb;
+    const exterior = S.color || 0xe6dccb, ST = S.style || 'plaster';
+    // acabamento de fora conforme o estilo: reboco colorido, tijolo aparente ou concreto
+    const EXT = ST === 'brick' ? MAT.brick : ST === 'panel' ? MAT.conc : MAT.ext, EXC = ST === 'brick' ? 0xffffff : exterior;
     const gable = S.roof === 'gable';
     for (let k = 0; k <= NF; k++) {
       const y = k * FH, top = k === NF;
@@ -145,11 +150,13 @@
       if (holeLane < 0) slab(x0, x1, z0, z1);
       else { slab(x0, x1, hz1, z1); slab(x0, x1, z0, hz0); slab(x0, sxa, hz0, hz1); slab(sxb, x1, hz0, hz1);
         // guarda-corpo em volta do buraco
-        box(MAT.rail, sxa, y, hz1 - .03, sxb, y + 1, hz1 + .03); col(sxa, hz1 - .05, sxb, hz1 + .05, y, y + 1); }
+        // grade de verdade (barras e postes) dos dois lados abertos do buraco — nada de parede "invisível"
+        const grade = zz => { box(MAT.rail, sxa, y + .95, zz - .03, sxb, y + 1.0, zz + .03); box(MAT.rail, sxa, y + .48, zz - .02, sxb, y + .52, zz + .02); for (let x = sxa; x <= sxb + .01; x += .55) box(MAT.rail, x - .02, y, zz - .02, x + .02, y + .97, zz + .02); };
+        grade(hz1); col(sxa, hz1 - .05, sxb, hz1 + .05, y, y + 1); if (hz0 > lz0 + .01) grade(hz0); }
       if (top && gable) { roofGable(y); break; }
       if (top) { // terraço: mureta e laje exposta
-        for (const [a, b] of [[z0, z0 + T_], [z1 - T_, z1]]) { box(MAT.ext, x0, y, a, x1, y + 1.05, b, exterior); col(x0, a, x1, b, y, y + 1.05); }
-        for (const [a, b] of [[x0, x0 + T_], [x1 - T_, x1]]) { box(MAT.ext, a, y, z0, b, y + 1.05, z1, exterior); col(a, z0, b, z1, y, y + 1.05); }
+        for (const [a, b] of [[z0, z0 + T_], [z1 - T_, z1]]) { box(EXT, x0, y, a, x1, y + 1.05, b, EXC); col(x0, a, x1, b, y, y + 1.05); }
+        for (const [a, b] of [[x0, x0 + T_], [x1 - T_, x1]]) { box(EXT, a, y, z0, b, y + 1.05, z1, EXC); col(a, z0, b, z1, y, y + 1.05); }
         for (const q of [[x0 - .05, z0 - .05, x1 + .05, z0 + T_ + .03], [x0 - .05, z1 - T_ - .03, x1 + .05, z1 + .05], [x0 - .05, z0, x0 + T_ + .03, z1], [x1 - T_ - .03, z0, x1 + .05, z1]]) box(MAT.conc, q[0], y + 1.05, q[1], q[2], y + 1.12, q[3], 0xbdbab3);
         // casinha da escada no terraço (cobertura)
         box(MAT.ext, sx0 - .1, y + 2.4, lz0 - .1, sx1 + .1, y + 2.55, lz2 + .2, exterior);
@@ -175,23 +182,27 @@
       // ---------- paredes do andar ----------
       const cz_ = lz2 + .1, front = winsOn(x0 + .6, x1 - .6, k === 0 || S.balcony ? 0 : null, .9, 1.4, [1.3]), back = winsOn(sx1 + .3, x1 - .6, null, .9, 1.3), side = winsOn(z0 + .6, z1 - .6, null, .9, 1.4, [cz_]);
       const balc = S.balcony && k > 0; let balDoor = 0;
+      if (k === 0 && ST === 'shop') { front.length = 0; front.push([x0 + .7, -1.0, .45, 2.45], [1.0, x1 - .7, .45, 2.45]); }
       if (k === 0) front.push([-.6, .6, 0, 2.2]);
       else if (balc) { for (let i = front.length - 1; i >= 0; i--) if (Math.abs((front[i][0] + front[i][1]) / 2) < 1.4) front.splice(i, 1); front.push([-.6, .6, 0, 2.2]); balDoor = 1;
         // varanda: piso, mureta e corrimão
         const bw = 1.9, bd = 1.3; box(MAT.conc, -bw, y - .2, z1, bw, y + .02, z1 + bd, 0xb9b5ad); floor(-bw, z1, bw, z1 + bd, y + .02);
         for (const q of [[-bw, z1 + bd - .12, bw, z1 + bd], [-bw, z1, -bw + .12, z1 + bd], [bw - .12, z1, bw, z1 + bd]]) { box(MAT.ext, q[0], y, q[1], q[2], y + .95, q[3], exterior); col(q[0], q[1], q[2], q[3], y, y + 1.05); }
         box(MAT.rail, -bw - .02, y + .95, z1 + bd - .14, bw + .02, y + 1.02, z1 + bd + .02); }
-      wall(true, x0, x1, z1, y, FH, front, MAT.ext, MAT.int, true);
-      wall(true, x0, x1, z0, y, FH, back, MAT.ext, MAT.int, true);
-      wall(false, z0 + T_ / 2, z1 - T_ / 2, x0, y, FH, side.filter(o => o[1] < lz2 - .3 || o[0] > lz2 + .3 ? true : false), MAT.ext, MAT.int, true);
-      wall(false, z0 + T_ / 2, z1 - T_ / 2, x1, y, FH, side, MAT.ext, MAT.int, true);
+      wall(true, x0, x1, z1, y, FH, front, EXT, MAT.int, true, 1);
+      wall(true, x0, x1, z0, y, FH, back, EXT, MAT.int, true, -1);
+      wall(false, z0 + T_ / 2, z1 - T_ / 2, x0, y, FH, side.filter(o => o[1] < lz2 - .3 || o[0] > lz2 + .3 ? true : false), EXT, MAT.int, true, -1);
+      wall(false, z0 + T_ / 2, z1 - T_ / 2, x1, y, FH, side, EXT, MAT.int, true, 1);
+      // faixa (cornija) na altura de cada laje: muda bastante a cara do prédio
+      if (S.band && k > 0) { const e = T_ / 2 + .13, bc = ST === 'panel' ? 0x8f8c85 : 0xd9d5cc; box(MAT.conc, x0 - e + T_ / 2, y - .3, z1 - .02, x1 + e - T_ / 2, y - .06, z1 + .13, bc); box(MAT.conc, x0 - e + T_ / 2, y - .3, z0 - .13, x1 + e - T_ / 2, y - .06, z0 + .02, bc); box(MAT.conc, x0 - .13, y - .3, z0, x0 + .02, y - .06, z1, bc); box(MAT.conc, x1 - .02, y - .3, z0, x1 + .13, y - .06, z1, bc); }
       if (k === 0) door(true, -.6, .6, z1, 0);
       // parede interna: corredor da escada | cômodos (porta), e divisão dos cômodos (porta)
       const cz = lz2 + .1, xm = 1.3;
       const dA = [[sx0 + .1, sx0 + 1.1, 0, 2.2], [sx1 - 1.15, sx1 - .15, 0, 2.2], [x1 - 2.4, x1 - 1.4, 0, 2.2]], dB = [[(cz + iz1) / 2 - .5, (cz + iz1) / 2 + .5, 0, 2.2]];
       wall(true, ix0, ix1, cz, y, FH - SLAB, dA, MAT.int, MAT.int, false);
-      wall(false, cz + T_ / 2, iz1, xm, y, FH - SLAB, dB, MAT.int, MAT.int, false);
-      for (const o of dA) door(true, o[0], o[1], cz, y, 1); for (const o of dB) door(false, o[0], o[1], xm, y, 1);
+      const openShop = ST === 'shop' && k === 0;
+      if (!openShop) wall(false, cz + T_ / 2, iz1, xm, y, FH - SLAB, dB, MAT.int, MAT.int, false);
+      for (const o of dA) door(true, o[0], o[1], cz, y, 1); if (!openShop) for (const o of dB) door(false, o[0], o[1], xm, y, 1);
       if (balDoor) door(true, -.6, .6, z1, y);
       // cômodos (para os móveis): esquerda e direita da divisória
       (S.rooms || (S.rooms = [])).push({ k, y: gy + y, a: [ix0 + .2, cz + T_ / 2 + .2, xm - .2, iz1 - .2], b: [xm + .2, cz + T_ / 2 + .2, ix1 - .2, iz1 - .2] });
@@ -203,15 +214,16 @@
     function roofGable(y) {
       const rh = D * .26, hz = D / 2 + .45, a = Math.atan(rh / (D / 2)), Lr = hz / Math.cos(a);
       const tint = (geo, c) => { const n = geo.attributes.position.count, cc = new Float32Array(n * 3), t = new T.Color(c).convertSRGBToLinear(); for (let i = 0; i < n; i++) { cc[i * 3] = t.r; cc[i * 3 + 1] = t.g; cc[i * 3 + 2] = t.b; } geo.setAttribute('color', new T.BufferAttribute(cc, 3)); return geo; };
-      const put = (geo, m, o) => { o.updateMatrix(); const ge = tint(geo.toNonIndexed(), m === MAT.roof ? 0xffffff : exterior); ge.applyMatrix4(o.matrix); ge.applyMatrix4(g.matrixWorld); push(S.mg || ('_' + S.id), m, ge); };
+      const put = (geo, m, o) => { o.updateMatrix(); const ge = tint(geo.toNonIndexed(), m === MAT.roof ? 0xffffff : EXC); ge.applyMatrix4(o.matrix); ge.applyMatrix4(g.matrixWorld); push(S.mg || ('_' + S.id), m, ge); };
       for (const sg of [1, -1]) { const o = new T.Object3D(); o.position.set(0, y + rh - (hz / 2) * Math.tan(a) + .08, sg * hz / 2); o.rotation.x = sg * a; put(new T.BoxGeometry(W + .7, .12, Lr), MAT.roof, o); }
       const sh = new T.Shape(); sh.moveTo(-D / 2, 0); sh.lineTo(D / 2, 0); sh.lineTo(0, rh); sh.lineTo(-D / 2, 0);
-      for (const [sx, ry] of [[x0 + T_ / 2 - .02, -Math.PI / 2], [x1 - T_ / 2 + .02, Math.PI / 2]]) { const o = new T.Object3D(); o.position.set(sx, y, 0); o.rotation.y = ry; put(new T.ShapeGeometry(sh), MAT.ext, o); }
+      for (const [sx, ry] of [[x0 + T_ / 2 - .02, -Math.PI / 2], [x1 - T_ / 2 + .02, Math.PI / 2]]) { const o = new T.Object3D(); o.position.set(sx, y, 0); o.rotation.y = ry; put(new T.ShapeGeometry(sh), EXT, o); }
       box(MAT.frame, x0 - .35, y + rh + .02, -.1, x1 + .35, y + rh + .2, .1, 0x5a2a1c);
     }
     S.L2W = L2W;
-    // marquise sobre a entrada
-    box(MAT.conc, -1.2, 2.45, z1, 1.2, 2.6, z1 + 1.1, 0xb8b4ac); box(MAT.brick, -1.3, 0, z1 - .05, -1.15, .12, z1 + 1.2); box(MAT.conc, -1.3, 0, z1, 1.3, .12, z1 + 1.2, 0xa9a59d); floor(-1.3, z1, 1.3, z1 + 1.2, .12);
+    // marquise sobre a entrada (loja: toldo largo e letreiro)
+    if (ST === 'shop') { box(MAT.awn, x0 + .4, 2.62, z1, x1 - .4, 2.72, z1 + 1.5, S.awn || 0x2f5d3a); box(MAT.awn, x0 + .4, 2.35, z1 + 1.45, x1 - .4, 2.72, z1 + 1.52, S.awn || 0x2f5d3a); box(MAT.awn, -2.2, 2.78, z1, 2.2, 3.08, z1 + .1, 0x1d1f22); }
+    else box(MAT.conc, -1.2, 2.45, z1, 1.2, 2.6, z1 + 1.1, 0xb8b4ac); box(MAT.brick, -1.3, 0, z1 - .05, -1.15, .12, z1 + 1.2); box(MAT.conc, -1.3, 0, z1, 1.3, .12, z1 + 1.2, 0xa9a59d); floor(-1.3, z1, 1.3, z1 + 1.2, .12);
 
     // ---------- junta tudo por material (poucos "desenhos" por prédio) ----------
     const v = new T.Vector3(), MK = S.mg || ('_' + S.id);

@@ -122,8 +122,8 @@
   for (const L of C.lots) {
     const m = .5, x0 = L.x0 + m, x1 = L.x1 - m, z0 = L.z0 + m, z1 = L.z1 - m, front = L.rot ? z0 : z1, back = L.rot ? z1 : z0, brick = rnd() < .5;
     const cx = (L.x0 + L.x1) / 2;
-    if (L.kind === 'str' || L.kind === 'model') {
-      wallGate(x0, front, x1, front, cx + (L.kind === 'str' ? 0 : 0), brick);
+    if (L.kind === 'str') {
+      wallGate(x0, front, x1, front, cx, brick);
       lowWall(x0, back, x1, back, brick);
       wallGate(x0, z0, x0, z1, (z0 + z1) / 2 + (L.rot ? 3 : -3), brick); wallGate(x1, z0, x1, z1, (z0 + z1) / 2 + (L.rot ? -3 : 3), brick);
       // caminho de concreto do portão até a porta
@@ -179,6 +179,10 @@
     const chk = () => { const px = cam.position.x, pz = cam.position.z; for (const S of furn) { const v = Math.abs(S.x - px) < 45 && Math.abs(S.z - pz) < 45; if (S.inner.visible !== v) S.inner.visible = v; } };
     chk(); setInterval(chk, 400);
   }
-  // alguns buggies estacionados nas ruas da cidade
-  try { if (typeof addCar === 'function') for (const [x, z, r] of [[C.XL[1] + 2, C.ZL[1] + 14, 0], [C.XL[3] - 2, C.ZL[1] - 18, Math.PI], [C.XL[2] + 20, C.ZL[2] + 2, Math.PI / 2]]) addCar(x, z, r); } catch (e) { }
+  // buggies: tira os que nasceram dentro da cidade (dentro de casa, na frente de porta) e deixa só 3 estacionados
+  // na faixa da rua, longe das portas
+  try {
+    for (let i = CARS.length - 1; i >= 0; i--) { const c = CARS[i]; if (c.heli) continue; if (c.x > C.x0 - 4 && c.x < C.x1 + 4 && c.z > C.z0 - 4 && c.z < C.z1 + 4) { sc.remove(c.g); CARS.splice(i, 1); } }
+    if (typeof addCar === 'function') for (const [x, z, r] of [[C.XL[1] + 2, (C.ZL[1] + C.ZL[2]) / 2 + 3, 0], [C.XL[3] - 2, (C.ZL[0] + C.ZL[1]) / 2 - 3, Math.PI], [(C.XL[1] + C.XL[2]) / 2 + 3, C.ZL[2] + 2, Math.PI / 2]]) addCar(x, z, r);
+  } catch (e) { console.warn('cidade: buggies', e); }
 })();

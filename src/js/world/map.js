@@ -26,7 +26,6 @@ const CITY=(function(){
  const C={n:'Porto Velho',x0:-36,x1:176,z0:-196,z1:-64,RW:8,SW:2.5,XL:[-28,22,72,122,168],ZL:[-188,-128,-72],blocks:[],lots:[]};
  C.x=(C.x0+C.x1)/2;C.z=(C.z0+C.z1)/2;
  const pal=[0xd8cfc0,0xc7b7a3,0xc9b79c,0xb7c0b8,0xe2d6b8,0xd1c4b4,0xbfae96,0xd9c7a8,0xa9b4b8,0xcfc1ad,0xe0d0c0,0xb8a48c,0xc4a88a,0x9fa8a3];
- const MODS=['apartment','tower','store','townhouse','office','house','police'];let mi=0;
  for(let i=0;i<C.XL.length-1;i++)for(let j=0;j<C.ZL.length-1;j++){
   const e=C.RW/2+C.SW,b={x0:C.XL[i]+e,x1:C.XL[i+1]-e,z0:C.ZL[j]+e,z1:C.ZL[j+1]-e,id:'q'+i+j};C.blocks.push(b);
   if(i===2&&j===0){b.heli=1;continue}           // quarteirão do heliponto
@@ -35,11 +34,15 @@ const CITY=(function(){
    const L={x0:lx0,x1:lx1,z0:lz0,z1:lz1,rot:rt,blk:b.id};C.lots.push(L);
    const r=rnd(),lw=lx1-lx0,ld=lz1-lz0;
    if(r<.06)L.kind='plaza';
-   else if(r<.27){L.kind='model';L.model=MODS[mi++%MODS.length]}
-   else{L.kind='str';const f=rnd(),floors=f<.12?1:f<.5?2:f<.78?3:4;
-    const w=Math.min(lw-3,11+rnd()*2.5),d=Math.min(ld-7,8+rnd()*2.5);
-    const S={id:'c'+C.lots.length,w:+w.toFixed(1),d:+d.toFixed(1),floors,rot:rt,color:pal[Math.floor(rnd()*pal.length)],mg:b.id,city:1};
-    if(floors<=2&&rnd()<.55)S.roof='gable';if(floors>=2&&rnd()<.45)S.balcony=1;
+   else{L.kind='str';
+    // estilos (todos com porta e interior): reboco, tijolo aparente, loja (vitrine + toldo), concreto (prédio de faixas)
+    const sr=rnd(),style=sr<.42?'plaster':sr<.68?'brick':sr<.86?'shop':'panel';
+    const f=rnd();let floors=f<.12?1:f<.5?2:f<.78?3:4;if(style==='shop')floors=Math.max(2,Math.min(3,floors));if(style==='panel')floors=Math.max(3,floors);
+    const w=Math.min(lw-3,11+rnd()*(style==='shop'||style==='panel'?4:2.5)),d=Math.min(ld-7,8+rnd()*3);
+    const S={id:'c'+C.lots.length,w:+w.toFixed(1),d:+d.toFixed(1),floors,rot:rt,color:pal[Math.floor(rnd()*pal.length)],mg:b.id,city:1,style};
+    if(style==='panel')S.color=[0xb9b6ae,0xa7a59e,0xc6c0b4][Math.floor(rnd()*3)];
+    if(style==='shop')S.awn=[0x2f5d3a,0x7a2e2a,0x2b4a6b,0x6b5a2b][Math.floor(rnd()*4)];
+    if(floors<=2&&style!=='shop'&&rnd()<.55)S.roof='gable';if(floors>=2&&style!=='panel'&&rnd()<.45)S.balcony=1;S.band=style!=='plaster'||rnd()<.5?1:0;
     S.x=+((lx0+lx1)/2).toFixed(2);S.z=+(rt?lz0+4.8+d/2:lz1-4.8-d/2).toFixed(2);L.S=S}
   }}
  C.rnd=rnd;return C})();
@@ -47,8 +50,8 @@ const CITY=(function(){
 // heliportos (o terreno fica plano em volta deles); o do norte fica no quarteirão do heliponto da cidade
 const HPS=[['Heliponto Norte',97,-158],['Heliponto Sul',-MAPH*.45,MAPH*.5]];
 // o terreno (relevo, praia e mar) fica em world/terrain.js
-// construções com modelo pronto (world/buildings.js): lotes "model" da cidade
-const BLDS=CITY.lots.filter(L=>L.kind==='model').map((L,i)=>({id:'m'+i,model:L.model,x:(L.x0+L.x1)/2,z:(L.z0+L.z1)/2,rot:L.rot,city:1,lot:L}));
+// construções com modelo pronto (world/buildings.js): nenhuma — todas as construções têm porta e interior
+const BLDS=[];
 // prédios com interior (world/structures.js): dá para entrar e subir em todos os andares
 // w,d = largura e fundo (m); floors = andares; roof:'gable' = telhado de telha; balcony = varandas
 const STRS=CITY.lots.filter(L=>L.S).map(L=>L.S);

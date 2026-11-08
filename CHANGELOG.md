@@ -1,5 +1,20 @@
 # Histórico de versões
 
+## 3.10.2 — todas as construções com porta e interior
+- **Todas as construções da cidade dá para entrar** (26 prédios): as construções baixadas da internet
+  que eram só "casca" (sem porta, e o personagem ficava preso em volta delas) foram removidas.
+- **Estilos novos, feitos pelo jogo**: reboco colorido, **tijolo aparente**, **concreto**
+  e **loja** (vitrine grande no térreo, toldo colorido e letreiro), com cornijas entre os andares.
+  Por dentro as paredes são de reboco claro.
+- **Animação de pular muro/janela refeita**: o personagem **apoia as mãos em cima** do obstáculo,
+  inclina o corpo, passa de lado com as pernas encolhidas e desce do outro lado.
+- **Portas dos andares de cima**: o botão de porta pegava a porta de outro andar (bem em cima ou
+  embaixo); agora só usa as portas do andar onde o personagem está.
+- **Terraço**: a proteção do buraco da escada era uma parede invisível de um lado e uma chapa
+  escura do outro; agora é **grade de metal** dos dois lados.
+- **Buggies** que nasciam dentro das casas ou na frente das portas foram tirados; ficam 3
+  estacionados nas ruas.
+
 ## 3.10.1 — pular obstáculos com animação e ajustes da cidade
 - **Pular janela e mureta com animação**: perto de um obstáculo baixo (janela, mureta, parapeito,
   sofá), o botão de pulo faz o personagem **apoiar as mãos, encolher as pernas e passar por cima**;

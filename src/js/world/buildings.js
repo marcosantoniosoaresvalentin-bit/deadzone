@@ -11,15 +11,7 @@
   // len: maior medida da construção em metros (o modelo é escalado para isso)
   // glass: materiais que não bloqueiam a passagem; wall: material das paredes principais (para achar a porta)
   // solid: construção só por fora (colisão = caixa do corpo do prédio); face: giro extra para a frente dar na rua
-  const MODELS = {
-    apartment: { url: 'assets/models/city/city-apartment-building.glb', len: 15, solid: 1, face: 0 },
-    tower: { url: 'assets/models/city/small-city-building1.glb', len: 12, solid: 1, face: 0 },
-    townhouse: { url: 'assets/models/city/small-city-building2.glb', len: 10, solid: 1, face: 0 },
-    store: { url: 'assets/models/city/convenience-store.glb', len: 16, solid: 1, face: 0 },
-    office: { url: 'assets/models/city/office-building.glb', len: 17, solid: 1, face: 0 },
-    house: { url: 'assets/models/city/residential-house.glb', len: 14, solid: 1, face: 0 },
-    police: { url: 'assets/models/city/police-station.glb', len: 17, solid: 1, face: 0 }
-  };
+  const MODELS = {};
   const SRC = {};
   const DZB = window.DZB = { list: [] };
 
