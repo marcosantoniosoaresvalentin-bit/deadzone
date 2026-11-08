@@ -150,7 +150,7 @@
     try { furnish(b, s); } catch (e) { console.warn('construção: interior/colisão', e); }
     if (typeof b.onPlace === 'function') b.onPlace(b);
   }
-  for (const k in MODELS) new T.GLTFLoader().load(MODELS[k].url, gl => {
+  for (const k in MODELS) if ((typeof BLDS !== 'undefined' ? BLDS : []).some(b => b.model === k)) new T.GLTFLoader().load(MODELS[k].url, gl => {
     SRC[k] = gl.scene; for (const b of (typeof BLDS !== 'undefined' ? BLDS : [])) if (b.model === k) place(b);
   }, undefined, e => console.warn('construção', k, e));
 })();

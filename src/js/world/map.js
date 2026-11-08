@@ -22,12 +22,14 @@ const rdT=ctex(128,256,(g,w,h)=>{g.fillStyle='#46494e';g.fillRect(0,0,w,h);for(l
 // heliportos (o terreno fica plano em volta deles)
 const HPS=[['Heliponto Norte',MAPH*.45,-MAPH*.5],['Heliponto Sul',-MAPH*.45,MAPH*.5]];
 // o terreno (relevo, praia e mar) fica em world/terrain.js
-// construções colocadas no mapa (o terreno fica plano embaixo). Modelos em world/buildings.js
-// rot: só múltiplos de 90° (a colisão das paredes usa caixas alinhadas com os eixos)
-const BLDS=[
- {id:'casa1',model:'brick',x:28,z:-134,rot:0,flat:10},
- {id:'casa2',model:'brick',x:52,z:-150,rot:Math.PI/2,flat:10},
- {id:'predio1',model:'ruin',x:8,z:-155,rot:Math.PI,flat:8}];
+// construções com modelo pronto (world/buildings.js) — nenhuma por enquanto
+const BLDS=[];
+// prédios com interior (world/structures.js): dá para entrar e subir em todos os andares e no terraço
+// w,d = largura e fundo (m); floors = andares; rot: só múltiplos de 90°
+const STRS=[
+ {id:'predio1',x:20,z:-150,w:12,d:10,floors:3,rot:0,color:0xd8cfc0},
+ {id:'casa1',x:44,z:-128,w:11,d:9,floors:2,rot:-Math.PI/2,color:0xc9b79c},
+ {id:'casa2',x:-4,z:-126,w:11,d:9,floors:2,rot:Math.PI/2,color:0xb7c0b8}];
 
 // ---- dados do mapa (vazios) que outros sistemas consultam ----
 const CX=[],CZ=[],BP=42,LK=[];

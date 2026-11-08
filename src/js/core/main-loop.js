@@ -36,7 +36,7 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;try{d
  const fx=Math.sin(yaw),fz=Math.cos(yaw),dx=fx*-iy-fz*ix,dz=fz*-iy+fx*ix,k=Math.min(1,dt*10);
  if(mode==='ground'){
   const spd=(6-cr*3-pr*4.8)*(1-.4*adk)*(cast?.5:1)*(mpMove()?1:0);mvp(dx*spd*l*dt,dz*spd*l*dt);
-  P.vy-=20*dt;P.y+=P.vy*dt;{const gy_=GY(P.x,P.z,P.y+.01);if(P.y<=gy_||(P.vy<=0&&P.y-gy_<.4&&P.y-gy_>0&&Math.abs(gy_-TERH(P.x,P.z))<.01)){P.y=gy_;P.vy=0}else if(P.vy<-22&&P.y-gy_>6)openChute()}
+  P.vy-=20*dt;P.y+=P.vy*dt;{const gy_=GY(P.x,P.z,P.y+.01);if(P.y<=gy_||(P.vy<=0&&P.y-gy_<.4&&P.y-gy_>0&&(Math.abs(gy_-TERH(P.x,P.z))<.01||P.y-gy_<.25))){P.y=gy_;P.vy=0}else if(P.vy<-22&&P.y-gy_>6)openChute()}
   air+=((P.y>GY(P.x,P.z,P.y)+.02?1:0)-air)*Math.min(1,dt*12);cr+=((st===1?1:0)-cr)*k;pr+=((st===2?1:0)-pr)*Math.min(1,dt*3);
   if(firing||keys.f||ads){pl.rotation.y+=(((yaw-pl.rotation.y+Math.PI*3)%(Math.PI*2))-Math.PI)*Math.min(1,dt*14)}
   else if(l>.05){const g=Math.atan2(dx,dz),d=((g-pl.rotation.y+Math.PI*3)%(Math.PI*2))-Math.PI;pl.rotation.y+=d*Math.min(1,dt*12)}

@@ -55,6 +55,9 @@ const TER=(()=>{
  // construções: terreno plano embaixo (e borda suave em volta)
  for(const b of (typeof BLDS!=='undefined'?BLDS:[])){const cx=b.x,cz=b.z,h0=rawH(cx,cz),r0=b.flat||12,r1=r0+14;
   for(let j=0;j<N;j++)for(let i=0;i<N;i++){const x=O+i*S,z=O+j*S,d=Math.hypot(x-cx,z-cz);if(d>r1)continue;const k=1-ss(r0,r1,d);H[idx(i,j)]=H[idx(i,j)]*(1-k)+h0*k}}
+ // prédios com interior: retângulo plano (com folga) e borda suave
+ for(const b of (typeof STRS!=='undefined'?STRS:[])){const cx=b.x,cz=b.z,h0=rawH(cx,cz),hw=Math.max(b.w,b.d)/2+3;
+  for(let j=0;j<N;j++)for(let i=0;i<N;i++){const x=O+i*S,z=O+j*S,d=Math.max(0,Math.max(Math.abs(x-cx),Math.abs(z-cz))-hw);if(d>14)continue;const k=1-ss(0,14,d);H[idx(i,j)]=H[idx(i,j)]*(1-k)+h0*k}}
  // mesma triangulação do PlaneGeometry: altura idêntica à malha
  function terh(x,z){
   const fx=(x-O)/S,fz=(z-O)/S;if(fx<0||fz<0||fx>=N-1||fz>=N-1)return -14;

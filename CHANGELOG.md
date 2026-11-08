@@ -1,5 +1,16 @@
 # Histórico de versões
 
+## 3.9.0 — prédios com interior (dá para entrar em todos os andares)
+- As casas antigas (só tinham o lado de fora) saíram. No lugar, **3 construções com interior
+  completo**, feitas por código: um **prédio de 3 andares + terraço** e **2 sobrados**.
+- **Todos os andares acessíveis**: escada em "vai e volta" no fundo do prédio, patamares,
+  guarda-corpo e buraco na laje; dá para subir até o **terraço** com mureta.
+- Porta de entrada que abre, **portas internas**, cômodos separados, janelas de vidro que
+  **quebram com tiro**, rodapé e luz em cada andar.
+- Paredes e lajes com colisão **por andar** (a parede de cima não bloqueia quem está embaixo);
+  o personagem desce escadas sem "pular".
+- APK mais leve: os modelos baixados das casas antigas foram removidos.
+
 ## 3.8.1 — construções estilo battle royale
 - A casa de madeira saiu. No lugar, uma **vilinha** no campo ao norte da ilha:
   2 **casas de tijolo** ("Countryside brick house", CC-BY 4.0) e um **prédio abandonado de
