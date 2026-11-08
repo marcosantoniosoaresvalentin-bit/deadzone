@@ -53,7 +53,10 @@
     tile: triMat(TX.tiles, .45), roof: triMat(TX.roof, .55, { side: T.DoubleSide }), wood: triMat(TX.wood, .5, { roughness: .8 }),
     frame: new T.MeshStandardMaterial({ color: lin(0x2b2d30), roughness: .6, metalness: .3, vertexColors: true }),
     rail: new T.MeshStandardMaterial({ color: lin(0x3a3c40), roughness: .5, metalness: .5, vertexColors: true }),
-    door: new T.MeshStandardMaterial({ color: lin(0x5a3a22), roughness: .7 }),
+    door: new T.MeshStandardMaterial({ roughness: .6, map: canvasT(128, 256, (g, w, h) => { const gr = g.createLinearGradient(0, 0, w, 0); gr.addColorStop(0, '#7a5232'); gr.addColorStop(.5, '#8a5f3a'); gr.addColorStop(1, '#74502f'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+      for (let i = 0; i < 70; i++) { g.strokeStyle = 'rgba(50,28,12,' + (.08 + Math.random() * .12) + ')'; g.beginPath(); const x = Math.random() * w; g.moveTo(x, 0); g.bezierCurveTo(x + 6, h * .3, x - 6, h * .7, x + 3, h); g.stroke(); }
+      const pnl = (x, y, ww, hh) => { g.fillStyle = 'rgba(40,20,8,.35)'; g.fillRect(x, y, ww, hh); g.fillStyle = 'rgba(255,220,180,.12)'; g.fillRect(x + 3, y + 3, ww - 6, hh - 6); g.strokeStyle = 'rgba(30,15,5,.6)'; g.lineWidth = 2; g.strokeRect(x + 5, y + 5, ww - 10, hh - 10); };
+      pnl(16, 18, 42, 96); pnl(70, 18, 42, 96); pnl(16, 136, 42, 100); pnl(70, 136, 42, 100); g.fillStyle = 'rgba(0,0,0,.5)'; g.fillRect(0, 0, w, 3); g.fillRect(0, h - 3, w, 3); }) }),
     dark: new T.MeshStandardMaterial({ color: lin(0x111214), roughness: 1 })
   };
 
@@ -111,23 +114,23 @@
       // molduras e vidros das janelas
       for (const o of sorted) if (o[2] > .3) {
         const cu = (o[0] + o[1]) / 2, cv = y0 + (o[2] + o[3]) / 2, ww = o[1] - o[0], hh = o[3] - o[2], d = th + .03;
-        if (alongX) { box(MAT.frame, o[0] - .06, y0 + o[2] - .08, f - d, o[1] + .06, y0 + o[2], f + d); box(MAT.frame, o[0] - .06, y0 + o[3], f - d, o[1] + .06, y0 + o[3] + .06, f + d); box(MAT.frame, o[0] - .06, y0 + o[2], f - .04, o[0], y0 + o[3], f + .04); box(MAT.frame, o[1], y0 + o[2], f - .04, o[1] + .06, y0 + o[3], f + .04); box(MAT.frame, cu - .025, y0 + o[2], f - .03, cu + .025, y0 + o[3], f + .03); glass.push([cu, cv, f, 0, ww, hh]); }
-        else { box(MAT.frame, f - d, y0 + o[2] - .08, o[0] - .06, f + d, y0 + o[2], o[1] + .06); box(MAT.frame, f - d, y0 + o[3], o[0] - .06, f + d, y0 + o[3] + .06, o[1] + .06); box(MAT.frame, f - .04, y0 + o[2], o[0] - .06, f + .04, y0 + o[3], o[0]); box(MAT.frame, f - .04, y0 + o[2], o[1], f + .04, y0 + o[3], o[1] + .06); box(MAT.frame, f - .03, y0 + o[2], cu - .025, f + .03, y0 + o[3], cu + .025); glass.push([f, cv, cu, Math.PI / 2, ww, hh]); }
+        if (alongX) { box(MAT.frame, o[0] - .06, y0 + o[2] - .08, f - d, o[1] + .06, y0 + o[2], f + d); box(MAT.frame, o[0] - .06, y0 + o[3], f - d, o[1] + .06, y0 + o[3] + .06, f + d); box(MAT.frame, o[0] - .06, y0 + o[2], f - .04, o[0], y0 + o[3], f + .04); box(MAT.frame, o[1], y0 + o[2], f - .04, o[1] + .06, y0 + o[3], f + .04); glass.push([cu, cv, f, 0, ww, hh]); }
+        else { box(MAT.frame, f - d, y0 + o[2] - .08, o[0] - .06, f + d, y0 + o[2], o[1] + .06); box(MAT.frame, f - d, y0 + o[3], o[0] - .06, f + d, y0 + o[3] + .06, o[1] + .06); box(MAT.frame, f - .04, y0 + o[2], o[0] - .06, f + .04, y0 + o[3], o[0]); box(MAT.frame, f - .04, y0 + o[2], o[1], f + .04, y0 + o[3], o[1] + .06); glass.push([f, cv, cu, Math.PI / 2, ww, hh]); }
       }
     }
     // portas com folha que abre
     const inner = new T.Group(); g.add(inner); S.inner = inner;
     function door(alongX, u0, u1, f, y0, inn) {
       const piv = new T.Group(), w = u1 - u0; if (alongX) piv.position.set(u0, y0, f); else piv.position.set(f, y0, u0);
-      const LH = 2.16, leaf = new T.Mesh(new T.BoxGeometry(alongX ? w - .04 : .05, LH, alongX ? .05 : w - .04), MAT.door); leaf.position.set(alongX ? w / 2 : 0, LH / 2 + .01, alongX ? 0 : w / 2); leaf.castShadow = true; piv.add(leaf);
-      if (!inn) { const kn = new T.Mesh(new T.BoxGeometry(.05, .05, .05), MAT.frame); kn.position.set(alongX ? w - .12 : .06, 1.0, alongX ? .06 : w - .12); piv.add(kn); }
+      const LH = 2.2, leaf = new T.Mesh(new T.BoxGeometry(alongX ? w : .05, LH, alongX ? .05 : w), MAT.door); leaf.position.set(alongX ? w / 2 : 0, LH / 2, alongX ? 0 : w / 2); leaf.castShadow = true; piv.add(leaf);
+      { const kn = new T.Mesh(new T.BoxGeometry(alongX ? .12 : .14, .04, alongX ? .14 : .12), MAT.knob || (MAT.knob = new T.MeshStandardMaterial({ color: lin(0xc9b27a), metalness: .8, roughness: .3 }))); kn.position.set(alongX ? w - .1 : 0, 1.0, alongX ? 0 : w - .1); piv.add(kn); }
       (inn ? inner : g).add(piv);
       const bx = alongX ? col(u0 + .05, f - .1, u1 - .05, f + .1, y0, y0 + 2.2) : col(f - .1, u0 + .05, f + .1, u1 - .05, y0, y0 + 2.2);
       const c = alongX ? L2W((u0 + u1) / 2, f) : L2W(f, (u0 + u1) / 2);
       const Dd = { piv, x: c[0], z: c[1], open: 0, a: 0, bx, y: gy + y0 }; bx.door = Dd; doors.push(Dd); return Dd;
     }
     // janelas distribuídas numa parede (evita a porta)
-    const winsOn = (a0, a1, skip, sill, wh) => { const out = [], n = Math.max(1, Math.floor((a1 - a0) / 2.6)), stp = (a1 - a0) / n; for (let i = 0; i < n; i++) { const c = a0 + stp * (i + .5); if (skip != null && Math.abs(c - skip) < 1.5) continue; out.push([c - .6, c + .6, sill, sill + wh]); } return out; };
+    const winsOn = (a0, a1, skip, sill, wh, avoid) => { const out = [], n = Math.max(1, Math.floor((a1 - a0) / 2.6)), stp = (a1 - a0) / n; for (let i = 0; i < n; i++) { let c = a0 + stp * (i + .5); if (skip != null && Math.abs(c - skip) < 1.5) continue; if (avoid) { let bad = 0; for (const v of avoid) if (Math.abs(c - v) < .95) { const c2 = c + (c > v ? 1 : -1) * (.96 - Math.abs(c - v)); if (c2 - .6 < a0 - .3 || c2 + .6 > a1 + .3 || (skip != null && Math.abs(c2 - skip) < 1.5)) bad = 1; else c = c2; } if (bad) continue; } out.push([c - .6, c + .6, sill, sill + wh]); } return out; };
 
     const x0 = -W / 2, x1 = W / 2, z0 = -D / 2, z1 = D / 2, ix0 = x0 + T_ / 2, ix1 = x1 - T_ / 2, iz0 = z0 + T_ / 2, iz1 = z1 - T_ / 2;
     // poço da escada no fundo, à esquerda: patamar | rampa | patamar, duas faixas (vai e volta)
@@ -159,13 +162,18 @@
       if (mkStair) {
       for (let i = 0; i < ns; i++) { const xs = up ? sxa + i * sl : sxb - (i + 1) * sl; box(MAT.conc, xs, y, a + .02, xs + sl, y + (i + 1) * sh, b - .02, 0xc9c5bd); }
       ramp(sxa, a, sxb, b, y + .02, y + FH + .02, true, !up);
-      // corrimão do lado de dentro
-      box(MAT.rail, sxa, y + 1, (lane === 0 ? b : a) - .03, sxb, y + 1.05, (lane === 0 ? b : a) + .03);
-      // parede entre as faixas (meia altura) para não cair de uma faixa na outra
-      if (lane === 0) { box(MAT.int, sxa + .8, y, lz1 - .06, sxb - .8, y + 1, lz1 + .06, 0xf2f0ea); col(sxa + .8, lz1 - .08, sxb - .8, lz1 + .08, y, y + 1); }
+      // grade de metal no lado aberto da escada (entre as duas faixas): balaústres + corrimão inclinado
+      { const rz = lz1 + (lane === 0 ? -.06 : .06);
+        const yAt = x => y + FH * Math.max(0, Math.min(1, up ? (x - sxa) / STEP_L : (sxb - x) / STEP_L));
+        for (let i = 0; i < ns; i += 2) { const xs = up ? sxa + i * sl : sxb - (i + 1) * sl, xc = xs + sl / 2, ys = y + (i + 1) * sh; box(MAT.rail, xc - .015, ys, rz - .015, xc + .015, yAt(xc) + .95, rz + .015); }
+        // corrimão inclinado contínuo
+        { const len = Math.hypot(STEP_L, FH), o = new T.Object3D(); o.position.set((sxa + sxb) / 2, y + FH / 2 + .95, rz); o.rotation.z = (up ? 1 : -1) * Math.atan2(FH, STEP_L); o.updateMatrix();
+          const ge = new T.BoxGeometry(len, .06, .06).toNonIndexed(), n = ge.attributes.position.count, cc = new Float32Array(n * 3).fill(1); ge.setAttribute('color', new T.BufferAttribute(cc, 3)); ge.applyMatrix4(o.matrix); ge.applyMatrix4(g.matrixWorld); push(S.mg || ('_' + S.id), MAT.rail, ge); }
+        box(MAT.rail, (up ? sxa : sxb) - .03, y, rz - .03, (up ? sxa : sxb) + .03, y + sh + .95, rz + .03); box(MAT.rail, (up ? sxb : sxa) - .03, y + FH - sh, rz - .03, (up ? sxb : sxa) + .03, y + FH + .95, rz + .03);
+        col(sxa + .3, rz - .05, sxb - .3, rz + .05, y, y + FH + 1); }
       }
       // ---------- paredes do andar ----------
-      const front = winsOn(x0 + .6, x1 - .6, k === 0 || S.balcony ? 0 : null, .9, 1.4), back = winsOn(sx1 + .3, x1 - .6, null, .9, 1.3), side = winsOn(z0 + .6, z1 - .6, null, .9, 1.4);
+      const cz_ = lz2 + .1, front = winsOn(x0 + .6, x1 - .6, k === 0 || S.balcony ? 0 : null, .9, 1.4, [1.3]), back = winsOn(sx1 + .3, x1 - .6, null, .9, 1.3), side = winsOn(z0 + .6, z1 - .6, null, .9, 1.4, [cz_]);
       const balc = S.balcony && k > 0; let balDoor = 0;
       if (k === 0) front.push([-.6, .6, 0, 2.2]);
       else if (balc) { for (let i = front.length - 1; i >= 0; i--) if (Math.abs((front[i][0] + front[i][1]) / 2) < 1.4) front.splice(i, 1); front.push([-.6, .6, 0, 2.2]); balDoor = 1;

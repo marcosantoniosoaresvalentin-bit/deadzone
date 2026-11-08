@@ -2,9 +2,9 @@
  * Monta a CIDADE descrita em world/map.js (CITY):
  *  - ruas de asfalto com faixa tracejada, cruzamentos, calçadas com meio-fio;
  *  - muretas em volta dos lotes (dá para pular por cima) e praças com muretas/blocos de concreto (cobertura);
- *  - carros destruídos nas ruas (cobertura), postes de luz;
+ *  - postes de luz;
  *  - móveis dentro dos prédios com interior (cama, sofá, mesa, escrivaninha, cadeira) — aparecem só de perto.
- * Modelos prontos (CC0, Microsoft Remix 3D via Ethereal Engine Open Asset Kit): móveis e carro.
+ * Modelos prontos (CC0, Microsoft Remix 3D via Ethereal Engine Open Asset Kit): móveis.
  */
 (function () {
   if (typeof CITY === 'undefined') return;
@@ -16,8 +16,7 @@
   const asph = (line) => canvasT(256, 512, (g, w, h) => {
     g.fillStyle = '#3d4044'; g.fillRect(0, 0, w, h); noise(g, w, h, 16000, .12);
     for (let i = 0; i < 40; i++) { g.fillStyle = 'rgba(20,20,20,' + (.05 + Math.random() * .1) + ')'; g.beginPath(); g.ellipse(Math.random() * w, Math.random() * h, 8 + Math.random() * 30, 6 + Math.random() * 20, Math.random() * 3, 0, 7); g.fill(); }
-    g.fillStyle = 'rgba(230,230,225,.85)'; g.fillRect(10, 0, 5, h); g.fillRect(w - 15, 0, 5, h);
-    if (line) { g.fillStyle = 'rgba(226,186,60,.9)'; for (let y = 0; y < h; y += 128) g.fillRect(w / 2 - 4, y + 20, 8, 70); }
+
   });
   const TXR = asph(1), TXI = asph(0);
   const TXS = canvasT(256, 256, (g, w, h) => { g.fillStyle = '#a7a39b'; g.fillRect(0, 0, w, h); noise(g, w, h, 9000, .1); g.fillStyle = 'rgba(60,60,60,.35)'; for (let i = 0; i <= 256; i += 64) { g.fillRect(i, 0, 2, h); g.fillRect(0, i, w, 2); } });
@@ -58,9 +57,6 @@
   const xs = C.XL, zs = C.ZL;
   for (const x of xs) for (let j = 0; j < zs.length - 1; j++) quads.r.push([x - hw, zs[j] + hw, x + hw, zs[j + 1] - hw, 1]);
   for (const z of zs) for (let i = 0; i < xs.length - 1; i++) quads.r.push([xs[i] + hw, z - hw, xs[i + 1] - hw, z + hw, 0]);
-  // pontas das ruas até a borda da cidade
-  for (const x of xs) { quads.r.push([x - hw, C.z0, x + hw, zs[0] - hw, 1]); quads.r.push([x - hw, zs[zs.length - 1] + hw, x + hw, C.z1, 1]); }
-  for (const z of zs) { quads.r.push([C.x0, z - hw, xs[0] - hw, z + hw, 0]); quads.r.push([xs[xs.length - 1] + hw, z - hw, C.x1, z + hw, 0]); }
   for (const x of xs) for (const z of zs) quads.i.push([x - hw, z - hw, x + hw, z + hw, 0]);
   function roadMesh(list, mat) {
     const P = [], U = [], N = [];
@@ -75,6 +71,20 @@
     const me = new T.Mesh(ge, mat); me.receiveShadow = true; sc.add(me);
   }
   roadMesh(quads.r, MR); roadMesh(quads.i, MI);
+  // faixas pintadas: borda branca contínua e faixa amarela tracejada no meio; terminam antes do cruzamento
+  { const P = [], Cc = [], wht = lin(0xe6e6e0), yel = lin(0xe2b83c), YL = Y + .012;
+    const strip = (x0, z0, x1, z1, c) => { const q = [[x0, z0], [x1, z0], [x1, z1], [x0, z1]]; for (const k of [0, 2, 1, 0, 3, 2]) { P.push(q[k][0], YL, q[k][1]); Cc.push(c.r, c.g, c.b); } };
+    for (const [x0, z0, x1, z1, az] of quads.r) {
+      const e = .35, lw = .14, gap = .6; // borda: 35 cm da beira; para 60 cm antes da esquina
+      if (az) { strip(x0 + e, z0 + gap, x0 + e + lw, z1 - gap, wht); strip(x1 - e - lw, z0 + gap, x1 - e, z1 - gap, wht); const cx = (x0 + x1) / 2; for (let z = z0 + 2; z + 3 < z1 - 1; z += 6) strip(cx - .08, z, cx + .08, z + 3, yel); }
+      else { strip(x0 + gap, z0 + e, x1 - gap, z0 + e + lw, wht); strip(x0 + gap, z1 - e - lw, x1 - gap, z1 - e, wht); const cz = (z0 + z1) / 2; for (let x = x0 + 2; x + 3 < x1 - 1; x += 6) strip(x, cz - .08, x + 3, cz + .08, yel); }
+    }
+    // faixa de pedestre na entrada de cada cruzamento
+    for (const [x0, z0, x1, z1] of quads.i) { const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, N_ = cz > zs[0] + 1, S_ = cz < zs[zs.length - 1] - 1, W_ = cx > xs[0] + 1, E_ = cx < xs[xs.length - 1] - 1;
+      for (let t = x0 + .5; t < x1 - .5; t += 1) { if (N_) strip(t, z0 - 2.2, t + .5, z0 - .4, wht); if (S_) strip(t, z1 + .4, t + .5, z1 + 2.2, wht); }
+      for (let t = z0 + .5; t < z1 - .5; t += 1) { if (W_) strip(x0 - 2.2, t, x0 - .4, t + .5, wht); if (E_) strip(x1 + .4, t, x1 + 2.2, t + .5, wht); } }
+    const ge = new T.BufferGeometry(); ge.setAttribute('position', new T.Float32BufferAttribute(P, 3)); ge.setAttribute('color', new T.Float32BufferAttribute(Cc, 3)); ge.computeVertexNormals(); ge.computeBoundingSphere();
+    const me = new T.Mesh(ge, new T.MeshStandardMaterial({ vertexColors: true, roughness: .8, polygonOffset: true, polygonOffsetFactor: -2 })); me.receiveShadow = true; sc.add(me); }
 
   // ---------- calçadas (com meio-fio) em volta de cada quarteirão ----------
   const CH = .15, SY = H + CH;
@@ -94,7 +104,7 @@
   }
 
   // ---------- muretas (0,9 m: dá para pular por cima) ----------
-  const WH = .9, WT = .22;
+  const WH = 1.1, WT = .24;
   function lowWall(x0, z0, x1, z1, brick) { // ao longo de x (z0==z1) ou de z (x0==x1)
     const ax = Math.abs(x1 - x0) > Math.abs(z1 - z0), a = ax ? Math.min(x0, x1) : Math.min(z0, z1), b = ax ? Math.max(x0, x1) : Math.max(z0, z1);
     if (b - a < .3) return;
@@ -130,7 +140,6 @@
 
   // ---------- modelos prontos: carro destruído e móveis ----------
   const MD = {
-    wreck: { url: 'assets/models/city/sedan.glb', len: 4.6 },
     bed: { url: 'assets/models/city/wooden-bed.glb', len: 2.1 },
     couch: { url: 'assets/models/city/modern-full-couch.glb', len: 2.4 },
     table: { url: 'assets/models/city/table.glb', len: 1.8 },
@@ -147,24 +156,11 @@
   }
   function inst(k) { const g = SRC[k].clone(true); g.userData.size = SRC[k].userData.size; return g; }
   for (const k in MD) new T.GLTFLoader().load(MD[k].url, gl => {
-    if (k === 'wreck') { const burnt = new T.MeshStandardMaterial({ color: lin(0x2f2925), roughness: 1, metalness: .25 }), rust = new T.MeshStandardMaterial({ color: lin(0x5a3322), roughness: 1 }); let i = 0; gl.scene.traverse(o => { if (o.isMesh && o.material) { o.material = /glass|window|vidro/i.test(o.material.name) ? new T.MeshStandardMaterial({ color: 0x111111, transparent: true, opacity: .35 }) : (i++ % 3 ? burnt : rust); } }); }
     gl.scene.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
     SRC[k] = prep(k, gl.scene); if (Object.keys(SRC).length === Object.keys(MD).length) placeAll();
   }, undefined, e => console.warn('cidade: modelo', k, e));
 
   function placeAll() {
-    // carros destruídos nas ruas (cobertura), na faixa da direita, de lado ou atravessados
-    let n = 0;
-    for (let t = 0; t < 60 && n < 16; t++) {
-      const az = rnd() < .5, x = az ? C.XL[Math.floor(rnd() * C.XL.length)] + (rnd() < .5 ? -1.9 : 1.9) : C.x0 + 10 + rnd() * (C.x1 - C.x0 - 20);
-      const z = az ? C.z0 + 10 + rnd() * (C.z1 - C.z0 - 20) : C.ZL[Math.floor(rnd() * C.ZL.length)] + (rnd() < .5 ? -1.9 : 1.9);
-      if (C.XL.some(v => Math.abs(v - x) < 7) && C.ZL.some(v => Math.abs(v - z) < 7)) continue; // fora dos cruzamentos
-      if (C.blocks.some(b => b.heli && x > b.x0 - 8 && x < b.x1 + 8 && z > b.z0 - 8 && z < b.z1 + 8)) continue;
-      const cross = rnd() < .25, ry = (az ? 0 : Math.PI / 2) + (cross ? Math.PI / 2 : 0) + (rnd() - .5) * .25 + (rnd() < .5 ? Math.PI : 0);
-      const g = inst('wreck'); g.position.set(x, Y, z); g.rotation.y = ry; sc.add(g);
-      const sz = g.userData.size, along = Math.abs(Math.sin(ry)) > .7, hx = (along ? sz.z : sz.x) / 2 - .1, hz = (along ? sz.x : sz.z) / 2 - .1;
-      col(x - hx, z - hz, x + hx, z + hz, Y - 1, Y + sz.y * .85); n++;
-    }
     // móveis nos cômodos (somem de longe para não pesar)
     const furn = [];
     for (const S of (window.DZSTR || [])) {

@@ -1,5 +1,18 @@
 # Histórico de versões
 
+## 3.10.1 — pular obstáculos com animação e ajustes da cidade
+- **Pular janela e mureta com animação**: perto de um obstáculo baixo (janela, mureta, parapeito,
+  sofá), o botão de pulo faz o personagem **apoiar as mãos, encolher as pernas e passar por cima**;
+  na janela o vidro **quebra com barulho**. O pulo normal ficou mais baixo (~0,6 m) e não passa
+  mais por cima de muro nem de janela.
+- Muretas um pouco mais altas (1,1 m).
+- Asfalto: as faixas (borda branca e tracejado amarelo) **param antes das esquinas**; faixas de
+  pedestre nos cruzamentos; tiradas as pontas de rua que saíam da cidade para a grama.
+- Carros destruídos removidos.
+- Portas: folha ocupa o vão inteiro (sem fresta), **porta de madeira com almofadas** e maçaneta.
+- Janelas sem a grade do meio; as **paredes internas não caem mais em cima das janelas**.
+- **Grade de metal com corrimão inclinado** em todas as escadas.
+
 ## 3.10.0 — cidade "Porto Velho"
 - **Cidade nova** no norte da ilha (~210 x 130 m): ruas de **asfalto** com faixa tracejada e
   cruzamentos, **calçadas** com meio-fio, **postes de luz**, 7 quarteirões e um quarteirão com o
