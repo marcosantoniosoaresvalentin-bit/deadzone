@@ -1,5 +1,15 @@
 # Histórico de versões
 
+## 3.11.0 — cidade maior e mais cheia + estádio de futebol
+- **Cidade mais cheia**: mais uma fileira de quarteirões e **lotes estreitos lado a lado**
+  (prédios com uma passagem de ~1,2 m entre eles, muros contínuos na frente) — **45 construções**,
+  todas com porta e interior, incluindo **11 casas com garagem** (buggy dentro) e prédios largos.
+- **Estádio de futebol** no lugar do heliponto (ocupa dois quarteirões): arquibancadas coloridas
+  em 4 lados (dá para subir os degraus), entradas com túnel, mureta na frente da arquibancada,
+  gramado listrado com linhas, área, círculo central e **gols com rede**, torres de iluminação e
+  letreiro. **O helicóptero fica no meio do campo.**
+- Garagem: porta de enrolar refeita (rolo liso e chapa ondulada, sem os "dentes").
+
 ## 3.10.3 — casas com garagem e janelas sem "pisca-pisca"
 - **Casas com garagem aberta** (estilo battle royale) no lugar das praças de muros soltos: sobrado de
   2 andares + garagem de 3 paredes com laje, porta de enrolar levantada e **um buggy dentro**,

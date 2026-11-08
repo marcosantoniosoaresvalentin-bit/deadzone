@@ -55,7 +55,7 @@
   const quads = { r: [], i: [] };
   // q: [x0,z0,x1,z1, alongZ]
   const xs = C.XL, zs = C.ZL;
-  for (const x of xs) for (let j = 0; j < zs.length - 1; j++) quads.r.push([x - hw, zs[j] + hw, x + hw, zs[j + 1] - hw, 1]);
+  for (let xi = 0; xi < xs.length; xi++) for (let j = 0; j < zs.length - 1; j++) if (!(C.skipV && C.skipV[xi + '_' + j])) { const x = xs[xi]; quads.r.push([x - hw, zs[j] + hw, x + hw, zs[j + 1] - hw, 1]); }
   for (const z of zs) for (let i = 0; i < xs.length - 1; i++) quads.r.push([xs[i] + hw, z - hw, xs[i + 1] - hw, z + hw, 0]);
   for (const x of xs) for (const z of zs) quads.i.push([x - hw, z - hw, x + hw, z + hw, 0]);
   function roadMesh(list, mat) {
@@ -80,7 +80,7 @@
       else { strip(x0 + gap, z0 + e, x1 - gap, z0 + e + lw, wht); strip(x0 + gap, z1 - e - lw, x1 - gap, z1 - e, wht); const cz = (z0 + z1) / 2; for (let x = x0 + 2; x + 3 < x1 - 1; x += 6) strip(x, cz - .08, x + 3, cz + .08, yel); }
     }
     // faixa de pedestre na entrada de cada cruzamento
-    for (const [x0, z0, x1, z1] of quads.i) { const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, N_ = cz > zs[0] + 1, S_ = cz < zs[zs.length - 1] - 1, W_ = cx > xs[0] + 1, E_ = cx < xs[xs.length - 1] - 1;
+    for (const [x0, z0, x1, z1] of quads.i) { const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, xi = xs.findIndex(v => Math.abs(v - cx) < 1), zi = zs.findIndex(v => Math.abs(v - cz) < 1), sk = (a, b) => !!(C.skipV && C.skipV[a + '_' + b]), N_ = cz > zs[0] + 1 && !sk(xi, zi - 1), S_ = cz < zs[zs.length - 1] - 1 && !sk(xi, zi), W_ = cx > xs[0] + 1, E_ = cx < xs[xs.length - 1] - 1;
       for (let t = x0 + .5; t < x1 - .5; t += 1) { if (N_) strip(t, z0 - 2.2, t + .5, z0 - .4, wht); if (S_) strip(t, z1 + .4, t + .5, z1 + 2.2, wht); }
       for (let t = z0 + .5; t < z1 - .5; t += 1) { if (W_) strip(x0 - 2.2, t, x0 - .4, t + .5, wht); if (E_) strip(x1 + .4, t, x1 + 2.2, t + .5, wht); } }
     const ge = new T.BufferGeometry(); ge.setAttribute('position', new T.Float32BufferAttribute(P, 3)); ge.setAttribute('color', new T.Float32BufferAttribute(Cc, 3)); ge.computeVertexNormals(); ge.computeBoundingSphere();
@@ -121,8 +121,59 @@
   // parede com vários portões: gates = [[centro, meia largura], ...]
   function wallGates(x0, z, x1, gates, brick) { const gs = gates.slice().sort((a, b) => a[0] - b[0]); let u = x0; for (const [c, h] of gs) { lowWall(u, z, c - h, z, brick); u = c + h; } lowWall(u, z, x1, z, brick); }
   const rnd = C.rnd;
+  // ---------- ESTÁDIO DE FUTEBOL (helicóptero no meio do campo) ----------
+  const TXG = canvasT(256, 256, (g, w, h) => { for (let i = 0; i < 8; i++) { g.fillStyle = i % 2 ? '#3f8a3a' : '#4a9a42'; g.fillRect(0, i * 32, w, 32); } noise(g, w, h, 9000, .08); });
+  const MG = new T.MeshStandardMaterial({ map: TXG, roughness: .95 }), MSEAT = new T.MeshStandardMaterial({ vertexColors: true, roughness: .7 }), MW = new T.MeshStandardMaterial({ vertexColors: true, roughness: .6 });
+  function stadium(b) {
+    const SD = 7.2, NT = 9, TD = SD / NT, TH = .46, WT2 = .5, ENT = 5; // arquibancada: 9 degraus de 80 cm x 46 cm
+    const ix0 = b.x0 + SD + WT2, ix1 = b.x1 - SD - WT2, iz0 = b.z0 + SD + WT2, iz1 = b.z1 - SD - WT2, cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2;
+    // chão do estádio (pista de concreto) e gramado com listras
+    box(MC, b.x0, H - .3, b.z0, b.x1, H + .06, b.z1, 0x9c958b); floor(b.x0, b.z0, b.x1, b.z1, H + .06); RDS.push([b.x0, b.z0, b.x1, b.z1]);
+    { const pg = new T.Mesh(new T.PlaneGeometry(ix1 - ix0 - 2, iz1 - iz0 - 2), MG); pg.rotation.x = -Math.PI / 2; pg.position.set(cx, H + .075, cz); pg.receiveShadow = true; TXG.repeat.set((ix1 - ix0) / 16, 1); sc.add(pg); }
+    // linhas do campo
+    const PX0 = ix0 + 2.5, PX1 = ix1 - 2.5, PZ0 = iz0 + 2.5, PZ1 = iz1 - 2.5, LY = H + .085, lw = .12, ln = (x0, z0, x1, z1) => box(MW, x0, LY - .005, z0, x1, LY, z1, 0xf2f2ee);
+    ln(PX0, PZ0, PX1, PZ0 + lw); ln(PX0, PZ1 - lw, PX1, PZ1); ln(PX0, PZ0, PX0 + lw, PZ1); ln(PX1 - lw, PZ0, PX1, PZ1); ln(cx - lw / 2, PZ0, cx + lw / 2, PZ1);
+    for (let a = 0; a < 40; a++) { const t0 = a / 40 * Math.PI * 2, r = 5.5; ln(cx + Math.cos(t0) * r - .1, cz + Math.sin(t0) * r - .1, cx + Math.cos(t0) * r + .1, cz + Math.sin(t0) * r + .1); }
+    const pa = (PZ1 - PZ0) * .55, pd = 9;
+    for (const [sx, gx] of [[PX0, 1], [PX1, -1]]) { const a = Math.min(sx, sx + gx * pd), c = Math.max(sx, sx + gx * pd); ln(a, cz - pa / 2, c, cz - pa / 2 + lw); ln(a, cz + pa / 2 - lw, c, cz + pa / 2); ln(sx + gx * pd - lw / 2, cz - pa / 2, sx + gx * pd + lw / 2, cz + pa / 2);
+      // gol: traves brancas e rede (grade fina)
+      const gw = 3.66, gh = 2.44, gb = 1.6, bx0 = sx - gx * gb;
+      for (const z of [cz - gw, cz + gw]) { box(MW, sx - .06, H, z - .06, sx + .06, H + gh, z + .06, 0xffffff); col(sx - .08, z - .08, sx + .08, z + .08, H - 1, H + gh); }
+      box(MW, sx - .06, H + gh - .12, cz - gw, sx + .06, H + gh, cz + gw, 0xffffff);
+      box(MM, Math.min(sx, bx0), H + gh - .04, cz - gw, Math.max(sx, bx0), H + gh, cz + gw, 0xdcdcdc); box(MM, bx0 - .02, H, cz - gw, bx0 + .02, H + gh, cz + gw, 0xdcdcdc); }
+    // arquibancadas nos 4 lados (com entradas no meio de cada lado); degraus = pisos (dá para subir)
+    const cols = [0x1f4fa0, 0xe8e8e8, 0xc23a2e];
+    const side = (A0, A1, alongX, inner, dir) => { // dir: +1 a arquibancada cresce para +z/+x
+      const mid = (A0 + A1) / 2, segs = [[A0, mid - ENT / 2], [mid + ENT / 2, A1]];
+      for (const [a0, a1] of segs) for (let k = 0; k < NT; k++) {
+        const f0 = inner + dir * k * TD, f1 = inner + dir * (k + 1) * TD, y1 = H + (k + 1) * TH, lo = Math.min(f0, f1), hi = Math.max(f0, f1);
+        if (alongX) { box(MC, a0, H, lo, a1, y1 - .08, hi, 0xb8b2a7); box(MSEAT, a0, y1 - .08, lo, a1, y1, hi, cols[k % 3]); floor(a0, lo, a1, hi, y1); }
+        else { box(MC, lo, H, a0, hi, y1 - .08, a1, 0xb8b2a7); box(MSEAT, lo, y1 - .08, a0, hi, y1, a1, cols[k % 3]); floor(lo, a0, hi, a1, y1); }
+      }
+      // paredes das entradas (túnel) e muro de trás
+      for (const w of [mid - ENT / 2, mid + ENT / 2]) { const lo = Math.min(inner, inner + dir * SD), hi = Math.max(inner, inner + dir * SD);
+        if (alongX) { box(MC, w - .2, H, lo, w + .2, H + NT * TH + 1, hi, 0xcfc9be); col(w - .2, lo, w + .2, hi, H - 1, H + NT * TH + 1); } else { box(MC, lo, H, w - .2, hi, H + NT * TH + 1, w + .2, 0xcfc9be); col(lo, w - .2, hi, w + .2, H - 1, H + NT * TH + 1); } }
+      const ob = inner + dir * SD, o0 = Math.min(ob, ob + dir * WT2), o1 = Math.max(ob, ob + dir * WT2), HH = NT * TH + 3.2;
+      for (const [a0, a1] of segs) { if (alongX) { box(MC, a0, H, o0, a1, H + HH, o1, 0xd6d0c4); col(a0, o0, a1, o1, H - 1, H + HH); } else { box(MC, o0, H, a0, o1, H + HH, a1, 0xd6d0c4); col(o0, a0, o1, a1, H - 1, H + HH); } }
+      // portão da entrada: verga em cima
+      if (alongX) box(MC, mid - ENT / 2, H + 3.2, o0, mid + ENT / 2, H + HH, o1, 0xd6d0c4); else box(MC, o0, H + 3.2, mid - ENT / 2, o1, H + HH, mid + ENT / 2, 0xd6d0c4);
+      // proteção na frente da arquibancada (mureta de 1,1 m: dá para pular com a animação)
+      const fl = inner - dir * .15; if (alongX) for (const [a0, a1] of segs) { box(MC, a0, H, Math.min(fl, inner), a1, H + 1.1, Math.max(fl, inner), 0xe0dbd0); col(a0, Math.min(fl, inner), a1, Math.max(fl, inner), H - 1, H + 1.1); }
+      else for (const [a0, a1] of segs) { box(MC, Math.min(fl, inner), H, a0, Math.max(fl, inner), H + 1.1, a1, 0xe0dbd0); col(Math.min(fl, inner), a0, Math.max(fl, inner), a1, H - 1, H + 1.1); }
+    };
+    side(b.x0 + SD + WT2, b.x1 - SD - WT2, true, iz0, -1); side(b.x0 + SD + WT2, b.x1 - SD - WT2, true, iz1, 1);
+    side(iz0, iz1, false, ix0, -1); side(iz0, iz1, false, ix1, 1);
+    // cantos: blocos cheios até o muro de fora
+    for (const [x0, x1] of [[b.x0, ix0], [ix1, b.x1]]) for (const [z0, z1] of [[b.z0, iz0], [iz1, b.z1]]) { box(MC, x0, H, z0, x1, H + NT * TH + 3.2, z1, 0xd6d0c4); col(x0, z0, x1, z1, H - 1, H + NT * TH + 3.2); floor(x0, z0, x1, z1, H + NT * TH + 3.2); }
+    // torres de iluminação nos cantos
+    for (const [x, z] of [[b.x0 + 2, b.z0 + 2], [b.x1 - 2, b.z0 + 2], [b.x0 + 2, b.z1 - 2], [b.x1 - 2, b.z1 - 2]]) { const y0 = H + NT * TH + 3.2; box(MM, x - .3, y0, z - .3, x + .3, y0 + 18, z + .3, 0x7d8186); box(MM, x - 2, y0 + 18, z - .4, x + 2, y0 + 20.4, z + .4, 0x55595e); box(MW, x - 1.8, y0 + 18.2, z - .45, x + 1.8, y0 + 20.2, z - .4, 0xfff6d8); LAMPS.push({ x, y: y0 + 19, z }); }
+    // letreiro
+    box(MW, cx - 8, H + NT * TH + 3.4, b.z1 - .1, cx + 8, H + NT * TH + 5.2, b.z1 + .05, 0x1d3f7a);
+  }
   // GARAGEM aberta (estilo battle royale): 3 paredes, laje, porta de enrolar levantada, piso de concreto
   const GAR = [];
+  // chapa ondulada da porta de enrolar (listras horizontais)
+  const GDM = new T.MeshStandardMaterial({ vertexColors: true, metalness: .5, roughness: .45, map: canvasT(64, 64, (g, w, h) => { for (let y = 0; y < h; y += 8) { const gr = g.createLinearGradient(0, y, 0, y + 8); gr.addColorStop(0, '#8d9196'); gr.addColorStop(.5, '#c3c6ca'); gr.addColorStop(1, '#6d7175'); g.fillStyle = gr; g.fillRect(0, y, w, 8); } }) });
   function garage(G, brick) {
     const hw = G.w / 2, hd = G.d / 2, x0 = G.x - hw, x1 = G.x + hw, z0 = G.z - hd, z1 = G.z + hd, t = .2, Hh = 2.9, op = G.rot ? -1 : 1; // op: lado aberto (+z ou -z)
     const zb = op > 0 ? z0 : z1, zf = op > 0 ? z1 : z0, WM = brick ? MB : MC, wc = brick ? 0xffffff : 0xbdb7ab;
@@ -133,24 +184,26 @@
     box(MC, x0 - .15, H + Hh, z0 - .15, x1 + .15, H + Hh + .2, z1 + .15, 0xc9c5bd); floor(x0 - .15, z0 - .15, x1 + .15, z1 + .15, H + Hh + .2);
     box(WM, x0, H + 2.45, Math.min(zf, zf - op * t), x1, H + Hh, Math.max(zf, zf - op * t), wc);
     // porta de enrolar levantada: rolo de chapa, guias laterais e a chapa ondulada aparecendo embaixo do rolo
-    const zr = zf - op * .35; box(MM, x0 + t, H + 2.08, zr - .2, x1 - t, H + 2.45, zr + .2, 0x6e7175); for (let x = x0 + t; x < x1 - t - .01; x += .12) box(MM, x, H + 1.98, zr - .02, x + .06, H + 2.1, zr + .02, 0x80848a);
+    const zr = zf - op * .3; box(MM, x0 + t, H + 2.12, zr - .2, x1 - t, H + 2.45, zr + .2, 0x9a9da1); box(GDM, x0 + t + .02, H + 1.95, zr - .015, x1 - t - .02, H + 2.12, zr + .015, 0xffffff);
     for (const gx of [x0 + t, x1 - t - .06]) box(MM, gx, H, zf - op * .3 - .03, gx + .06, H + 2.45, zf - op * .3 + .03, 0x55585c);
     // lâmpada e área (câmera não atravessa as paredes; grama não nasce dentro)
     LAMPS.push({ x: G.x, y: H + 2.6, z: G.z }); FP.push({ x0, x1, z0, z1 }); (window.DZCEIL || []).push({ x0, x1, z0, z1, y: H + Hh - .01 });
     GAR.push(G);
   }
+  for (const b of C.blocks) if (b.stadium) stadium(b);
   for (const L of C.lots) {
-    const m = .5, x0 = L.x0 + m, x1 = L.x1 - m, z0 = L.z0 + m, z1 = L.z1 - m, front = L.rot ? z0 : z1, back = L.rot ? z1 : z0, brick = rnd() < .5;
+    const m = .5, x0 = L.x0 + (L.eL ? m : 0), x1 = L.x1 - (L.eR ? m : 0), z0 = L.z0 + m, z1 = L.z1 - m, front = L.rot ? z0 : z1, back = L.rot ? z1 : z0, brick = rnd() < .5;
+    const sides = () => { if (L.eL) wallGate(x0, z0, x0, z1, (z0 + z1) / 2 + (L.rot ? 3 : -3), brick); if (L.eR) wallGate(x1, z0, x1, z1, (z0 + z1) / 2 + (L.rot ? -3 : 3), brick); };
     const cx = (L.x0 + L.x1) / 2;
     if (L.kind === 'str') {
       wallGate(x0, front, x1, front, cx, brick);
       lowWall(x0, back, x1, back, brick);
-      wallGate(x0, z0, x0, z1, (z0 + z1) / 2 + (L.rot ? 3 : -3), brick); wallGate(x1, z0, x1, z1, (z0 + z1) / 2 + (L.rot ? -3 : 3), brick);
+      sides();
       // caminho de concreto do portão até a porta
       if (L.S) { const S = L.S, dz0 = L.rot ? L.z0 : S.z + S.d / 2 + 1.2, dz1 = L.rot ? S.z - S.d / 2 - 1.2 : L.z1; box(MC, cx - 1.1, H - .2, Math.min(dz0, dz1), cx + 1.1, H + .06, Math.max(dz0, dz1), 0xb5b1a8); floor(cx - 1.1, Math.min(dz0, dz1), cx + 1.1, Math.max(dz0, dz1), H + .06); RDS.push([cx - 1.1, Math.min(dz0, dz1), cx + 1.1, Math.max(dz0, dz1)]); }
     } else if (L.kind === 'home') {
       const S = L.S, G = L.G, gwH = G.w / 2;
-      wallGates(x0, front, x1, [[S.x, 1.6], [G.x, gwH + .3]], brick); lowWall(x0, back, x1, back, brick); lowWall(x0, z0, x0, z1, brick); lowWall(x1, z0, x1, z1, brick);
+      wallGates(x0, front, x1, [[S.x, 1.6], [G.x, gwH + .3]], brick); lowWall(x0, back, x1, back, brick); sides();
       // caminho até a porta da casa e entrada de carro até a garagem
       const fz = L.rot ? G.z - G.d / 2 : G.z + G.d / 2, dz0 = L.rot ? L.z0 : S.z + S.d / 2 + 1.2, dz1 = L.rot ? S.z - S.d / 2 - 1.2 : L.z1;
       box(MC, S.x - 1.1, H - .2, Math.min(dz0, dz1), S.x + 1.1, H + .06, Math.max(dz0, dz1), 0xb5b1a8); floor(S.x - 1.1, Math.min(dz0, dz1), S.x + 1.1, Math.max(dz0, dz1), H + .06); RDS.push([S.x - 1.1, Math.min(dz0, dz1), S.x + 1.1, Math.max(dz0, dz1)]);
