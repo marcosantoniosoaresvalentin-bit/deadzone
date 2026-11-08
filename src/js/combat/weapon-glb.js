@@ -110,13 +110,16 @@
     // miras (mesmas peças das armas antigas, apoiadas no trilho deste modelo)
     let ey = [0, Sm[1] - .006, Sm[0] - (t === 'pistol' ? .3 : .16)];
     if ((t === 'rifle' || t === 'sniper') && lv > 0) {
-      const yb = Rm[1], ax = yb + .052, zc = Rm[0] + .02;
+      const yb = Math.max(Rm[1], Sm[1] - .012), ax = yb + .052, zc = Rm[0] + .02;
       if (lv === 1) {
-        add(new T.BoxGeometry(.05, .012, .07), blk, 0, yb + .006, zc);
-        add(new T.BoxGeometry(.05, .05, .012), blk, 0, ax - .005, zc + .025); add(new T.BoxGeometry(.008, .06, .05), blk, -.022, ax - .005, zc + .005); add(new T.BoxGeometry(.008, .06, .05), blk, .022, ax - .005, zc + .005); add(new T.BoxGeometry(.05, .008, .05), blk, 0, ax + .027, zc + .005);
-        const gl = new T.Mesh(new T.BoxGeometry(.038, .045, .002), M.glass || MAT.Grey_Dark); gl.position.set(0, ax, zc + .018); g.add(gl);
-        const d = new T.Mesh(new T.CircleGeometry(.0025, 10), M.dot || new T.MeshBasicMaterial({ color: 0xff2020 })); d.rotation.y = Math.PI; d.position.set(0, ax, zc + .016); g.add(d);
-        ey = [0, ax, zc - .2];
+        // mira holográfica: base no trilho, duas colunas finas e uma barra em cima; vidro limpo (dá para ver através) e ponto vermelho
+        add(new T.BoxGeometry(.044, .01, .06), blk, 0, yb + .005, zc);
+        for (const sx of [-1, 1]) add(new T.BoxGeometry(.005, .05, .03), blk, sx * .024, yb + .035, zc + .012);
+        add(new T.BoxGeometry(.053, .005, .03), blk, 0, yb + .061, zc + .012);
+        const gl = new T.Mesh(new T.PlaneGeometry(.043, .05), new T.MeshBasicMaterial({ color: 0x9fdcff, transparent: true, opacity: .08, depthWrite: false, side: T.DoubleSide })); gl.position.set(0, yb + .035, zc + .012); g.add(gl);
+        const dm = new T.MeshBasicMaterial({ color: 0xff2a2a, depthTest: false, transparent: true }), d = new T.Mesh(new T.CircleGeometry(.0014, 12), dm); d.rotation.y = Math.PI; d.position.set(0, yb + .035, zc + .011); d.renderOrder = 9; g.add(d);
+        const rg = new T.Mesh(new T.RingGeometry(.0065, .0075, 24), dm); rg.rotation.y = Math.PI; rg.position.copy(d.position); rg.renderOrder = 9; g.add(rg);
+        ey = [0, yb + .035, zc - .3];
       } else if (lv === 2) {
         add(new T.BoxGeometry(.03, ax - yb - .02, .1), blk, 0, (yb + ax - .02) / 2, zc);
         Z(.022, .022, .16, blk, 0, ax, zc, 16); Z(.03, .024, .04, blk, 0, ax, zc + .1, 16); Z(.028, .022, .035, blk, 0, ax, zc - .095, 16);

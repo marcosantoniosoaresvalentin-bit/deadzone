@@ -1,5 +1,19 @@
 # Histórico de versões
 
+## 3.17.1 — correção da câmera travada e dos bots presos no céu
+- **Câmera travada / personagem longe / bots parados de paraquedas no céu**: um erro na navegação dos
+  bots (porta inexistente em muros e guaritas) travava o quadro inteiro. Corrigido, e agora um bot com
+  problema nunca mais trava a câmera nem os outros bots.
+- **Mira holográfica nova**: vidro limpo (dá para ver através), armação fina e ponto vermelho no centro;
+  antes havia uma placa escura tampando a mira.
+- **Configurações** no estilo battle royale (abas Básico · Gráficos · Controles, opções lado a lado);
+  sempre 100 jogadores na partida; distância de visão automática (diminui sozinha se o FPS cair).
+- **Modos renomeados**: Arena e Confronto.
+- **Tela de abertura** do Deadzone com barra de carregamento; tela de carregamento ao entrar em todos os modos.
+- **Granada de fumaça**: a nuvem agora aparece no chão certo (antes nascia embaixo do terreno), bem maior,
+  macia e dura mais; linha da trajetória com pontos e círculo onde vai cair.
+- **Animação de bandagem** (mãos juntas enrolando no braço) e **kit médico** (agachado aplicando).
+
 ## 3.17.0 — armas reais, sons reais de tiro, zona mais lenta e mapa corrigido
 - **Armas reais 3D**: 20 modelos baixados (licença livre) no lugar das armas feitas no código:
   8 fuzis/submetralhadoras (M4A1, AK-12, SCAR-H, Galil ACE, MPX, PP-19, Micro UZI, MP9),

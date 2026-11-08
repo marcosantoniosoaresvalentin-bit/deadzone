@@ -17,7 +17,7 @@ function botLineHits(q,x0,z0,x1,z1){
 }
 function botNavigate(b,tx,tz,speed,dt){
  let wx=tx,wz=tz;
- const from=FP.find(q=>botInside(q,b.x,b.z)),to=FP.find(q=>botInside(q,tx,tz));
+ /* só construções com porta (muros, guaritas e áreas sem porta não têm entrada/saída) */const from=FP.find(q=>q.door&&q.ox!=null&&botInside(q,b.x,b.z)),to=FP.find(q=>q.door&&q.ox!=null&&botInside(q,tx,tz));
  if(from&&from===to){/* deslocamento dentro do mesmo prédio */}
  else if(to&&!from){
    const d=Math.hypot(to.ox-b.x,to.oz-b.z);

@@ -84,7 +84,7 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;try{d
  animExtra(dt);try{const g_=mode==='ground'&&ml<=0;CH.loco={w:mode==='lobby'?1:g_?(1-cr)*(1-Math.min(1,pr*3))*(1-air):0,sp:g_?amt*(6-cr*3)*(1-.4*adk)*(cast?.5:1):0,arm:!!(rf.visible||cast||GA||TH||ml>0),fw:l>.05?(dx*Math.sin(pl.rotation.y)+dz*Math.cos(pl.rotation.y))/l:1}}catch(e){}pl.position.set(P.x,P.y,P.z);if(mode==='drive'&&drv)seatPose(dt,typeof ix!=='undefined'?ix:0);else if(RIDE&&mode==='ground')ropePose();else if(VLT&&mode==='ground')vaultPose();else if(pl.rotation.x||pl.rotation.z){pl.rotation.x=0;pl.rotation.z=0}shd.visible=mode==='ground'||mode==='lobby';shd.position.x=P.x;shd.position.z=P.z;{const g_=GY(P.x,P.z,P.y);shd.position.y=g_+.03;shd.scale.setScalar(Math.max(.4,1-(P.y-g_)*.2))};
  if(window.DZChute&&DZChute.ready)DZChute.update(dt,fw,bk,sd);else{canopy.position.set(P.x,P.y+1.6,P.z);canopy.rotation.set(.55*fw-.3*bk,yaw,sd*.3,'YXZ')}
  {const LD_=[34,44,60,80][Math.max(0,Math.min(3,CFG.q|0))];for(const o of loot){const vv=Math.abs(o.x-P.x)+Math.abs(o.z-P.z)<LD_&&!MP;if(o.top.visible!==vv)o.top.visible=vv}}/* loot só de perto */
- for(const b of bots){
+ for(const b of bots){try{
   if(b.air){
    if(b.waitForPlayer){
     if(mode==='plane'){
@@ -113,7 +113,7 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;try{d
   else{b.wt-=dt;if(b.wt<=0||Math.hypot(b.tx-b.x,b.tz-b.z)<1.5){b.tx=b.x+R(-40,40);b.tz=b.z+R(-40,40);b.wt=R(5,10)}
    botNavigate(b,b.tx,b.tz,2.5,dt);mv=1}
   if(mv&&mode==='ground'&&dp<32&&b.team!==1&&vSnd(0)){b.st-=dt;if(b.st<=0){b.st=.5;pingDir(b.x,b.z,'step')}}
-  b.g.position.set(b.x,TERH(b.x,b.z),b.z);{const t_=b.g.rotation.y;if(b.sy==null)b.sy=t_;b.sy+=(((t_-b.sy+Math.PI*3)%(Math.PI*2))-Math.PI)*Math.min(1,dt*9);b.g.rotation.y=b.sy}if(b.g.visible)animBot(b,dt,mv,dp)}
+  b.g.position.set(b.x,TERH(b.x,b.z),b.z);{const t_=b.g.rotation.y;if(b.sy==null)b.sy=t_;b.sy+=(((t_-b.sy+Math.PI*3)%(Math.PI*2))-Math.PI)*Math.min(1,dt*9);b.g.rotation.y=b.sy}if(b.g.visible)animBot(b,dt,mv,dp)}catch(e_){/* um bot com erro não pode travar a câmera nem os outros bots */if(!b.__e){b.__e=1;dzErr(e_)}}}
  if(hp<=0&&mode!=='dead'&&!MP)die();
  if(trt>0){trt-=dt;if(trt<=0)trl.visible=false}
  if(plane.visible){for(const p of props)p.rotation.z+=dt*45;plane.position.set(pS.x+pD.x*PLV*gt,450,pS.z+pD.z*PLV*gt);if(gt>=PLT&&mode==='plane')jumpOut();if(gt>PLT+8)plane.visible=false}

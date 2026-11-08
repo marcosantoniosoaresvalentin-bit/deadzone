@@ -20,7 +20,10 @@ function animExtra(dt){const g_=mode==='ground';
     if(TH.k==='gel'){P2(1,lp(lp(.6,-1.25,s),-.2,f),.15,lp(lp(-.5,-.3,s),-.2,f),lp(-.7,-.2,f),-.25,-.9);tor.rotation.x+=.35*bp;crouchB(bp);body.position.z+=.08*s}
     else{P2(1,lp(lp(-2.6,-1.1,s),.2,f),.1,lp(lp(-1.9,-.15,s),-.3,f),lp(-1,-.3,f),-.3,-.5);tor.rotation.y=lp(lp(.5,-.5,s),-.2,f);tor.rotation.x+=.25*s-.1*(1-s);body.position.z+=.1*s;lg1.th.rotation.x-=.35*s;lg2.th.rotation.x+=.2*s}}}
   else if(cast){const T_=cast.k==='band'?3:6,pr_=1-cast.t/T_,wob=Math.sin(tt*9);
-   if(cast.k==='band')P2(1,-1+wob*.25,.15+wob*.12,-1.2,-1.1,.5,-1.5);else{P2(1,-.9+Math.sin(tt*3)*.06,.05,-1,-.9,-.05,-1);head.rotation.x+=.3;crouchB(.5)}
+   // bandagem: antebraço esquerdo na frente do peito e a mão direita dando voltas em volta dele (enrolando)
+   if(cast.k==='band'){const w_=tt*7,e_=Math.min(1,(T_-cast.t)*4);ik(aL,-1,lp(-.29,-.04,e_),lp(-.05,.2,e_),lp(.05,.3,e_));ik(aR,1,lp(.29,-.02+.03*Math.sin(w_*.5),e_),lp(-.05,.21+.075*Math.sin(w_),e_),lp(.05,.31+.075*Math.cos(w_),e_));head.rotation.x+=.38;tor.rotation.x+=.06}
+   // kit médico: ajoelhado, as duas mãos baixas na frente abrindo o kit e aplicando
+   else{const e_=Math.min(1,(T_-cast.t)*3),k_=Math.sin(tt*4);ik(aL,-1,lp(-.29,-.1,e_),lp(-.05,.05+.02*k_,e_),lp(.05,.36,e_));ik(aR,1,lp(.29,.09,e_),lp(-.05,.07-.02*k_,e_),lp(.05,.34+.03*Math.sin(tt*6),e_));head.rotation.x+=.45;crouchB(.6)}
    tor.rotation.x+=.12;if(Math.random()<dt*5)fxP(P.x+R(-.5,.5),.3,P.z+R(-.5,.5),0,R(1,2),0,.07,.9,0x6aef7a,-1,.2)}
   else if(HO>.02){const tr=GA&&GA.k!=='gel'&&GA.t>FUSE*.6?Math.sin(tt*45)*.04:0;
    if(aim===1){P2(HO,-2.6+tr,.1,-1.9,-1,-.3,-.5);tor.rotation.y+=.5*HO;tor.rotation.x-=.12*HO;head.rotation.x-=.1*HO}
