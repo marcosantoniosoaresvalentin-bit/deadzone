@@ -58,9 +58,9 @@ const TER=(()=>{
  // prédios com interior: retângulo plano (com folga) e borda suave
  for(const b of (typeof STRS!=='undefined'?STRS:[])){if(b.city)continue;const cx=b.x,cz=b.z,h0=rawH(cx,cz),hw=Math.max(b.w,b.d)/2+3;
   for(let j=0;j<N;j++)for(let i=0;i<N;i++){const x=O+i*S,z=O+j*S,d=Math.max(0,Math.max(Math.abs(x-cx),Math.abs(z-cz))-hw);if(d>14)continue;const k=1-ss(0,14,d);H[idx(i,j)]=H[idx(i,j)]*(1-k)+h0*k}}
- // cidade: um platô só (nível médio do lugar) com borda suave de 30 m
- if(typeof CITY!=='undefined'){let sm=0,n=0;for(let x=CITY.x0;x<=CITY.x1;x+=8)for(let z=CITY.z0;z<=CITY.z1;z+=8){sm+=rawH(x,z);n++}const h0=CITY.h=sm/n;
-  for(let j=0;j<N;j++)for(let i=0;i<N;i++){const x=O+i*S,z=O+j*S,d=Math.hypot(Math.max(0,CITY.x0-x,x-CITY.x1),Math.max(0,CITY.z0-z,z-CITY.z1));if(d>30)continue;const k=1-ss(0,30,d);H[idx(i,j)]=H[idx(i,j)]*(1-k)+h0*k}}
+ // cidades e locais especiais: cada um vira um platô (nível médio do lugar) com borda suave
+ for(const A of (typeof FLATS!=='undefined'?FLATS:[])){let sm=0,n=0;for(let x=A.x0;x<=A.x1;x+=6)for(let z=A.z0;z<=A.z1;z+=6){sm+=rawH(x,z);n++}const h0=A.h=Math.max(1.6,sm/n),bl=A.bl||30;
+  for(let j=0;j<N;j++)for(let i=0;i<N;i++){const x=O+i*S,z=O+j*S,d=Math.hypot(Math.max(0,A.x0-x,x-A.x1),Math.max(0,A.z0-z,z-A.z1));if(d>bl)continue;const k=1-ss(0,bl,d);H[idx(i,j)]=H[idx(i,j)]*(1-k)+h0*k}}
  // mesma triangulação do PlaneGeometry: altura idêntica à malha
  function terh(x,z){
   const fx=(x-O)/S,fz=(z-O)/S;if(fx<0||fz<0||fx>=N-1||fz>=N-1)return -14;

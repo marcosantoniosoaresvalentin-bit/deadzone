@@ -12,6 +12,7 @@ function buildBig(){const G=bmGeo(),{W,H,k,d,X,Y}=G;BG=G;bmS=document.createElem
  // grade de referência (100 m)
  g.strokeStyle='rgba(255,255,255,.10)';g.lineWidth=d;for(let v=-Math.floor(MAPH/100)*100;v<=MAPH;v+=100){g.beginPath();g.moveTo(X(v),Y(-MAPH));g.lineTo(X(v),Y(MAPH));g.stroke();g.beginPath();g.moveTo(X(-MAPH),Y(v));g.lineTo(X(MAPH),Y(v));g.stroke()}
  g.fillStyle='#fff';g.strokeStyle='#000';g.lineWidth=3*d;g.font='bold '+Math.round(14*d)+'px sans-serif';g.textAlign='center';for(const c of CITIES){if(c.blank)continue;g.strokeText(c.n,X(c.x),Y(c.z)-12*d);g.fillText(c.n,X(c.x),Y(c.z)-12*d)}
+ for(const c of (typeof MAPNAMES!=='undefined'?MAPNAMES:[])){g.strokeText(c.n,X(c.x),Y(c.z));g.fillText(c.n,X(c.x),Y(c.z))}
  for(const h of HPADS){const r=10*d;g.fillStyle='#1d6fd0';g.strokeStyle='#fff';g.lineWidth=2*d;g.beginPath();g.arc(X(h.x),Y(h.z),r,0,7);g.fill();g.stroke();g.fillStyle='#fff';g.font='bold '+Math.round(r*1.3)+'px sans-serif';g.textBaseline='middle';g.fillText('H',X(h.x),Y(h.z)+1)}g.textBaseline='alphabetic'}
 function drawBig(){if(bmap.style.display!=='flex'||!BG)return;const {k,d,X,Y}=BG;bmg.drawImage(bmS,0,0);
  bmg.strokeStyle='rgba(120,190,255,.95)';bmg.lineWidth=3*d;bmg.beginPath();bmg.arc(X(zX),Y(zZ),zR*k,0,7);bmg.stroke();

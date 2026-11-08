@@ -94,15 +94,15 @@ const hpT=ctex(256,256,(g,w,h)=>{g.clearRect(0,0,w,h);g.fillStyle='#3a3e44';g.be
  const spots=HPS;
  const hitB=(x,z)=>{for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)for(const b of near(x+i*32,z+j*32))if(b.x1>x-13&&b.x0<x+13&&b.z1>z-13&&b.z0<z+13)return 1;return 0};
  const free=(x,z)=>!onRoad(x,z)&&!inFP(x,z,16)&&!LK.some(l=>Math.hypot(x-l.x,z-l.z)<l.r+16)&&!CARS.some(c=>Math.hypot(c.x-x,c.z-z)<16)&&!HPADS.some(h=>Math.hypot(h.x-x,h.z-z)<60)&&!hitB(x,z);
- for(const[n,sx,sz]of spots){let x=sx,z=sz,ok=0;for(let t=0;t<120&&!ok;t++){x=sx+(t?R(-1,1)*Math.min(70,6+t*1.2):0);z=sz+(t?R(-1,1)*Math.min(70,6+t*1.2):0);x=Math.max(-(MAPH-20),Math.min(MAPH-20,x));z=Math.max(-(MAPH-20),Math.min(MAPH-20,z));ok=free(x,z)}
+ for(const[n,sx,sz,noPad_]of spots){let x=sx,z=sz,ok=0;for(let t=0;t<120&&!ok;t++){x=sx+(t?R(-1,1)*Math.min(70,6+t*1.2):0);z=sz+(t?R(-1,1)*Math.min(70,6+t*1.2):0);x=Math.max(-(MAPH-20),Math.min(MAPH-20,x));z=Math.max(-(MAPH-20),Math.min(MAPH-20,z));ok=free(x,z)}
   if(!ok)continue;
-  const m=new T.Mesh(pg,pm);m.rotation.x=-Math.PI/2;const gy=TERH(x,z);m.position.set(x,gy+.075,z);m.renderOrder=-.2;sc.add(m);
-  const pg2=new T.Group();pg2.position.set(x,gy,z);
+  const gy=TERH(x,z),noPad=!!noPad_;if(!noPad){const m=new T.Mesh(pg,pm);m.rotation.x=-Math.PI/2;m.position.set(x,gy+.075,z);m.renderOrder=-.2;sc.add(m)}
+  if(!noPad){  const pg2=new T.Group();pg2.position.set(x,gy,z);
   for(let k=0;k<4;k++){const a=k*Math.PI/2+Math.PI/4,l=new T.Mesh(hbx(.35,.22,.35),lampM);l.position.set(Math.cos(a)*7.3,.12,Math.sin(a)*7.3);pg2.add(l)}
   const pole=new T.Mesh(new T.CylinderGeometry(.07,.09,5,6),poleM);pole.position.set(9.4,2.5,-3);pole.castShadow=true;pg2.add(pole);
   const fg=new T.Mesh(hbx(.2,.45,1.6),flagM);fg.position.set(9.4,4.7,-3.8);pg2.add(fg);
   sc.add(pg2);addBox({x0:x+9.2,x1:x+9.6,z0:z-3.2,z1:z-2.8});
-  HPADS.push({n,x,z});
+  }if(!noPad)HPADS.push({n,x,z});
   const pal=HPAL[Math.floor(R(0,HPAL.length))],h=mkHeli(pal);h.position.set(x,gy,z);h.rotation.y=R(0,6.28);sc.add(h);
   const c={g:h,fl:h.userData.fl,x,z,y:gy,yaw:h.rotation.y,spd:0,vy:0,rs:0,pit:0,roll:0,hp:100,fuel:R(45,95),fire:0,dead:0,heli:1,crash:0,ph:R(0,6),sn:0,ds:0,pad:{x,z,n}};
   h.body=h.userData.stat.children[0];h.cab=h.userData.stat.children[0];

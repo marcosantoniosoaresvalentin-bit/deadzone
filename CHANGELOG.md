@@ -1,5 +1,23 @@
 # Histórico de versões
 
+## 3.12.0 — mapa novo com várias cidades e locais especiais
+- **3 cidades** bem afastadas: **Porto Velho** (norte, com o estádio), **Vila Serena** (sudoeste)
+  e **Monte Verde** (sudeste) — todas com ruas, calçadas, muros e prédios com interior.
+- **Base Sentinela** (base militar): alambrado com arame farpado, portão com **2 guaritas** e
+  cancela, **4 torres de vigia** (dá para subir a escada), **hangar** em arco, barracão,
+  alojamentos e prédio de comando com interior, contêineres empilhados, sacos de areia e o
+  **heliponto com helicóptero**.
+- **Escola Estadual**: prédio de 2 andares com varandas + anexo, muro com portão e placa, pátio,
+  mastro com bandeira e **quadra poliesportiva** com alambrado e traves.
+- **Cais do Sul** (porto): cais de concreto com cabeços, **2 píeres de madeira** sobre o mar,
+  **guindaste de pórtico** amarelo, armazém, pilhas de contêineres coloridos e capitania.
+- **Galpões do Oeste**: 3 **barracões de chapa** (portão grande aberto, porta nos fundos,
+  caixotes dentro), tanques de combustível, contêineres e alambrado.
+- **Nomes de todos os lugares no mapa grande** (como no mapa antigo).
+- Estádio: **sem o "H"** no gramado — só o helicóptero no meio do campo.
+- Todas as mecânicas valem nos lugares novos: pular janela/mureta/sacos de areia com animação,
+  portas, vidros que quebram, escadas e paraquedas ao cair de lugar alto.
+
 ## 3.11.0 — cidade maior e mais cheia + estádio de futebol
 - **Cidade mais cheia**: mais uma fileira de quarteirões e **lotes estreitos lado a lado**
   (prédios com uma passagem de ~1,2 m entre eles, muros contínuos na frente) — **45 construções**,
