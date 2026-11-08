@@ -64,19 +64,34 @@ const TOWNS=[CITY,
  genTown({n:'Monte Verde',tag:'mv',seed:9119,x0:133,x1:207,z0:143,z1:217,XL:[145,195],ZL:[155,205],bl:20})];
 // LOCAIS ESPECIAIS (world/city.js monta): base militar, escola, porto e galpões
 const SITES=[
- {id:'base',t:'military',n:'Base Sentinela',x0:-130,x1:-30,z0:15,z1:95,bl:22},
+ {id:'base',t:'military',n:'Base Sentinela',x0:-148,x1:-22,z0:15,z1:108,bl:22},
  {id:'escola',t:'school',n:'Escola Estadual',x0:-18,x1:48,z0:100,z1:150,bl:18},
  {id:'cais',t:'port',n:'Cais do Sul',x0:20,x1:110,z0:192,z1:222,bl:10},
- {id:'galpoes',t:'depot',n:'Galpões do Oeste',x0:-215,x1:-150,z0:-15,z1:30,bl:18}];
+ {id:'galpoes',t:'depot',n:'Galpões do Oeste',x0:-215,x1:-150,z0:-15,z1:30,bl:18},
+ {id:'posto',t:'gas',n:'Posto Rota 1',x0:27,x1:47,z0:36,z1:58,bl:10},
+ {id:'fazenda',t:'farm',n:'Fazenda Boa Vista',x0:55,x1:108,z0:8,z1:50,bl:18}];
 for(const S_ of SITES){S_.x=(S_.x0+S_.x1)/2;S_.z=(S_.z0+S_.z1)/2}
 // prédios com interior dos locais (entram na lista STRS: dá para entrar, subir, pular janela...)
 const SITE_STRS=[
- {id:'base_aloj1',x:-112,z:72,w:16,d:9,floors:2,rot:0,style:'panel',color:0x8f9479,band:1,mg:'base',city:1},
- {id:'base_aloj2',x:-112,z:48,w:16,d:9,floors:2,rot:0,style:'panel',color:0x8f9479,band:1,mg:'base',city:1},
+ {id:'base_aloj1',x:-100,z:75,w:16,d:9,floors:2,rot:0,style:'panel',color:0x8f9479,band:1,mg:'base',city:1},
+ {id:'base_aloj2',x:-100,z:52,w:16,d:9,floors:2,rot:0,style:'panel',color:0x8f9479,band:1,mg:'base',city:1},
+ {id:'base_aloj3',x:-75,z:96,w:14,d:9,floors:1,rot:Math.PI,style:'panel',color:0x7f8a6a,band:1,mg:'base',city:1},
+ {id:'posto_loja',x:42,z:52,w:10,d:7,floors:1,rot:-Math.PI/2,style:'shop',color:0xe6e1d6,awn:0xc0302a,mg:'posto',city:1},
+ {id:'faz_casa',x:96,z:18,w:11,d:9,floors:2,rot:-Math.PI/2,style:'plaster',color:0xe9e0c6,roof:'gable',band:1,balcony:1,mg:'fazenda',city:1},
  {id:'base_cmd',x:-58,z:30,w:12,d:9,floors:3,rot:Math.PI,style:'brick',band:1,mg:'base',city:1},
  {id:'escola1',x:15,z:111.5,w:24,d:11,floors:2,rot:Math.PI,style:'plaster',color:0xe8dcb8,band:1,balcony:1,mg:'escola',city:1},
  {id:'escola2',x:-5,z:139,w:12,d:9,floors:1,rot:0,style:'plaster',color:0xe8dcb8,band:1,mg:'escola',city:1},
  {id:'cais_cap',x:30,z:203,w:11,d:9,floors:2,rot:0,style:'plaster',color:0x9fb6c4,band:1,balcony:1,mg:'cais',city:1}];
+// ESTRADAS ligando cidades e locais (curvas suaves passando por estes pontos; o terreno fica plano embaixo)
+const ROADLINES=[
+ [[22,-12],[22,18],[16,55],[15,99]],                               // Porto Velho -> escola
+ [[22,10],[-20,6],[-80,8],[-148,7]],                               // -> base militar -> galpões
+ [[-80,8],[-80,15]],                                               // portão da base
+ [[-182,31],[-182,62],[-162,96],[-160,116]],                       // galpões -> Vila Serena
+ [[-106,180],[-50,184],[15,187],[64,191]],                         // Vila Serena -> porto
+ [[111,206],[141,205]],                                            // porto -> Monte Verde
+ [[145,151],[152,105],[172,45],[168,-12]],                         // Monte Verde -> Porto Velho
+ [[22,26],[40,30],[55,30]]];                                       // -> fazenda
 // tudo que precisa de chão plano (o terreno lê esta lista)
 const FLATS=TOWNS.concat(SITES);
 // nomes no mapa grande (como no mapa antigo)
@@ -84,7 +99,7 @@ const MAPNAMES=TOWNS.map(t=>({n:t.n,x:t.x,z:t.z})).concat(SITES.map(t=>({n:t.n,x
 // ---- pontos fixos do mapa ----
 // heliportos (o terreno fica plano em volta deles); o do norte fica no meio do campo do estádio
 // [nome, x, z, sem a marca H no chão]: no estádio fica só o helicóptero no meio do campo; a base militar tem heliponto
-const HPS=[['Estádio',(CITY.stadium.x0+CITY.stadium.x1)/2,(CITY.stadium.z0+CITY.stadium.z1)/2,1],['Base Sentinela',-62,72]];
+const HPS=[['Estádio',(CITY.stadium.x0+CITY.stadium.x1)/2,(CITY.stadium.z0+CITY.stadium.z1)/2,1],['Base Sentinela',-48,88]];
 // o terreno (relevo, praia e mar) fica em world/terrain.js
 // construções com modelo pronto (world/buildings.js): nenhuma — todas as construções têm porta e interior
 const BLDS=[];

@@ -61,6 +61,16 @@ const TER=(()=>{
  // cidades e locais especiais: cada um vira um platô (nível médio do lugar) com borda suave
  for(const A of (typeof FLATS!=='undefined'?FLATS:[])){let sm=0,n=0;for(let x=A.x0;x<=A.x1;x+=6)for(let z=A.z0;z<=A.z1;z+=6){sm+=rawH(x,z);n++}const h0=A.h=Math.max(1.6,sm/n),bl=A.bl||30;
   for(let j=0;j<N;j++)for(let i=0;i<N;i++){const x=O+i*S,z=O+j*S,d=Math.hypot(Math.max(0,A.x0-x,x-A.x1),Math.max(0,A.z0-z,z-A.z1));if(d>bl)continue;const k=1-ss(0,bl,d);H[idx(i,j)]=H[idx(i,j)]*(1-k)+h0*k}}
+ // ESTRADAS: curva suave pelos pontos; altura da pista = terreno suavizado ao longo dela; faixa plana de 6,5 m + borda suave
+ if(typeof ROADLINES!=='undefined'){const hAt=(x,z)=>{const fx=(x-O)/S,fz=(z-O)/S,i=Math.max(0,Math.min(N-2,Math.floor(fx))),j=Math.max(0,Math.min(N-2,Math.floor(fz))),u=fx-i,v=fz-j;return H[idx(i,j)]*(1-u)*(1-v)+H[idx(i+1,j)]*u*(1-v)+H[idx(i,j+1)]*(1-u)*v+H[idx(i+1,j+1)]*u*v};
+  const bD=new Float32Array(N*N).fill(1e9),bH=new Float32Array(N*N);window.ROADS=[];
+  for(const L of ROADLINES){const cv=new T.CatmullRomCurve3(L.map(p=>new T.Vector3(p[0],0,p[1])),false,'centripetal'),len=cv.getLength(),n=Math.max(2,Math.round(len/2)),pts=cv.getSpacedPoints(n);
+   let hs=pts.map(p=>hAt(p.x,p.z));for(let it=0;it<3;it++){const o=hs.slice();for(let k=0;k<hs.length;k++){let a=0,c=0;for(let q=-8;q<=8;q++){const m=k+q;if(m<0||m>=hs.length)continue;a+=o[m];c++}hs[k]=a/c}}
+   hs[0]=hAt(pts[0].x,pts[0].z);hs[hs.length-1]=hAt(pts[pts.length-1].x,pts[pts.length-1].z);
+   ROADS.push({pts:pts.map((p,k)=>[p.x,p.z,hs[k]])});
+   pts.forEach((p,k)=>{const i0=Math.floor((p.x-14-O)/S),i1=Math.ceil((p.x+14-O)/S),j0=Math.floor((p.z-14-O)/S),j1=Math.ceil((p.z+14-O)/S);
+    for(let j=Math.max(0,j0);j<=Math.min(N-1,j1);j++)for(let i=Math.max(0,i0);i<=Math.min(N-1,i1);i++){const d=Math.hypot(O+i*S-p.x,O+j*S-p.z),q=idx(i,j);if(d<bD[q]){bD[q]=d;bH[q]=hs[k]}}})}
+  for(let q=0;q<N*N;q++){const d=bD[q];if(d>14)continue;const k=d<=6.5?1:1-ss(6.5,14,d);H[q]=H[q]*(1-k)+bH[q]*k}}
  // mesma triangulação do PlaneGeometry: altura idêntica à malha
  function terh(x,z){
   const fx=(x-O)/S,fz=(z-O)/S;if(fx<0||fz<0||fx>=N-1||fz>=N-1)return -14;

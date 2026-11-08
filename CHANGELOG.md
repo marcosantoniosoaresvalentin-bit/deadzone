@@ -1,5 +1,20 @@
 # Histórico de versões
 
+## 3.13.0 — estradas, base maior, posto e fazenda
+- **Estradas de asfalto** ligando tudo: Porto Velho ⇄ escola ⇄ base ⇄ galpões ⇄ Vila Serena ⇄
+  porto ⇄ Monte Verde ⇄ Porto Velho, e ramal para a fazenda. Curvas suaves, bordas brancas e
+  tracejado amarelo; o terreno fica plano embaixo da pista.
+- **Torre de vigia nova** (aço): pilares com contraventamento em X, cabine fechada até a cintura
+  com janelas, telhado com beiral e holofote, **escada maciça de concreto com corrimão** dos dois lados.
+- **Base Sentinela maior**: 2 hangares, 2 barracões, 3 alojamentos + comando (com interior),
+  **casamatas (bunkers)** com seteira, **antena de rádio** de 22 m, pátio de viaturas com buggies,
+  tanques de combustível, mais contêineres e sacos de areia.
+- **Posto Rota 1**: cobertura das bombas com faixa vermelha, 2 ilhas de bombas, loja de
+  conveniência com interior e placa alta.
+- **Fazenda Boa Vista**: celeiro vermelho, 2 silos, casa da fazenda com varanda, cerca de madeira
+  baixa (dá para pular), porteira, terreiro e fardos de feno.
+- Mais buggies espalhados (base, posto, fazenda e beira das estradas).
+
 ## 3.12.0 — mapa novo com várias cidades e locais especiais
 - **3 cidades** bem afastadas: **Porto Velho** (norte, com o estádio), **Vila Serena** (sudoeste)
   e **Monte Verde** (sudeste) — todas com ruas, calçadas, muros e prédios com interior.
