@@ -9,8 +9,10 @@ function exitCar(){const c=drv;if(c.heli){if(c.y-(c.fb||0)<=2.5&&Math.abs(c.spd)
  if(Math.abs(c.spd)>5){say('Reduza a velocidade para sair',1.5);return}P.x=c.x+Math.cos(c.yaw)*2.6;P.z=c.z-Math.sin(c.yaw)*2.6;P.y=TERH(P.x,P.z);P.vy=0;drv=null;mode='ground';mvp(0,0);pl.visible=true;yaw=c.yaw;setLabel()}
 // personagem SENTADO no banco do motorista, com as mãos no volante (IK) girando para os lados
 const _seatV=new T.Vector3(),SEAT0={car:new T.Vector3(.38,.6,-.2),heli:new T.Vector3(0,1.5,1.25)};let steerA=0;
-function seatPose(dt_,ix_){const c=drv;if(!c||!c.g)return;const g=c.g,s=(g.userData&&g.userData.seat)||(c.heli?SEAT0.heli:SEAT0.car);g.updateMatrixWorld();_seatV.copy(s).applyMatrix4(g.matrixWorld);
- pl.visible=true;pl.quaternion.copy(g.quaternion);pl.position.set(_seatV.x,_seatV.y-.62,_seatV.z);
+function seatPose(dt_,ix_){const c=drv;if(!c||!c.g)return;const g=c.g,s=(g.userData&&g.userData.seat)||(c.heli?SEAT0.heli:SEAT0.car);g.updateMatrixWorld();
+ // o deslocamento do quadril é feito NO ESPAÇO DO CARRO (antes era no mundo: com o carro de lado o personagem saía pela lateral)
+ _seatV.set(s.x,s.y-.62,s.z).applyMatrix4(g.matrixWorld);
+ pl.visible=true;pl.quaternion.copy(g.quaternion);pl.position.copy(_seatV);
  const inp=Math.max(-1,Math.min(1,ix_||0));steerA+=(inp-steerA)*Math.min(1,(dt_||.016)*7);
  // corpo: quadril no assento, costas um pouco para trás, coxas para frente, joelhos dobrados
  // zera TUDO que a pose a pé mexe (agachar, deitar, andar) antes de sentar
@@ -91,9 +93,9 @@ function carAir(c,dt){
   if(c.cy<TERH(c.x,c.z)-.5){c.cy=TERH(c.x,c.z)+CPH.cm;c.vy=0}}
  c.wn=wn;c.air=wn===0&&!bodyHit;c.bImp=bImp;
  _cU.set(0,1,0).applyQuaternion(_cQ);const up=_cU.y;c.ok=up>.55&&wn>=2;
- // pancadas: rodas aguentam muito (pouso em pé não machuca); carroceria batendo forte machuca
- // dano só quando a CARROCERIA bate forte (pouso nas rodas nunca machuca)
- if(bodyHit&&bImp>18){hitCar(c,(bImp-18)*2);if(drv===c)hp-=(bImp-18)*.5;sfx(120,Math.min(.6,bImp/25),.2,0)}
+ // dano só quando o carro bate DE LADO ou DE TETO (inclinado mais de 45°) com força.
+ // Pousar em pé (nas rodas, mesmo raspando o para-choque) nunca machuca.
+ if(bodyHit&&bImp>14&&up<.7){hitCar(c,(bImp-18)*2);if(drv===c)hp-=(bImp-18)*.5;sfx(120,Math.min(.6,bImp/25),.2,0)}
  if(maxImp>5)sfx(150,Math.min(.4,maxImp/30),.12,0);
  // capotado e quase parado por 3 s: desvira devagar (como se alguém empurrasse)
  if(up<.55&&Math.abs(c.spd)<2&&Math.abs(c.rv)+Math.abs(c.pv)<1.2){c.flipT=(c.flipT||0)+dt;if(c.flipT>3){c.r-=c.r*Math.min(1,dt*1.6);c.p-=c.p*Math.min(1,dt*1.6);c.vy=Math.max(c.vy,1.2);c.rv*=.5;c.pv*=.5}}else if(up>.9)c.flipT=0;

@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 3.7.7
+- **Personagem não sai mais do carro quando ele cai de lado**: o ajuste da altura do quadril era
+  feito "para baixo no mundo"; com o carro de lado isso empurrava o personagem pela lateral.
+  Agora é feito no espaço do carro, e ele fica no banco em qualquer inclinação.
+- **Sem dano ao cair nas rodas**: raspar o para-choque ao pousar não conta mais como batida;
+  só bater de lado ou de teto (inclinado mais de 45°) com força causa dano.
+
 ## 3.7.6
 - **Personagem fixo no banco**: ao entrar no carro, zera agachar/deitar (antes, quem entrava
   agachado ou deitado continuava com o corpo inclinado/deitado atravessando o carro) e corta na
