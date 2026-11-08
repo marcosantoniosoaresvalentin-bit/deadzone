@@ -33,7 +33,13 @@ const CITY=(function(){
   for(const [lx0,lx1] of [[b.x0,mx],[mx,b.x1]])for(const [lz0,lz1,rt] of [[b.z0,mz,Math.PI],[mz,b.z1,0]]){
    const L={x0:lx0,x1:lx1,z0:lz0,z1:lz1,rot:rt,blk:b.id};C.lots.push(L);
    const r=rnd(),lw=lx1-lx0,ld=lz1-lz0;
-   if(r<.06)L.kind='plaza';
+   if(r<.12){ // casa com garagem aberta (com um buggy dentro)
+    L.kind='home';const w=11,d=9,gw=5.2,gd=7,left=rnd()<.5;
+    const S={id:'c'+C.lots.length,w,d,floors:2,rot:rt,color:pal[Math.floor(rnd()*pal.length)],mg:b.id,city:1,style:rnd()<.6?'plaster':'brick',band:1};
+    if(rnd()<.65)S.roof='gable';
+    S.x=+(left?lx0+.8+w/2:lx1-.8-w/2).toFixed(2);S.z=+(rt?lz0+4.8+d/2:lz1-4.8-d/2).toFixed(2);L.S=S;
+    L.G={x:+(left?lx1-.8-gw/2:lx0+.8+gw/2).toFixed(2),z:+(rt?lz0+3.2+gd/2:lz1-3.2-gd/2).toFixed(2),w:gw,d:gd,rot:rt};
+   }
    else{L.kind='str';
     // estilos (todos com porta e interior): reboco, tijolo aparente, loja (vitrine + toldo), concreto (prédio de faixas)
     const sr=rnd(),style=sr<.42?'plaster':sr<.68?'brick':sr<.86?'shop':'panel';

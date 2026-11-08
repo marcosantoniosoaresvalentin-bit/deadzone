@@ -118,7 +118,27 @@
     if (ax) { lowWall(Math.min(x0, x1), z0, g0, z0, brick); lowWall(g1, z0, Math.max(x0, x1), z0, brick); }
     else { lowWall(x0, Math.min(z0, z1), x0, g0, brick); lowWall(x0, g1, x0, Math.max(z0, z1), brick); }
   }
+  // parede com vários portões: gates = [[centro, meia largura], ...]
+  function wallGates(x0, z, x1, gates, brick) { const gs = gates.slice().sort((a, b) => a[0] - b[0]); let u = x0; for (const [c, h] of gs) { lowWall(u, z, c - h, z, brick); u = c + h; } lowWall(u, z, x1, z, brick); }
   const rnd = C.rnd;
+  // GARAGEM aberta (estilo battle royale): 3 paredes, laje, porta de enrolar levantada, piso de concreto
+  const GAR = [];
+  function garage(G, brick) {
+    const hw = G.w / 2, hd = G.d / 2, x0 = G.x - hw, x1 = G.x + hw, z0 = G.z - hd, z1 = G.z + hd, t = .2, Hh = 2.9, op = G.rot ? -1 : 1; // op: lado aberto (+z ou -z)
+    const zb = op > 0 ? z0 : z1, zf = op > 0 ? z1 : z0, WM = brick ? MB : MC, wc = brick ? 0xffffff : 0xbdb7ab;
+    box(MC, x0, H - .2, z0, x1, H + .06, z1, 0x9e9a92); floor(x0, z0, x1, z1, H + .06);
+    for (const [a, b] of [[x0, x0 + t], [x1 - t, x1]]) { box(WM, a, H, z0, b, H + Hh, z1, wc); col(a, z0, b, z1, H - 1, H + Hh); }
+    box(WM, x0, H, Math.min(zb, zb + op * t), x1, H + Hh, Math.max(zb, zb + op * t), wc); col(x0, Math.min(zb, zb + op * t), x1, Math.max(zb, zb + op * t), H - 1, H + Hh);
+    // laje (dá para ficar em cima) e verga sobre a abertura
+    box(MC, x0 - .15, H + Hh, z0 - .15, x1 + .15, H + Hh + .2, z1 + .15, 0xc9c5bd); floor(x0 - .15, z0 - .15, x1 + .15, z1 + .15, H + Hh + .2);
+    box(WM, x0, H + 2.45, Math.min(zf, zf - op * t), x1, H + Hh, Math.max(zf, zf - op * t), wc);
+    // porta de enrolar levantada: rolo de chapa, guias laterais e a chapa ondulada aparecendo embaixo do rolo
+    const zr = zf - op * .35; box(MM, x0 + t, H + 2.08, zr - .2, x1 - t, H + 2.45, zr + .2, 0x6e7175); for (let x = x0 + t; x < x1 - t - .01; x += .12) box(MM, x, H + 1.98, zr - .02, x + .06, H + 2.1, zr + .02, 0x80848a);
+    for (const gx of [x0 + t, x1 - t - .06]) box(MM, gx, H, zf - op * .3 - .03, gx + .06, H + 2.45, zf - op * .3 + .03, 0x55585c);
+    // lâmpada e área (câmera não atravessa as paredes; grama não nasce dentro)
+    LAMPS.push({ x: G.x, y: H + 2.6, z: G.z }); FP.push({ x0, x1, z0, z1 }); (window.DZCEIL || []).push({ x0, x1, z0, z1, y: H + Hh - .01 });
+    GAR.push(G);
+  }
   for (const L of C.lots) {
     const m = .5, x0 = L.x0 + m, x1 = L.x1 - m, z0 = L.z0 + m, z1 = L.z1 - m, front = L.rot ? z0 : z1, back = L.rot ? z1 : z0, brick = rnd() < .5;
     const cx = (L.x0 + L.x1) / 2;
@@ -128,6 +148,14 @@
       wallGate(x0, z0, x0, z1, (z0 + z1) / 2 + (L.rot ? 3 : -3), brick); wallGate(x1, z0, x1, z1, (z0 + z1) / 2 + (L.rot ? -3 : 3), brick);
       // caminho de concreto do portão até a porta
       if (L.S) { const S = L.S, dz0 = L.rot ? L.z0 : S.z + S.d / 2 + 1.2, dz1 = L.rot ? S.z - S.d / 2 - 1.2 : L.z1; box(MC, cx - 1.1, H - .2, Math.min(dz0, dz1), cx + 1.1, H + .06, Math.max(dz0, dz1), 0xb5b1a8); floor(cx - 1.1, Math.min(dz0, dz1), cx + 1.1, Math.max(dz0, dz1), H + .06); RDS.push([cx - 1.1, Math.min(dz0, dz1), cx + 1.1, Math.max(dz0, dz1)]); }
+    } else if (L.kind === 'home') {
+      const S = L.S, G = L.G, gwH = G.w / 2;
+      wallGates(x0, front, x1, [[S.x, 1.6], [G.x, gwH + .3]], brick); lowWall(x0, back, x1, back, brick); lowWall(x0, z0, x0, z1, brick); lowWall(x1, z0, x1, z1, brick);
+      // caminho até a porta da casa e entrada de carro até a garagem
+      const fz = L.rot ? G.z - G.d / 2 : G.z + G.d / 2, dz0 = L.rot ? L.z0 : S.z + S.d / 2 + 1.2, dz1 = L.rot ? S.z - S.d / 2 - 1.2 : L.z1;
+      box(MC, S.x - 1.1, H - .2, Math.min(dz0, dz1), S.x + 1.1, H + .06, Math.max(dz0, dz1), 0xb5b1a8); floor(S.x - 1.1, Math.min(dz0, dz1), S.x + 1.1, Math.max(dz0, dz1), H + .06); RDS.push([S.x - 1.1, Math.min(dz0, dz1), S.x + 1.1, Math.max(dz0, dz1)]);
+      const ez0 = L.rot ? L.z0 : fz, ez1 = L.rot ? fz : L.z1; box(MC, G.x - gwH, H - .2, Math.min(ez0, ez1), G.x + gwH, H + .06, Math.max(ez0, ez1), 0xaaa69d); floor(G.x - gwH, Math.min(ez0, ez1), G.x + gwH, Math.max(ez0, ez1), H + .06); RDS.push([G.x - gwH, Math.min(ez0, ez1), G.x + gwH, Math.max(ez0, ez1)]);
+      garage(G, brick);
     } else if (L.kind === 'plaza') {
       // praça de concreto com muretas e blocos para se proteger
       box(MS, L.x0 + .3, H - .2, L.z0 + .3, L.x1 - .3, H + .08, L.z1 - .3, 0xd9d5cc); floor(L.x0 + .3, L.z0 + .3, L.x1 - .3, L.z1 - .3, H + .08); RDS.push([L.x0 + .3, L.z0 + .3, L.x1 - .3, L.z1 - .3]);
@@ -138,51 +166,16 @@
   }
   flushBoxes();
 
-  // ---------- modelos prontos: carro destruído e móveis ----------
-  const MD = {
-    bed: { url: 'assets/models/city/wooden-bed.glb', len: 2.1 },
-    couch: { url: 'assets/models/city/modern-full-couch.glb', len: 2.4 },
-    table: { url: 'assets/models/city/table.glb', len: 1.8 },
-    desk: { url: 'assets/models/city/desk.glb', len: 1.4 },
-    chair: { url: 'assets/models/city/chair.glb', len: .6 }
-  };
-  const SRC = {}, WAIT = [];
-  // prepara o modelo: escala para o tamanho real, base no chão, centro em 0
-  function prep(k, sc_) {
-    const s = sc_.clone(true), g = new T.Group(); g.add(s); s.updateMatrixWorld(true);
-    let bb = new T.Box3().setFromObject(s); const sz = bb.getSize(new T.Vector3()); s.scale.multiplyScalar(MD[k].len / Math.max(sz.x, sz.z));
-    s.updateMatrixWorld(true); bb = new T.Box3().setFromObject(s); const c = bb.getCenter(new T.Vector3()); s.position.set(-c.x, -bb.min.y, -c.z);
-    g.userData.size = bb.getSize(new T.Vector3()); return g;
-  }
-  function inst(k) { const g = SRC[k].clone(true); g.userData.size = SRC[k].userData.size; return g; }
-  for (const k in MD) new T.GLTFLoader().load(MD[k].url, gl => {
-    gl.scene.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
-    SRC[k] = prep(k, gl.scene); if (Object.keys(SRC).length === Object.keys(MD).length) placeAll();
-  }, undefined, e => console.warn('cidade: modelo', k, e));
-
-  function placeAll() {
-    // móveis nos cômodos (somem de longe para não pesar)
-    const furn = [];
-    for (const S of (window.DZSTR || [])) {
-      if (!S.rooms || !S.inner) continue; const grp = S.inner;
-      const put = (k, lx, lz, ry) => { const g = inst(k); g.position.set(lx, 0, lz); g.rotation.y = ry; return g; };
-      for (const R of S.rooms) {
-        const y = R.y - S.g.position.y, a = R.a, b = R.b;
-        // cômodo A (sala): sofá encostado na parede da frente, mesa no meio
-        const add = (k, lx, lz, ry, cH) => { const g = put(k, lx, lz, ry); g.position.y = y; grp.add(g); if (cH) { const p = S.L2W(lx, lz), sz = g.userData.size, sw = Math.abs(Math.sin(ry)) > .7, hx = (sw ? sz.z : sz.x) / 2, hz = (sw ? sz.x : sz.z) / 2, rr = Math.abs(Math.sin(S.rot || 0)) > .7; const ex = rr ? hz : hx, ez = rr ? hx : hz; col(p[0] - ex, p[1] - ez, p[0] + ex, p[1] + ez, R.y, R.y + cH); } };
-        if (a[2] - a[0] > 3.2 && a[3] - a[1] > 2.6) { add('couch', a[0] + 1.6, a[3] - .55, Math.PI, .8); add('table', a[0] + 1.6, (a[1] + a[3]) / 2 - .2, 0, 0); }
-        if (b[2] - b[0] > 2.6 && b[3] - b[1] > 2.6) { if ((R.k + S.floors) % 2) add('bed', (b[0] + b[2]) / 2, b[3] - 1.1, Math.PI / 2, .6); else { add('desk', (b[0] + b[2]) / 2, b[3] - .45, Math.PI, .8); add('chair', (b[0] + b[2]) / 2, b[3] - 1.2, Math.PI, 0); } }
-      }
-      furn.push(S);
-    }
-    // de longe: some o interior (portas internas e móveis)
-    const chk = () => { const px = cam.position.x, pz = cam.position.z; for (const S of furn) { const v = Math.abs(S.x - px) < 45 && Math.abs(S.z - pz) < 45; if (S.inner.visible !== v) S.inner.visible = v; } };
-    chk(); setInterval(chk, 400);
-  }
+  // de longe some o interior dos prédios (portas internas)
+  { const L_ = (window.DZSTR || []).filter(S => S.inner);
+    const chk = () => { const px = cam.position.x, pz = cam.position.z; for (const S of L_) { const v = Math.abs(S.x - px) < 45 && Math.abs(S.z - pz) < 45; if (S.inner.visible !== v) S.inner.visible = v; } };
+    chk(); setInterval(chk, 400); }
   // buggies: tira os que nasceram dentro da cidade (dentro de casa, na frente de porta) e deixa só 3 estacionados
   // na faixa da rua, longe das portas
   try {
     for (let i = CARS.length - 1; i >= 0; i--) { const c = CARS[i]; if (c.heli) continue; if (c.x > C.x0 - 4 && c.x < C.x1 + 4 && c.z > C.z0 - 4 && c.z < C.z1 + 4) { sc.remove(c.g); CARS.splice(i, 1); } }
     if (typeof addCar === 'function') for (const [x, z, r] of [[C.XL[1] + 2, (C.ZL[1] + C.ZL[2]) / 2 + 3, 0], [C.XL[3] - 2, (C.ZL[0] + C.ZL[1]) / 2 - 3, Math.PI], [(C.XL[1] + C.XL[2]) / 2 + 3, C.ZL[2] + 2, Math.PI / 2]]) addCar(x, z, r);
+    // um buggy dentro de cada garagem, de frente para a rua (addCar recusa ponto dentro de construção: põe direto)
+    for (const G of GAR) { const keep = FP.splice(0); try { addCar(G.x, G.z + (G.rot ? 1 : -1) * .4, G.rot ? Math.PI : 0); } finally { FP.push(...keep); } }
   } catch (e) { console.warn('cidade: buggies', e); }
 })();

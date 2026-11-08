@@ -1,5 +1,14 @@
 # Histórico de versões
 
+## 3.10.3 — casas com garagem e janelas sem "pisca-pisca"
+- **Casas com garagem aberta** (estilo battle royale) no lugar das praças de muros soltos: sobrado de
+  2 andares + garagem de 3 paredes com laje, porta de enrolar levantada e **um buggy dentro**,
+  entrada de carro e caminho até a porta.
+- **Móveis removidos** de todas as casas.
+- **Janelas e portas piscando** (moldura/batente no mesmo plano da parede, brigando na tela):
+  molduras, batentes, barra de tijolo e cornijas agora ficam um pouco para fora da parede.
+- A barra de tijolo da base fica só do lado de fora.
+
 ## 3.10.2 — todas as construções com porta e interior
 - **Todas as construções da cidade dá para entrar** (26 prédios): as construções baixadas da internet
   que eram só "casca" (sem porta, e o personagem ficava preso em volta delas) foram removidas.

@@ -98,7 +98,7 @@
       const th = T_ / 2, cuts = [a0];
       for (const o of opens) cuts.push(o[0], o[1]); cuts.push(a1); cuts.sort((a, b) => a - b);
       const tc = mExt === EXT ? EXC : mExt === MAT.ext ? exterior : 0xf2f0ea, sk = out ? [Math.min(f + out * th, f + out * (th + .03)), Math.max(f + out * th, f + out * (th + .03))] : null;
-      const P = (u0, u1, v0, v1, m) => { if (sk) { alongX ? box(MAT.int, u0, y0 + v0, f - th, u1, y0 + v1, f + th, 0xf2f0ea) : box(MAT.int, f - th, y0 + v0, u0, f + th, y0 + v1, u1, 0xf2f0ea); alongX ? box(m, u0, y0 + v0, sk[0], u1, y0 + v1, sk[1], tc) : box(m, sk[0], y0 + v0, u0, sk[1], y0 + v1, u1, tc); }
+      const P = (u0, u1, v0, v1, m) => { if (sk) { alongX ? box(MAT.int, u0, y0 + v0, f - th, u1, y0 + v1, f + th, 0xf2f0ea) : box(MAT.int, f - th, y0 + v0, u0, f + th, y0 + v1, u1, 0xf2f0ea); alongX ? box(m, u0 - (u0 === a0 ? .03 : 0), y0 + v0, sk[0], u1 + (u1 === a1 ? .03 : 0), y0 + v1, sk[1], tc) : box(m, sk[0], y0 + v0, u0, sk[1], y0 + v1, u1, tc); }
         else alongX ? box(m, u0, y0 + v0, f - th, u1, y0 + v1, f + th, tc) : box(m, f - th, y0 + v0, u0, f + th, y0 + v1, u1, tc); };
       const C = (u0, u1, v0, v1) => alongX ? col(u0, f - th, u1, f + th, y0 + v0, y0 + v1) : col(f - th, u0, f + th, u1, y0 + v0, y0 + v1);
       // trechos cheios entre aberturas
@@ -107,16 +107,18 @@
       for (const o of sorted) { if (o[0] > u) { P(u, o[0], 0, h, mExt); C(u, o[0], 0, h); } P(o[0], o[1], 0, o[2], mExt); if (o[2] > .05) C(o[0], o[1], 0, o[2]); P(o[0], o[1], o[3], h, mExt); if (o[3] < h) { const lb = C(o[0], o[1], o[3], h); if (lb) lb.lint = 1; } u = o[1]; }
       if (a1 > u) { P(u, a1, 0, h, mExt); C(u, a1, 0, h); }
       if (colBase && y0 < .1 && (ST === 'plaster' || ST === 'shop')) { // barra de tijolo na base (externa)
-        const bt = th + .02; let uu = a0; for (const o of sorted) { if (o[2] < .05) { if (o[0] > uu) (alongX ? box(MAT.brick, uu, 0, f - bt, o[0], .9, f + bt) : box(MAT.brick, f - bt, 0, uu, f + bt, .9, o[0])); uu = o[1]; } }
-        if (a1 > uu) (alongX ? box(MAT.brick, uu, 0, f - bt, a1, .9, f + bt) : box(MAT.brick, f - bt, 0, uu, f + bt, .9, a1));
+        const b0 = out ? (out > 0 ? f + th + .03 : f - th - .055) : f - th - .02, b1 = out ? (out > 0 ? f + th + .055 : f - th - .03) : f + th + .02;
+        const BB = (u0, u1) => alongX ? box(MAT.brick, u0, 0, b0, u1, .9, b1) : box(MAT.brick, b0, 0, u0, b1, .9, u1);
+        let uu = a0; for (const o of sorted) { if (o[2] < .05) { if (o[0] > uu) BB(uu, o[0]); uu = o[1]; } }
+        if (a1 > uu) BB(uu, a1);
       }
       // batentes das portas (tapam a fresta em volta da folha)
-      for (const o of sorted) if (o[2] < .05) { const d = th + .03, tw = .08, tp = y0 + o[3];
+      for (const o of sorted) if (o[2] < .05) { const d = th + .06, tw = .08, tp = y0 + o[3];
         if (alongX) { box(MAT.wood, o[0] - tw, y0, f - d, o[0], tp + tw, f + d, 0x8a6a4a); box(MAT.wood, o[1], y0, f - d, o[1] + tw, tp + tw, f + d, 0x8a6a4a); box(MAT.wood, o[0], tp, f - d, o[1], tp + tw, f + d, 0x8a6a4a); }
         else { box(MAT.wood, f - d, y0, o[0] - tw, f + d, tp + tw, o[0], 0x8a6a4a); box(MAT.wood, f - d, y0, o[1], f + d, tp + tw, o[1] + tw, 0x8a6a4a); box(MAT.wood, f - d, tp, o[0], f + d, tp + tw, o[1], 0x8a6a4a); } }
       // molduras e vidros das janelas
       for (const o of sorted) if (o[2] > .3) {
-        const cu = (o[0] + o[1]) / 2, cv = y0 + (o[2] + o[3]) / 2, ww = o[1] - o[0], hh = o[3] - o[2], d = th + .03;
+        const cu = (o[0] + o[1]) / 2, cv = y0 + (o[2] + o[3]) / 2, ww = o[1] - o[0], hh = o[3] - o[2], d = th + .065;
         if (alongX) { box(MAT.frame, o[0] - .06, y0 + o[2] - .08, f - d, o[1] + .06, y0 + o[2], f + d); box(MAT.frame, o[0] - .06, y0 + o[3], f - d, o[1] + .06, y0 + o[3] + .06, f + d); box(MAT.frame, o[0] - .06, y0 + o[2], f - .04, o[0], y0 + o[3], f + .04); box(MAT.frame, o[1], y0 + o[2], f - .04, o[1] + .06, y0 + o[3], f + .04); glass.push([cu, cv, f, 0, ww, hh]); }
         else { box(MAT.frame, f - d, y0 + o[2] - .08, o[0] - .06, f + d, y0 + o[2], o[1] + .06); box(MAT.frame, f - d, y0 + o[3], o[0] - .06, f + d, y0 + o[3] + .06, o[1] + .06); box(MAT.frame, f - .04, y0 + o[2], o[0] - .06, f + .04, y0 + o[3], o[0]); box(MAT.frame, f - .04, y0 + o[2], o[1], f + .04, y0 + o[3], o[1] + .06); glass.push([f, cv, cu, Math.PI / 2, ww, hh]); }
       }
@@ -194,7 +196,7 @@
       wall(false, z0 + T_ / 2, z1 - T_ / 2, x0, y, FH, side.filter(o => o[1] < lz2 - .3 || o[0] > lz2 + .3 ? true : false), EXT, MAT.int, true, -1);
       wall(false, z0 + T_ / 2, z1 - T_ / 2, x1, y, FH, side, EXT, MAT.int, true, 1);
       // faixa (cornija) na altura de cada laje: muda bastante a cara do prédio
-      if (S.band && k > 0) { const e = T_ / 2 + .13, bc = ST === 'panel' ? 0x8f8c85 : 0xd9d5cc; box(MAT.conc, x0 - e + T_ / 2, y - .3, z1 - .02, x1 + e - T_ / 2, y - .06, z1 + .13, bc); box(MAT.conc, x0 - e + T_ / 2, y - .3, z0 - .13, x1 + e - T_ / 2, y - .06, z0 + .02, bc); box(MAT.conc, x0 - .13, y - .3, z0, x0 + .02, y - .06, z1, bc); box(MAT.conc, x1 - .02, y - .3, z0, x1 + .13, y - .06, z1, bc); }
+      if (S.band && k > 0) { const e = .27, bc = ST === 'panel' ? 0x8f8c85 : 0xd9d5cc; box(MAT.conc, x0 - e, y - .3, z1 - .02, x1 + e, y - .06, z1 + e, bc); box(MAT.conc, x0 - e, y - .3, z0 - e, x1 + e, y - .06, z0 + .02, bc); box(MAT.conc, x0 - e, y - .3, z0 + .02, x0 + .02, y - .06, z1 - .02, bc); box(MAT.conc, x1 - .02, y - .3, z0 + .02, x1 + e, y - .06, z1 - .02, bc); }
       if (k === 0) door(true, -.6, .6, z1, 0);
       // parede interna: corredor da escada | cômodos (porta), e divisão dos cômodos (porta)
       const cz = lz2 + .1, xm = 1.3;
