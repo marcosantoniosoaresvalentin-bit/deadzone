@@ -34,7 +34,7 @@ let _at=performance.now();
 setInterval(()=>{const now=performance.now(),dt=Math.min(.05,(now-_at)/1000);_at=now;
  const q=cur>=0?slots[cur]:null,isB=q&&q.t==='bow'&&mode==='ground',ok=isB&&dw>=1&&mpOk()&&!rlOn&&!cast;BC=Math.max(0,BC-dt);
  if(ok){if((firing||keys.f)&&q.mag>0&&BC<=0)BD=Math.min(1,BD+dt/.9);else{if(BD>.2&&q.mag>0){shootArrow(BD);q.mag--;BC=.45;drawSlots()}BD=0}}else BD=0;
- {const isS=q&&q.t==='sniper'&&mode==='ground',hd=!!(firing||keys.f);if(isS&&dw>=1&&mpOk()&&!rlOn&&!cast){if(SPH&&!hd&&q.mag>0&&SNC<=0){q.mag--;SNC=WS.sniper.r;fcd=WS.sniper.r;kk=1;_fire2(Math.sin(pl.rotation.y),Math.cos(pl.rotation.y));_sfx(q.sil?700:1800,q.sil?.12:.5,q.sil?.1:.18,0);drawSlots()}SPH=hd?1:0}else SPH=0;SNC=Math.max(0,SNC-dt)}
+ {const isS=q&&q.t==='sniper'&&mode==='ground',hd=!!(firing||keys.f);if(isS&&dw>=1&&mpOk()&&!rlOn&&!cast){if(SPH&&!hd&&q.mag>0&&SNC<=0){q.mag--;SNC=WS.sniper.r;fcd=WS.sniper.r;kk=1;_fire2(Math.sin(pl.rotation.y),Math.cos(pl.rotation.y));if(!(window.gunSnd&&gunSnd(q.v,'sniper',0,0,q.sil)))_sfx(q.sil?700:1800,q.sil?.12:.5,q.sil?.1:.18,0);drawSlots()}SPH=hd?1:0}else SPH=0;SNC=Math.max(0,SNC-dt)}
  HG.bow[0][2]=-.2-.32*BD-(BC>0?.12*BC/.45:0);if(BD>0&&!BDs){BDs=1;bowSnd(1)}if(BD===0)BDs=0;{const bc=$('bdc');bc.style.display=(q&&q.t==='bow'&&ads&&!q.sc&&adk>.85&&mode==='ground')?'block':'none'}
  for(const w of[rf.children[0],vmH.children[0]]){const u=w&&w.ud;if(u&&u.t==='bow'){bowPose(u)}}
  const bw=$('bdw');bw.style.display=BD>0?'block':'none';bw.firstChild.style.width=(BD*100)+'%';

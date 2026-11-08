@@ -2,7 +2,7 @@
  * Dano, tiros, explosões, granadas e ataque corpo a corpo.
  */
 function hurtBot(t,d,by){t.hp-=d;if(t.hp<=0&&!t.dead){t.by=by||null;killBot(t,0)}}
-function killBot(b,me){b.dead=1;b.dt=0;alive--;if(me)kills++;feedK(b,me);if(b.w)mkLoot(b.w,b.x,b.z,null,0,b.sil)}
+function killBot(b,me){b.dead=1;b.dt=0;alive--;if(me)kills++;feedK(b,me);if(b.w)mkLoot(b.w,b.x,b.z,b.v?{v:b.v}:null,0,b.sil)}
 function capT(o,dr,x,y,z,cr,mx,v){const hs=cr?[.3,.75,1]:[.45,1.05,1.35],hh=cr?1.3:1.65;
  const tt_=(h,r0,k)=>{const vx=x-o.x,vz=z-o.z;let vy=y+h-o.y;const t=vx*dr.x+vy*dr.y+vz*dr.z;if(t<0||t>mx)return 1e9;if(v)vy+=4.9*(t/v)*(t/v);const px=vx-dr.x*t,py=vy-dr.y*t,pz=vz-dr.z*t,r=r0+t*k;return px*px+py*py+pz*pz<r*r?t:1e9};
  const th=tt_(hh,.27,.002);if(th<1e9){capHead=1;return th}capHead=0;let bt=1e9;for(let i=0;i<3;i++){const t=tt_(hs[i],i===2?.42:.5,.003);if(t<bt)bt=t}return bt}

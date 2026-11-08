@@ -10,7 +10,7 @@ function animBot(b,dt,mv,dp){const r=b.g.rig,k=Math.min(1,dt*8);b.am+=((mv?1:0)-
  r.lg1.th.rotation.x=-s_*.85*w-1.1*cr;r.lg1.kn.rotation.x=Math.max(0,c)*1.1*w+1.9*cr;r.lg2.th.rotation.x=s_*.85*w-1.1*cr;r.lg2.kn.rotation.x=Math.max(0,-c)*1.1*w+1.9*cr;
  r.hips.position.y=.95-.33*cr+Math.abs(s_)*.03*w;r.tor.rotation.x=.1*w+.3*cr;if(b.fl>0){b.fl=Math.max(0,b.fl-dt*4);const e_=Math.sin(b.fl*Math.PI);r.tor.rotation.x-=.45*e_;r.tor.rotation.z=.25*e_*(b.fs||1);r.head.rotation.x=-.3*e_}else{r.tor.rotation.z=0;r.head.rotation.x=0}
  if(b.w){const wg=b.wg;if(b.dw<1){b.dw=Math.min(1,b.dw+dt/.7);const e=b.dw*b.dw*(3-2*b.dw);wg.position.set(.1*e,.32+(.27-.32)*e,-.36+.58*e);wg.rotation.set(-1.35*(1-e),0,.3*(1-e))}else{b.kk=Math.max(0,(b.kk||0)-dt*6);wg.position.set(.1,.27,.22-.04*b.kk);wg.rotation.set(-.06*b.kk,0,0);animW(wg,b.kk,0,1)}
-  if(b.dw<1||dp<90){wg.updateMatrix();const h=HG[b.w];_a.set(h[0][0],h[0][1],h[0][2]).applyMatrix4(wg.matrix);ik(r.aR,1,_a.x,_a.y,_a.z);_a.set(h[1][0],h[1][1],h[1][2]).applyMatrix4(wg.matrix);ik(r.aL,-1,_a.x,_a.y,_a.z)}}
+  if(b.dw<1||dp<90){wg.updateMatrix();const h=window.wHG?wHG(wg,b.w):HG[b.w];_a.set(h[0][0],h[0][1],h[0][2]).applyMatrix4(wg.matrix);ik(r.aR,1,_a.x,_a.y,_a.z);_a.set(h[1][0],h[1][1],h[1][2]).applyMatrix4(wg.matrix);ik(r.aL,-1,_a.x,_a.y,_a.z)}}
  else{r.aR.sh.rotation.set(-s_*.7*w,0,.06);r.aL.sh.rotation.set(s_*.7*w,0,-.06);r.aR.el.rotation.x=r.aL.el.rotation.x=-.25-.4*w}}
 const bn=b=>b;
 function botLoot(b,dt){b.lt-=dt;b.sd+=dt;

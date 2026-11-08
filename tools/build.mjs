@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = path.join(ROOT, 'dist');
 const WEB = path.join(DIST, 'web');
-const MIME = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.glb': 'model/gltf-binary', '.webp': 'image/webp' };
+const MIME = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.glb': 'model/gltf-binary', '.webp': 'image/webp', '.mp3': 'audio/mpeg' };
 
 const read = p => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const copyDir = (src, dst) => {
@@ -49,7 +49,7 @@ const dataUri = rel => {
   if (!fs.existsSync(file)) { console.error('arquivo não encontrado: ' + rel); process.exit(1); }
   return `data:${MIME[path.extname(rel).toLowerCase()] || 'application/octet-stream'};base64,${fs.readFileSync(file).toString('base64')}`;
 };
-const inlineAssets = t => t.replace(/(["'(])(assets\/[A-Za-z0-9_./-]+\.(?:jpg|jpeg|png|glb|webp))(?=["')])/g, (_, q, rel) => q + dataUri(rel));
+const inlineAssets = t => t.replace(/(["'(])(assets\/[A-Za-z0-9_./-]+\.(?:jpg|jpeg|png|glb|webp|mp3))(?=["')])/g, (_, q, rel) => q + dataUri(rel));
 let single = index
   .replace(/<link rel="stylesheet" href="([^"]+)">/g, (_, href) => `<style>\n${read(href).replace(/\.\.\/\.\.\/assets\//g, 'assets/')}</style>`)   // CSS embutido: caminho relativo ao HTML
   .replace(/<script src="([^"]+)"><\/script>/g, (_, src) => `<script>\n${read(src).replace(/<\/script/gi, '<\\/script')}\n</script>`)

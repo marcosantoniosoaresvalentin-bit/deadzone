@@ -32,17 +32,17 @@ function refreshLoot(){const near=mode==='ground'&&!MP?loot.filter(o=>Math.hypot
  if(!near.length){lpn.style.display='none';lpd.style.display='none';return}
  if(lhid){lpn.style.display='none';lpd.style.display='block';return}
  lpd.style.display='none';lpn.style.display='block';lpg.innerHTML='';
- for(const o of near.slice(0,60)){const b=document.createElement('button');b.innerHTML=IC[o.t]+LN[o.t];b.style.borderColor=LC[o.t];b.onclick=()=>take(o);lpg.appendChild(b)}}
+ for(const o of near.slice(0,60)){const b=document.createElement('button');b.innerHTML=IC[o.t]+(WS[o.t]&&window.wNm?wNm(o):LN[o.t]);b.style.borderColor=LC[o.t];b.onclick=()=>take(o);lpg.appendChild(b)}}
 function take(o){if(o.tk||loot.indexOf(o)<0)return;o.tk=1;take_(o);if(loot.indexOf(o)>=0)o.tk=0}
 const TK={med:['med','Kit médico'],bandage:['band','Bandagem'],knife:['knife','Faca'],gren:['gren','Granada',2],fuel:['fuel','Galão de gasolina'],ammo:['ammo','Munição'],scope1:['sc1','Luneta 1x'],scope2:['sc2','Luneta 2x'],scope8:['sc3','Luneta 8x'],sil:['sil','Silenciador']};
 function take_(o){const t=o.t,k=TK[t];
  if(k){if(ATT.includes(k[0])&&autoAtt(k[0])){}else{if(t==='knife'&&bag.knife){say('Você já tem uma faca',2);return}if(!addBag(k[0],k[2]||1,'Guardou na mochila: '+k[1]))return}}
  else if(t==='vest'||t==='helm'){const nd=o.am&&o.am.d?o.am.d:100;if(ARM[t]>=nd){say('Você já tem '+(t==='vest'?'um colete':'um capacete')+' igual ou melhor',2);return}if(ARM[t]>5)mkLoot(t,P.x+R(-.8,.8),P.z+R(-.8,.8),{d:ARM[t]});ARM[t]=nd;say('Equipou: '+LN[t],2);updArm()}
  else if(t==='bp1'||t==='bp2'||t==='bp3'){const lv=+t[2];if(lv<=bagLv){say('Você já tem mochila igual ou melhor',2);return}if(bagLv>0)mkLoot('bp'+bagLv,P.x+R(-.8,.8),P.z+R(-.8,.8));bagLv=lv;drawBag();say('Mochila nível '+lv+' equipada',2)}
- else{const big=BIG(o.t),idx=big?[0,1].find(i=>!slots[i]):(!slots[2]?2:undefined),nw={t:o.t,mag:o.am?o.am.mag:WS[o.t].mag,res:o.am?o.am.res:WS[o.t].mag*2,sc:o.sc||0,sil:o.sil||0};
-  if(idx!==undefined){slots[idx]=nw;if(cur<0){cur=idx;dw=0}say('Pegou: '+LN[o.t],2)}
+ else{const big=BIG(o.t),idx=big?[0,1].find(i=>!slots[i]):(!slots[2]?2:undefined),nw={t:o.t,v:o.v,mag:o.am&&o.am.mag!=null?o.am.mag:WS[o.t].mag,res:o.am&&o.am.res!=null?o.am.res:WS[o.t].mag*2,sc:o.sc||0,sil:o.sil||0},wn_=window.wNm?wNm(nw):LN[o.t];
+  if(idx!==undefined){slots[idx]=nw;if(cur<0){cur=idx;dw=0}say('Pegou: '+wn_,2)}
   else{const ok=cur>=0&&(big?cur<2:cur===2);
    if(!ok){say(big?'Segure uma arma grande para trocar':'Segure a pistola para trocar',2.5);return}
-   const old=slots[cur];mkLoot(old.t,P.x+R(-.8,.8),P.z+R(-.8,.8),{mag:old.mag,res:old.res},old.sc,old.sil);
-   slots[cur]=nw;rlOn=0;rl=0;say('Trocou por '+LN[o.t],2)}}
+   const old=slots[cur];mkLoot(old.t,P.x+R(-.8,.8),P.z+R(-.8,.8),{mag:old.mag,res:old.res,v:old.v},old.sc,old.sil);
+   slots[cur]=nw;rlOn=0;rl=0;say('Trocou por '+wn_,2)}}
  sc.remove(o.top);loot.splice(loot.indexOf(o),1);lkey='';drawSlots()}

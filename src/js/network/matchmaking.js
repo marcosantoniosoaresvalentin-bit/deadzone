@@ -77,7 +77,7 @@ function clStart(ids,mid,seed){if(ids.length>1){netOpen(mid,ids,'classic');for(c
  if(N)setInterval(()=>{for(const id in CL){const e=CL[id];e.g.visible=!!e.vis;entDraw(e,.033,Math.hypot(e.x-P.x,e.z-P.z))}for(const id in CB){const e=CB[id];if(!e.dead&&e.vx!=null&&Date.now()-e.lt<260){e.tx+=e.vx*.033;e.tz+=e.vz*.033}e.vis=Date.now()-e.lt<1500;e.g.visible=e.dead?e.dt<5:e.vis;entDraw(e,.033,Math.hypot(e.x-P.x,e.z-P.z))}},33)}
 function clRx(m){if(clRx2(m))return;const e=CL[m.f];if(m.t==='hit'){if(m.to===mpId&&mode!=='plane'&&mode!=='dead'&&mode!=='lobby'){hp-=m.d;lastHit=m.f;pingDir(m.x,m.z,'hit')}return}
  if(m.t==='kl'){feedKill(m.k?nmId(m.k):'',nmHash(m.f),m.k===mpId&&wp&&WS[wp]?WS[wp].n:'');if(m.k===mpId){kills++;say('Abate!',1.5)}return}
- if(!e)return;if(m.t==='f'){e.kk=1;sfx(1500,.35*Math.max(0,1-Math.hypot(e.x-P.x,e.z-P.z)/70)*vSnd(e.gy),.15,0);return}
+ if(!e)return;if(m.t==='f'){e.kk=1;if(!(window.gunSnd&&e.w&&vSnd(e.gy)&&gunSnd(e.v,e.w,Math.hypot(e.x-P.x,e.z-P.z),typeof panOf==='function'?panOf(e.x,e.z):0,0)))sfx(1500,.35*Math.max(0,1-Math.hypot(e.x-P.x,e.z-P.z)/70)*vSnd(e.gy),.15,0);return}
  if(m.t==='s'){if(!e.vis&&m.v){e.x=m.x;e.z=m.z}e.tx=m.x;e.tz=m.z;e.ty=m.r;e.py=m.y;e.gy=m.gy||0;e.mv=m.mv;e.vis=m.v&&!m.d;ghArm(e,m.w);if(m.d&&!e.dead){e.dead=1;e.dt=0;alive--;e.vis=m.v}}}
 setInterval(()=>{if(mode==='dead'&&N&&N.mode==='classic'&&!N.sd){N.sd=1;feedKill(lastHit?nmId(lastHit):'','Você','');gp({t:'kl',k:lastHit},1)}},300);
 
@@ -121,7 +121,7 @@ function sqRx(m){const S=SQ;if(!S)return;
  if(m.t==='bst'){m.a.forEach((x,i)=>S.stats['B'+i]={t:x[0],k:x[1],d:x[2]});return}
  if(m.t==='b'){if(S.host)return;S.ls=Date.now();m.a.forEach((a,i)=>{const e=S.K[i];if(!e)return;e.tx=a[0];e.tz=a[1];e.ty=a[2];e.mv=a[3];e.hp=a[4];if(a[5]&&!e.dead){e.dead=1;e.dt=0}});return}
  const e=S.H[m.f];if(!e)return;
- if(m.t==='f'){e.kk=1;sfx(1500,.35*Math.max(0,1-Math.hypot(e.x-P.x,e.z-P.z)/70)*vSnd(e.gy),.15,0)}
+ if(m.t==='f'){e.kk=1;if(!(window.gunSnd&&e.w&&vSnd(e.gy)&&gunSnd(e.v,e.w,Math.hypot(e.x-P.x,e.z-P.z),typeof panOf==='function'?panOf(e.x,e.z):0,0)))sfx(1500,.35*Math.max(0,1-Math.hypot(e.x-P.x,e.z-P.z)/70)*vSnd(e.gy),.15,0)}
  else if(m.t==='s'){e.tx=m.x;e.tz=m.z;e.ty=m.r;e.gy=m.gy||0;e.mv=m.mv;e.hp=m.h;ghArm(e,m.w);if(m.d&&!e.dead){e.dead=1;e.dt=0}}}
 function sqZone(S){const e=S.zt0?(Date.now()-S.zt0)/1000:0;let q=((S.zs||1)+S.r*7919)>>>0;const rd=()=>{q=(q*1664525+1013904223)>>>0;return q/4294967296};
  const a=rd()*6.2832,d=Math.sqrt(rd())*70,fx=S.cx+Math.cos(a)*d,fz=S.cz+Math.sin(a)*d,R0=125,HOLD=20,SH=75,RF=9,k=e<HOLD?0:Math.min(1,(e-HOLD)/SH);
