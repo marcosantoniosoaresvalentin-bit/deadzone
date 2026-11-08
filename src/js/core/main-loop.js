@@ -15,7 +15,7 @@ function dcam(c,dt){if(dcCar!==c){dcCar=c;dcY=0;dcLast=null}
 // RESOLUÇÃO AUTOMÁTICA: mede o tempo médio dos quadros e ajusta a resolução para não travar
 const DYN={acc:0,n:0,k:1,base:0};
 function dynRes(dt){if(mode==='lobby'||!(dt>0))return;DYN.acc+=dt;DYN.n++;if(DYN.acc<2)return;const ms=DYN.acc/DYN.n*1000;DYN.acc=0;DYN.n=0;
- const base=DYN.base||(DYN.base=ren.getPixelRatio());let k=DYN.k;if(ms>25&&k>.6)k=Math.max(.6,k-.1);else if(ms<17&&k<1)k=Math.min(1,k+.05);
+ const base=DYN.base||(DYN.base=ren.getPixelRatio());let k=DYN.k;if(ms>33&&k>.75)k=Math.max(.75,k-.08);else if(ms<22&&k<1)k=Math.min(1,k+.05);
  if(k!==DYN.k){DYN.k=k;ren.setPixelRatio(base*k);rs()}}
 function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;try{dynRes(dt)}catch(e){}smokeTick(dt);if(spec)specTick();
  

@@ -2,7 +2,7 @@
  * Direção, entrada/saída e colisão de veículos.
  */
 function carTxt(){const c=drv;if(c.heli)return '🚁 '+Math.round(Math.abs(c.spd)*3.6)+' km/h · ↑ '+Math.round(c.y)+' m · ⛽ '+Math.round(c.fuel)+'% · 🔧 '+Math.max(0,Math.round(c.hp))+'%'+(c.fire?' · 🔥 FOGO!':'')+(c.fuel<=0?' · SEM COMBUSTÍVEL':'');return '🚗 '+Math.round(Math.abs(c.spd)*3.6)+' km/h · ⛽ '+Math.round(c.fuel)+'% · 🔧 '+Math.max(0,Math.round(c.hp))+'%'+(c.fire?' · 🔥 FOGO!':'')+(c.fuel<=0?' · SEM GASOLINA':'')}
-function enterCar(c){if(c.dead){say(c.heli?'Helicóptero destruído':'Carro destruído',1.5);return}if(c.heli&&c.y-(c.fb||0)>1.5)return;drv=c;if(!c.heli)try{if(selC>0&&CARC[selC]&&c.g.body.material!==BURN)c.g.body.material=carMatFor(selC)}catch(e){}mode='drive';st=0;ui();ads=0;firing=0;rlOn=0;rl=0;cast=null;P.x=c.x;P.z=c.z;P.y=0;pl.visible=false;setLabel();say(c.heli?'🚁 Segure ▲ para subir · ▼ para descer · analógico: frente/ré e girar · Sair para descer':'Analógico: acelera, ré e vira · Sair para descer',c.heli?6:4)}
+function enterCar(c){if(c.dead){say(c.heli?'Helicóptero destruído':'Carro destruído',1.5);return}if(c.heli&&c.y-(c.fb||0)>1.5)return;drv=c;if(!c.heli)try{if(selC>0&&CARC[selC]&&c.g.body.material!==BURN)c.g.body.material=carMatFor(selC)}catch(e){}mode='drive';st=0;cr=0;pr=0;air=0;ui();ads=0;firing=0;rlOn=0;rl=0;cast=null;P.x=c.x;P.z=c.z;P.y=0;pl.visible=false;setLabel();say(c.heli?'🚁 Segure ▲ para subir · ▼ para descer · analógico: frente/ré e girar · Sair para descer':'Analógico: acelera, ré e vira · Sair para descer',c.heli?6:4)}
 function exitCar(){const c=drv;if(c.heli){if(c.y-(c.fb||0)<=2.5&&Math.abs(c.spd)<5){P.x=c.x+Math.cos(c.yaw)*3.6;P.z=c.z-Math.sin(c.yaw)*3.6;P.y=Math.max(GY(P.x,P.z,c.y+1.3),c.y);P.vy=0;drv=null;mode='ground';mvp(0,0);pl.visible=true;yaw=c.yaw;setLabel();HK.u=HK.d=0;return}
   if(c.y-(c.fb||0)>=15||(c.crash&&c.y-(c.fb||0)>=6)){P.x=c.x;P.z=c.z;P.y=c.y;P.vy=-6;drv=null;pl.visible=true;yaw=c.yaw;HK.u=HK.d=0;openChute();say('🪂 Você saltou do helicóptero!',3);return}
   say('Pouse para sair · ou suba acima de 15 m para saltar de paraquedas',2.5);return}
@@ -13,7 +13,10 @@ function seatPose(dt_,ix_){const c=drv;if(!c||!c.g)return;const g=c.g,s=(g.userD
  pl.visible=true;pl.quaternion.copy(g.quaternion);pl.position.set(_seatV.x,_seatV.y-.62,_seatV.z);
  const inp=Math.max(-1,Math.min(1,ix_||0));steerA+=(inp-steerA)*Math.min(1,(dt_||.016)*7);
  // corpo: quadril no assento, costas um pouco para trás, coxas para frente, joelhos dobrados
- hips.position.y=.62;hips.rotation.set(0,0,0);body.position.y=0;
+ // zera TUDO que a pose a pé mexe (agachar, deitar, andar) antes de sentar
+ hips.position.set(0,.62,0);hips.rotation.set(0,0,0);body.position.set(0,0,0);body.rotation.set(0,0,0);cr=0;pr=0;
+ // sem mistura com as animações de andar/parado (elas levantavam o quadril e as pernas para fora do carro)
+ try{CH.loco={w:0,sp:0,arm:false,fw:1};for(const r of DZR.rigs)if(r.pl===pl&&r.av)r.av.lw=0}catch(e){}
  tor.rotation.set(.1,0,-steerA*.06*(c.heli?0:1));head.rotation.set(-.08,steerA*.25,0);
  lg1.th.rotation.set(-1.42,0,.1);lg2.th.rotation.set(-1.42,0,-.1);lg1.kn.rotation.x=1.25;lg2.kn.rotation.x=1.25;
  if(c.heli){ // helicóptero: mão direita no manche, esquerda no coletivo

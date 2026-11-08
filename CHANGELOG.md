@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 3.7.6
+- **Personagem fixo no banco**: ao entrar no carro, zera agachar/deitar (antes, quem entrava
+  agachado ou deitado continuava com o corpo inclinado/deitado atravessando o carro) e corta na
+  hora a mistura com as animações de andar/parado (que levantavam quadril e pernas para fora).
+- **Qualidade melhor**: mais resolução (Baixa 0,9 · Média 1,3 · Alta 1,6), suavização de bordas
+  de volta na Média; a resolução automática só reduz abaixo de ~30 fps e no máximo até 75%.
+
 ## 3.7.5
 - **Personagem não "sai" mais do carro bugado**: se o jogador morre dentro do veículo (batida
   forte, carro explodindo), o corpo é colocado ao lado do carro antes da animação de morte;
