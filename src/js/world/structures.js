@@ -124,7 +124,7 @@
       if (top) { // terraço: mureta e laje exposta
         for (const [a, b] of [[z0, z0 + T_], [z1 - T_, z1]]) { box(MAT.ext, x0, y, a, x1, y + 1.05, b, exterior); col(x0, a, x1, b, y, y + 1.05); }
         for (const [a, b] of [[x0, x0 + T_], [x1 - T_, x1]]) { box(MAT.ext, a, y, z0, b, y + 1.05, z1, exterior); col(a, z0, b, z1, y, y + 1.05); }
-        box(MAT.conc, x0 - .05, y + 1.05, z0 - .05, x1 + .05, y + 1.12, z1 + .05, 0xbdbab3);
+        for (const q of [[x0 - .05, z0 - .05, x1 + .05, z0 + T_ + .03], [x0 - .05, z1 - T_ - .03, x1 + .05, z1 + .05], [x0 - .05, z0, x0 + T_ + .03, z1], [x1 - T_ - .03, z0, x1 + .05, z1]]) box(MAT.conc, q[0], y + 1.05, q[1], q[2], y + 1.12, q[3], 0xbdbab3);
         // casinha da escada no terraço (cobertura)
         box(MAT.ext, sx0 - .1, y + 2.4, lz0 - .1, sx1 + .1, y + 2.55, lz2 + .2, exterior);
         for (const [px, pz] of [[sx0, lz2], [sx1, lz2], [sx0, lz0], [sx1, lz0]]) { box(MAT.ext, px - .08, y, pz - .08, px + .08, y + 2.4, pz + .08, exterior); col(px - .1, pz - .1, px + .1, pz + .1, y, y + 2.4); }
