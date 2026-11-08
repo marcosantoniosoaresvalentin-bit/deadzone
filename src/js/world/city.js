@@ -667,4 +667,25 @@
     // um buggy dentro de cada garagem, de frente para a rua (addCar recusa ponto dentro de construção: põe direto)
     for (const G of GAR) { const keep = FP.splice(0); try { addCar(G.x, G.z + (G.rot ? 1 : -1) * .4, G.rot ? Math.PI : 0); } finally { FP.push(...keep); } }
   } catch (e) { console.warn('cidade: buggies', e); }
+  // ---------- PONTOS DE LOOT (combat/loot.js espalha os itens) ----------
+  // um ponto por andar em cada prédio (às vezes dois), barracões/hangares e locais abertos; a Ilha Zênite tem loot melhor
+  { let sd = 97531; const rr = () => { sd = (sd * 16807) % 2147483647; return (sd - 1) / 2147483646; };
+    const inZ = (x, z) => x < -350;
+    for (const S of (window.DZSTR || [])) { if (!S.spots) continue; const rich = inZ(S.x, S.z);
+      S.spots.forEach((p, i) => { if (i % 2 === 1 && (rich ? rr() < .5 : rr() < .6)) return; LS.push({ x: p[0], z: p[1], y: p[2], rich }); }); }
+    // arranha-céu: saguão e topo com loot forte
+    if (typeof TOWER !== 'undefined') { const y0 = TOWER.y0, yt = TOWER.y0 + TOWER.h + .06;
+      for (const [dx, dz] of [[-8, -3], [8, 3], [-4, 6], [5, -6]]) LS.push({ x: TOWER.x + dx, z: TOWER.z + dz, y: y0 + .2, rich: 1 });
+      for (const [dx, dz] of [[-9, -4], [-9, 4], [10, 9], [10, -9]]) LS.push({ x: TOWER.x + dx, z: TOWER.z + dz, y: yt, rich: 1 }); }
+    // locais especiais: dentro de barracões/hangares e no pátio
+    const site = (x, z, n, r) => { for (let i = 0; i < n; i++) LS.push({ x: x + (rr() - .5) * r, z: z + (rr() - .5) * r, y: null, rich: inZ(x, z) }); };
+    site(-125, 45, 2, 10); site(-125, 78, 2, 10); site(-62, 55, 2, 8); site(-35, 62, 1, 6); site(-80, 30, 2, 20);   // base militar
+    site(-200, 8, 2, 12); site(-170, 21, 1, 8); site(-168, -4, 1, 8);                                       // galpões
+    site(48, 205, 2, 8); site(95, 205, 2, 14);                                                           // cais
+    site(-201, -78, 1, 8); site(-172, -66, 1, 6); site(78, 38, 2, 10);                                    // pedreira, fazenda
+    site(30, 135, 1, 10); site(-50, 210, 2, 40); site(200, -15, 2, 16);                                  // quadra, praia, usina
+    for (const G of GAR) LS.push({ x: G.x + 1.6, z: G.z, y: null, rich: 0 });                                // garagens
+    window.DZLS = LS; }
+  // fim da montagem do mapa: para de registrar o que entra na cena
+  if (window.__dzScAdd) sc.add = window.__dzScAdd; window.__dzWorldDone = 1;
 })();

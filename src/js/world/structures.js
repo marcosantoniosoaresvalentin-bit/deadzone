@@ -5,6 +5,8 @@
  *  - colisão por andar (paredes só bloqueiam no andar delas) e pisos reconhecidos pela física (GY).
  * Lista de onde ficam: STRS em world/map.js. Rotação só em múltiplos de 90°.
  */
+// tudo que o mapa adiciona na cena daqui até o fim do world/city.js é registrado (core/perf.js congela e some de longe)
+window.__dzWorldAdds = []; window.__dzScAdd = sc.add; sc.add = function () { for (const o of arguments) window.__dzWorldAdds.push(o); return window.__dzScAdd.apply(this, arguments); };
 (function () {
   if (typeof STRS === 'undefined') return;
   const FH = 3.2, T_ = .25, SLAB = .22, STEP_L = 5.2, LANE = 1.25, LAND = 1.3;
@@ -62,6 +64,8 @@
     awn: new T.MeshStandardMaterial({ vertexColors: true, roughness: .85 })
   };
 
+  // materiais só de dentro dos prédios (core/perf.js esconde de longe)
+  window.DZMATINT = [MAT.int, MAT.tile, MAT.wood, MAT.dark, MAT.rail];
   // ---------- junta geometria por quarteirão + material ----------
   const STORE = new Map(), MID = new Map();
   function push(key, m, ge) { if (!MID.has(m)) MID.set(m, MID.size); const k = key + '|' + MID.get(m); let e = STORE.get(k); if (!e) STORE.set(k, e = { m, geos: [] }); e.geos.push(ge); }

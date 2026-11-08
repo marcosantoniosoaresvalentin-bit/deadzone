@@ -1,5 +1,27 @@
 # Histórico de versões
 
+## 3.16.0 — desempenho, configurações gráficas, bots e jogar com amigos
+- **Configurações → Gráficos**: Qualidade (**Baixa / Média / Alta / Ultra**), **Distância de
+  renderização** (Curta 190 m / Média 300 m / Longa 450 m / Máxima 650 m), Sombras ligadas/desligadas,
+  **Limite de FPS** (30 ou 60), **Mostrar FPS** na tela e **Bots na partida** (15 / 30 / 50).
+  No celular começa em Média, distância Média e 30 FPS (não esquenta e não trava).
+- **Otimização**: prédios, ruas e muros ficam "congelados" (o celular não recalcula a posição deles a
+  cada quadro); o que passa da distância de renderização some; interior dos prédios, vidros, buggies,
+  loot e bots caindo longe também somem de longe; cada arma no chão virou 1 peça só (antes até 8).
+  No centro da Ilha Zênite: de ~900 para ~250 desenhos por quadro.
+- **Loot de volta**: um ponto por andar nos prédios, barracões, hangares, garagens, praia e usina
+  (~340 pontos). **Ilha Zênite e o arranha-céu têm loot forte** (rifles, snipers, colete, capacete,
+  mochila grande, mira 8x).
+- **Bots ligados**: completam a partida quando não há jogadores reais suficientes; caem sempre em
+  terra perto do loot. No squad, com **Autopareamento** marcado, bots completam a equipe.
+- **Amigos e convites** (testado com 2 aparelhos ao mesmo tempo): pedido de amizade chega e pode ser
+  aceito (antes o aceitar não funcionava: o ID de quem mandou era apagado); convite para equipe,
+  amigo aparece no lobby ao lado (antes ficava fora da tela); quem foi convidado aperta **PRONTO**,
+  o líder aperta **Iniciar** e os dois entram juntos na mesma partida, com os bots da equipe
+  aparecendo como aliados para os dois.
+- Corrigido: partida podia começar com 100 bots em vez do número escolhido; prédios do mapa
+  apareciam atrás do lobby.
+
 ## 3.15.1 — corda do arranha-céu e estradas sem terra por cima
 - **Corda**: o personagem fica **de frente para a corda**, com as duas mãos nela na frente do
   corpo (antes ficava de costas, com as mãos para trás).

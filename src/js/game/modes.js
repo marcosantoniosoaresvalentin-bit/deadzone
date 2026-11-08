@@ -55,12 +55,12 @@ function hurtB2(tg,b,d){if(tg.id)gp({t:'hit',to:tg.id,d,x:b.x,z:b.z},1);else hur
 {const _kb=killBot;killBot=function(b,me){_kb(b,me);if(N&&N.mode==='classic'&&N.host)gp({t:'bk',i:bots.indexOf(b),k:KK||(me?mpId:null),x:b.x,z:b.z,w:WLL.indexOf(b.w),s:b.sil},1)}}
 function clBots(){if(!N||!N.host||mode==='lobby')return;const hs=[[P.x,P.z]];for(const id in CL){const e=CL[id];if(e.vis&&!e.dead)hs.push([e.x,e.z])}
  const a=[];bots.forEach((b,i)=>{if(b.dead)return;if(!hs.some(h=>Math.hypot(h[0]-b.x,h[1]-b.z)<(b.air?450:230)))return;const mv=Math.hypot(b.x-(b.lx||0),b.z-(b.lz||0))>.03;b.lx=b.x;b.lz=b.z;
-  a.push([i,+b.x.toFixed(1),+b.z.toFixed(1),b.air?+b.y.toFixed(1):0,+b.g.rotation.y.toFixed(2),(b.air?1:0)|(b.air&&b.ch?2:0)|(mv?4:0),WLL.indexOf(b.w)])});
+  a.push([i,+b.x.toFixed(1),+b.z.toFixed(1),b.air?+b.y.toFixed(1):0,+b.g.rotation.y.toFixed(2),(b.air?1:0)|(b.air&&b.ch?2:0)|(mv?4:0),WLL.indexOf(b.w),b.team===1?1:0])});
  gp({t:'B',a})}
 function clRx2(m){
  if(m.t==='B'){if(N.host)return 1;const now=Date.now();for(const a of m.a){let e=CB[a[0]];if(!e){e=CB[a[0]]=mkEnt(-1);e.g.children[e.g.children.length-1].visible=false;e.bi=a[0];e.rem=1;e.x=a[1];e.z=a[2]}
   {const dtm=(now-(e.lt||0))/1000;if(!e.lt||dtm>.7||Math.hypot(a[1]-e.x,a[2]-e.z)>15){e.x=a[1];e.z=a[2];e.vx=e.vz=0}else if(dtm>.03&&e.tx!=null){let vx=(a[1]-e.tx)/dtm,vz=(a[2]-e.tz)/dtm;const vm=Math.hypot(vx,vz);if(vm>40){vx*=40/vm;vz*=40/vm}e.vx=vx;e.vz=vz}}
-  e.tx=a[1];e.tz=a[2];e.ty=a[4];e.py=a[3]>.05?a[3]:0;e.mv=a[5]&4?1:0;e.lt=now;e.g.cn.visible=!!(a[5]&2);ghArm(e,a[6]>=0?WLL[a[6]]:null)}return 1}
+  if(a[7]===1&&!e.ally){e.ally=1;const mk_=e.g.children[e.g.children.length-1];mk_.visible=true;mk_.material.color.set(0x3a82ff)}/* bot companheiro da equipe: aliado também para os outros jogadores */e.tx=a[1];e.tz=a[2];e.ty=a[4];e.py=a[3]>.05?a[3]:0;e.mv=a[5]&4?1:0;e.lt=now;e.g.cn.visible=!!(a[5]&2);ghArm(e,a[6]>=0?WLL[a[6]]:null)}return 1}
  if(m.t==='bh'){if(N.host){const b=bots[m.i];if(b&&!b.dead&&!b.air){b.hp-=m.d;if(b.hp<=0){KK=m.f;killBot(b,0);KK=null}}}return 1}
  if(m.t==='bk'){if(!N.host){const e=CB[m.i];if(e&&!e.dead){e.dead=1;e.dt=0;e.g.cn.visible=false}alive--;feedKill(m.k?nmId(m.k):'',e?nmOf(e):'Bot',m.k===mpId&&wp&&WS[wp]?WS[wp].n:'');if(m.k===mpId){kills++;say('Abate!',1.5)}if(m.w>=0)mkLoot(WLL[m.w],m.x,m.z,null,0,m.s)}return 1}
  return 0}

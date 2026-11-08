@@ -70,7 +70,10 @@
    for(let i=bots.length-1;i>=0;i--){const b=bots[i];if(b.team===1){sc.remove(b.g);bots.splice(i,1)}}
    const team=localStorage.getItem('deadzone_party_mode')||localStorage.getItem('dzTeamSize')||'squad';
    const cap=({'solo':1,'duo':2,'trio':3,'squad':4,'1':1,'2':2,'3':3,'4':4})[team]||4;
-   const count=Math.max(0,cap-1-(window.dzRealAllies||0)),meLv=level(),used=new Set(),roster=[];
+   // companheiros bots só com AUTOPAREAMENTO marcado; na partida em grupo só o dono da sala cria (e envia para os outros)
+   const autoOn=(()=>{try{const c=document.getElementById('dz33-autopair')||document.getElementById('dz31-autopair');return c?c.checked:localStorage.getItem('dzAutoPair')!=='0'}catch(e){return true}})();
+   if(typeof N!=='undefined'&&N&&!N.host){teamCreated=true;return}
+   const count=autoOn?Math.max(0,cap-1-(window.dzRealAllies||0)):0,meLv=level(),used=new Set(),roster=[];
    for(let i=0;i<count;i++)roster.push({name:randomBotName(used),lv:Math.max(1,meLv-i-1)});
    const baseX=pS.x+pD.x*PLV*(gt+12),baseZ=pS.z+pD.z*PLV*(gt+12);
    roster.forEach((r,i)=>{

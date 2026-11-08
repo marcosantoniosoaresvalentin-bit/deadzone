@@ -61,7 +61,7 @@ function entDraw(e,dt,pd){if(e.dead){e.dt+=dt;deadPose(e,dt);e.g.position.set(e.
  e.g.position.set(e.x,e.py,e.z);e.g.rotation.y=e.y;animBot(e,dt,e.mv,pd)}
 let lastHit=null;
 function sqDmg(e,d){if(SQ)SQ.my.d+=Math.min(d,e.hp>0?e.hp:d);if(e.id)gp({t:'hit',to:e.id,d,x:P.x,z:P.z},1);else if(e.bi!=null)gp({t:'bh',i:e.bi,d},1);else if(SQ&&SQ.host){e.hp-=d;if(e.hp<=0)sqKill(e,mpId)}else gp({t:'bh',i:SQ.K.indexOf(e),d},1)}
-const enemies=()=>SQ?(SQ.st==='live'?SQ.B.filter(b=>b.team!==SQ.mt&&!b.dead):[]):(N&&N.mode==='classic'?Object.values(CL).concat(Object.values(CB)).filter(e=>!e.dead&&e.vis&&e.py<3&&!(window.dzAllies&&window.dzAllies.has(e.id))):[]);
+const enemies=()=>SQ?(SQ.st==='live'?SQ.B.filter(b=>b.team!==SQ.mt&&!b.dead):[]):(N&&N.mode==='classic'?Object.values(CL).concat(Object.values(CB)).filter(e=>!e.dead&&e.vis&&e.py<3&&!e.ally&&!(window.dzAllies&&window.dzAllies.has(e.id))):[]);
 const _fire=fire;fire=function(fx,fz){_fire(fx,fz);if(!wp)return;const L=enemies();if(N)gp({t:'f'});if(!L.length)return;const o=cam.position,dr=new T.Vector3();cam.getWorldDirection(dr);const W=WS[wp];let bt=1e9,hb=null,hbH=0;
  const t0=Math.max(0,(P.x-o.x)*dr.x+(P.y+1.4-o.y)*dr.y+(P.z-o.z)*dr.z);
  for(const b of L){const t=capT(o,dr,b.x,b.py||0,b.z,b.cr,W.rg,wp==='sniper'?300:0);
@@ -71,7 +71,7 @@ const _ex=expl;expl=function(x,y,z,r,dm,own){_ex(x,y,z,r,dm,own);if(!own||RGX)re
 
 // ---- Clássico online: mesma rota de voo (seed) e jogadores reais visíveis/atacáveis
 function clStart(ids,mid,seed){if(ids.length>1){netOpen(mid,ids,'classic');for(const id of ids)if(id!==mpId){const e=mkEnt(-1);e.id=id;e.rem=1;e.vis=0;e.g.visible=false;CL[id]=e}}
- const _r=Math.random;let s=seed;Math.random=()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296};try{startGame();if(ids.length>1)regenLoot()}finally{Math.random=_r}
+ const _r=Math.random;let s=seed;Math.random=()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296};try{startGame();if(ids.length>1)regenLoot()}finally{Math.random=_r}alive+=ids.length-1;
  sched.length=N&&!N.host?0:Math.min(sched.length,Math.max(0,100-ids.length));if(N&&N.host)setInterval(clBots,125);
  if(N)setInterval(()=>{const ok=mode==='ground'||mode==='sky'||mode==='chute';gp({t:'s',x:+P.x.toFixed(2),y:+(ok&&mode!=='ground'?P.y:0).toFixed(1),z:+P.z.toFixed(2),r:+pl.rotation.y.toFixed(2),mv:amt>.15?1:0,h:hp,w:wp,v:ok?1:0,d:mode==='dead'?1:0,gy:+(mode==='ground'?P.y:0).toFixed(0)})},100);
  if(N)setInterval(()=>{for(const id in CL){const e=CL[id];e.g.visible=!!e.vis;entDraw(e,.033,Math.hypot(e.x-P.x,e.z-P.z))}for(const id in CB){const e=CB[id];if(!e.dead&&e.vx!=null&&Date.now()-e.lt<260){e.tx+=e.vx*.033;e.tz+=e.vz*.033}e.vis=Date.now()-e.lt<1500;e.g.visible=e.dead?e.dt<5:e.vis;entDraw(e,.033,Math.hypot(e.x-P.x,e.z-P.z))}},33)}

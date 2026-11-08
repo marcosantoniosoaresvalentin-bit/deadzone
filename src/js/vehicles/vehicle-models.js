@@ -383,6 +383,7 @@
         const c = v.car || (v.car = typeof CARS !== 'undefined' ? CARS.find(c => c.g === v.g) : null);
         if (c && v.wheels) spinWheels(v, c);
         { const d = _v.distanceTo(cam.position), ni = d < 40, ns = d < 80;
+          { const vf = d < [110, 160, 230, 350][Math.max(0, Math.min(3, q))] || (typeof drv !== 'undefined' && drv && drv.g === v.g); if (vf !== v.vf) { v.vf = vf; v.g.visible = vf; } } // buggy some de longe
           if (ni !== v.ni) { v.ni = ni; const it = v.g.userData.cab; if (it) it.visible = ni; }
           if (ns !== v.ns) { v.ns = ns; v.root.traverse(o => { if (o.isMesh && !o.material.transparent) o.castShadow = ns; }); }
           // peças pequenas (faróis, molas, antena...) somem de longe: quase não aparecem e pesam no celular

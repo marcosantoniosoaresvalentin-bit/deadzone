@@ -80,7 +80,7 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;try{d
  knf.visible=ml>0&&!!mlK&&mode==='ground';
  animExtra(dt);try{const g_=mode==='ground'&&ml<=0;CH.loco={w:mode==='lobby'?1:g_?(1-cr)*(1-Math.min(1,pr*3))*(1-air):0,sp:g_?amt*(6-cr*3)*(1-.4*adk)*(cast?.5:1):0,arm:!!(rf.visible||cast||GA||TH||ml>0),fw:l>.05?(dx*Math.sin(pl.rotation.y)+dz*Math.cos(pl.rotation.y))/l:1}}catch(e){}pl.position.set(P.x,P.y,P.z);if(mode==='drive'&&drv)seatPose(dt,typeof ix!=='undefined'?ix:0);else if(RIDE&&mode==='ground')ropePose();else if(VLT&&mode==='ground')vaultPose();else if(pl.rotation.x||pl.rotation.z){pl.rotation.x=0;pl.rotation.z=0}shd.visible=mode==='ground'||mode==='lobby';shd.position.x=P.x;shd.position.z=P.z;{const g_=GY(P.x,P.z,P.y);shd.position.y=g_+.03;shd.scale.setScalar(Math.max(.4,1-(P.y-g_)*.2))};
  if(window.DZChute&&DZChute.ready)DZChute.update(dt,fw,bk,sd);else{canopy.position.set(P.x,P.y+1.6,P.z);canopy.rotation.set(.55*fw-.3*bk,yaw,sd*.3,'YXZ')}
- for(const o of loot){const vv=Math.abs(o.x-P.x)+Math.abs(o.z-P.z)<110&&!MP;o.top.visible=vv;}
+ {const LD_=[34,44,60,80][Math.max(0,Math.min(3,CFG.q|0))];for(const o of loot){const vv=Math.abs(o.x-P.x)+Math.abs(o.z-P.z)<LD_&&!MP;if(o.top.visible!==vv)o.top.visible=vv}}/* loot só de perto */
  for(const b of bots){
   if(b.air){
    if(b.waitForPlayer){
@@ -94,7 +94,7 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;try{d
    b.vy+=((b.ch?-5.5:-48)-b.vy)*Math.min(1,dt*(b.ch?2.5:4));b.y+=b.vy*dt;
    const ddx=b.tx-b.x,ddz=b.tz-b.z,dd=Math.hypot(ddx,ddz),tl=Math.max(.6,b.y/Math.max(3,-b.vy)),spb=Math.min(b.ch?14:30,dd/tl);
    if(dd>.5){b.x+=ddx/dd*spb*dt;b.z+=ddz/dd*spb*dt;b.g.rotation.y=Math.atan2(ddx,ddz)}
-   b.g.position.set(b.x,Math.max(b.y,TERH(b.x,b.z)),b.z);b.g.visible=Math.hypot(P.x-b.x,P.z-b.z)<600;
+   b.g.position.set(b.x,Math.max(b.y,TERH(b.x,b.z)),b.z);b.g.visible=Math.hypot(P.x-b.x,P.z-b.z,P.y-b.y)<220;
    if(b.y<=TERH(b.x,b.z)){b.air=0;b.cn.visible=false;mvE(b,0,0)}continue}
   if(b.dead){b.dt+=dt;deadPose(b,dt);if(b.dt>5)b.g.visible=false;continue}
   if(Math.hypot(b.x-zX,b.z-zZ)>zR){b.hp-=dt*(1.5+zI*1.2);if(b.hp<=0){killBot(b,0);continue}b.tgt=null;b.tx=zX+(b.zx??(b.zx=R(-40,40)));b.tz=zZ+(b.zz??(b.zz=R(-40,40)));b.wt=3}
@@ -127,7 +127,7 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;try{d
  else if(mode==='drive'){const c=drv,d_=8.5+Math.abs(c.spd)*.08,cy=c.g.position.y||0,ya=dcam(c,dt);const cx_=c.x-Math.sin(ya)*d_*Math.cos(pit*.5),cz_=c.z-Math.cos(ya)*d_*Math.cos(pit*.5);cam.position.set(cx_,Math.max(cy+3.4+Math.sin(pit)*5,TERH(cx_,cz_)+1.2),cz_);cam.lookAt(c.x+Math.sin(ya)*4,cy+1.2,c.z+Math.cos(ya)*4)}
  else{/* com o paraquedas aberto a câmera se afasta e mira entre o jogador e o velame, para ver o paraquedas inteiro */const ty=(mode==='ground'?P.y*.6+1.6-.45*cr-pr:P.y+1+3*ch),cd=mode==='ground'?6.5:8+6*ch;
   cam.position.set(P.x-fx*cd*Math.cos(pit),ty+.2+Math.sin(pit)*cd,P.z-fz*cd*Math.cos(pit));cam.lookAt(P.x,ty,P.z)}
- {const air=mode==='plane'||mode==='sky'||mode==='chute'||(mode==='drive'&&drv&&drv.heli&&drv.y>14);if(air!==wasAir){wasAir=air;cam.far=air?2400:380;sc.fog.near=air?500:70;sc.fog.far=air?2200:340;sky.scale.setScalar(air?3.9:.62);cam.updateProjectionMatrix()}
+ {const air=mode==='plane'||mode==='sky'||mode==='chute'||(mode==='drive'&&drv&&drv.heli&&drv.y>14);if(air!==wasAir){wasAir=air;{const F_=window.__dzFar||380;cam.far=air?2400:F_;sc.fog.near=air?500:F_*.3;sc.fog.far=air?2200:F_*.92}sky.scale.setScalar(air?3.9:.62);cam.updateProjectionMatrix()}
   // no ar a neblina fica sempre longe (sair do lobby voltava a neblina do chão e escondia a ilha)
   if(air&&(sc.fog.near!==500||sc.fog.far!==2200)){sc.fog.near=500;sc.fog.far=2200}}
  if(mode==='ground')pl.visible=adk<.85;{const sv=mode==='ground'&&adk>.85&&scp>0;sce.style.display=sv?'block':'none';if(sv)sce.className='s'+scp}
