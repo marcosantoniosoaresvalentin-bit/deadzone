@@ -27,9 +27,13 @@ const BLDS=[];
 // prédios com interior (world/structures.js): dá para entrar e subir em todos os andares e no terraço
 // w,d = largura e fundo (m); floors = andares; rot: só múltiplos de 90°
 const STRS=[
+ // roof:'gable' = sobrado com telhado de telha; balcony = varandas na frente (dá para sair nelas)
  {id:'predio1',x:20,z:-150,w:12,d:10,floors:3,rot:0,color:0xd8cfc0},
- {id:'casa1',x:44,z:-128,w:11,d:9,floors:2,rot:-Math.PI/2,color:0xc9b79c},
- {id:'casa2',x:-4,z:-126,w:11,d:9,floors:2,rot:Math.PI/2,color:0xb7c0b8}];
+ {id:'predio2',x:50,z:-162,w:13,d:10,floors:4,rot:-Math.PI/2,color:0xc7b7a3,balcony:1},
+ {id:'casa1',x:44,z:-128,w:11,d:9,floors:2,rot:-Math.PI/2,color:0xc9b79c,roof:'gable'},
+ {id:'casa2',x:-4,z:-126,w:11,d:9,floors:2,rot:Math.PI/2,color:0xb7c0b8,roof:'gable'},
+ {id:'casa3',x:20,z:-116,w:11,d:9,floors:2,rot:Math.PI,color:0xe2d6b8,balcony:1},
+ {id:'casa4',x:-10,z:-158,w:11,d:9,floors:2,rot:Math.PI/2,color:0xd1c4b4,roof:'gable'}];
 
 // ---- dados do mapa (vazios) que outros sistemas consultam ----
 const CX=[],CZ=[],BP=42,LK=[];

@@ -8,7 +8,8 @@
 (function () {
   if (typeof STRS === 'undefined') return;
   const FH = 3.2, T_ = .25, SLAB = .22, STEP_L = 5.2, LANE = 1.25, LAND = 1.3;
-  const FLR = window.DZFLR = [];   // pisos: {x0,x1,z0,z1,y} ou rampa {.., ax:'x'|'z', a0,a1,y0,y1}
+  const FLR = window.DZFLR = [];
+  const CEIL = window.DZCEIL = [];  // fundo das lajes (a câmera não passa para o andar de cima)   // pisos: {x0,x1,z0,z1,y} ou rampa {.., ax:'x'|'z', a0,a1,y0,y1}
 
   // ---------- a física passa a reconhecer pisos, escadas e terraços ----------
   const _GY = GY;
@@ -42,11 +43,12 @@
     brick: canvasT(256, 256, (g, w, h) => { g.fillStyle = '#6f6359'; g.fillRect(0, 0, w, h); for (let y = 0; y < h; y += 16) for (let x = -32; x < w; x += 32) { const o = (y / 16 % 2) * 16; g.fillStyle = 'hsl(' + (10 + Math.random() * 12) + ',' + (30 + Math.random() * 20) + '%,' + (30 + Math.random() * 14) + '%)'; g.fillRect(x + o + 1, y + 1, 30, 14); } noise(g, w, h, 6000, .12); }),
     concrete: canvasT(256, 256, (g, w, h) => { g.fillStyle = '#9a978f'; g.fillRect(0, 0, w, h); noise(g, w, h, 14000, .12); for (let i = 0; i < 30; i++) { g.fillStyle = 'rgba(40,40,40,' + (.03 + Math.random() * .05) + ')'; g.beginPath(); g.arc(Math.random() * w, Math.random() * h, 10 + Math.random() * 30, 0, 7); g.fill(); } }),
     tiles: canvasT(256, 256, (g, w, h) => { g.fillStyle = '#4a4744'; g.fillRect(0, 0, w, h); for (let y = 0; y < h; y += 64) for (let x = 0; x < w; x += 64) { g.fillStyle = 'hsl(30,' + (6 + Math.random() * 6) + '%,' + (58 + Math.random() * 10) + '%)'; g.fillRect(x + 2, y + 2, 60, 60); } noise(g, w, h, 8000, .08); }),
+    roof: canvasT(256, 256, (g, w, h) => { g.fillStyle = '#5b2a1c'; g.fillRect(0, 0, w, h); for (let y = 0; y < h; y += 32) for (let x = 0; x < w; x += 32) { const o = (y / 32 % 2) * 16; g.fillStyle = 'hsl(' + (12 + Math.random() * 8) + ',' + (45 + Math.random() * 15) + '%,' + (30 + Math.random() * 10) + '%)'; g.beginPath(); g.ellipse(x + o + 16, y + 20, 15, 16, 0, 0, Math.PI); g.fill(); g.fillRect(x + o + 1, y + 2, 30, 18); g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(x + o, y + 30, 32, 2); } noise(g, w, h, 6000, .1); }),
     wood: canvasT(256, 256, (g, w, h) => { for (let i = 0; i < 8; i++) { g.fillStyle = 'hsl(' + (24 + Math.random() * 8) + ',' + (35 + Math.random() * 10) + '%,' + (26 + Math.random() * 10) + '%)'; g.fillRect(0, i * 32, w, 31); g.fillStyle = 'rgba(0,0,0,.45)'; g.fillRect(0, i * 32 + 31, w, 1); } noise(g, w, h, 5000, .1); })
   };
   const MAT = {
     ext: triMat(TX.plaster, .45), int: triMat(TX.plaster, .5), brick: triMat(TX.brick, .9), conc: triMat(TX.concrete, .35),
-    tile: triMat(TX.tiles, .45), wood: triMat(TX.wood, .5, { roughness: .8 }),
+    tile: triMat(TX.tiles, .45), roof: triMat(TX.roof, .55, { side: T.DoubleSide }), wood: triMat(TX.wood, .5, { roughness: .8 }),
     frame: new T.MeshStandardMaterial({ color: lin(0x2b2d30), roughness: .6, metalness: .3, vertexColors: true }),
     rail: new T.MeshStandardMaterial({ color: lin(0x3a3c40), roughness: .5, metalness: .5, vertexColors: true }),
     door: new T.MeshStandardMaterial({ color: lin(0x5a3a22), roughness: .7 }),
@@ -112,15 +114,17 @@
     // poço da escada no fundo, à esquerda: patamar | rampa | patamar, duas faixas (vai e volta)
     const sx0 = ix0, sxa = sx0 + LAND, sxb = sxa + STEP_L, sx1 = sxb + LAND, lz0 = iz0, lz1 = lz0 + LANE, lz2 = lz1 + LANE;
     const exterior = S.color || 0xe6dccb;
+    const gable = S.roof === 'gable';
     for (let k = 0; k <= NF; k++) {
       const y = k * FH, top = k === NF;
       // laje/piso (o térreo é o chão); buraco sobre a faixa da escada que chega por baixo
-      const holeLane = k > 0 ? ((k - 1) % 2) : -1, hz0 = holeLane === 0 ? lz0 : lz1, hz1 = holeLane === 0 ? lz1 : lz2;
-      const slab = (a, b, c, d) => { if (b - a < .05 || d - c < .05) return; box(k === 0 ? MAT.tile : (top ? MAT.conc : MAT.tile), a, y - (k ? SLAB : .02), c, b, y + .02, d); if (k) box(MAT.int, a, y - SLAB - .01, c, b, y - SLAB, d, 0xf2f0ea); floor(a, c, b, d, y + .02); };
+      const holeLane = k > 0 && !(gable && top) ? ((k - 1) % 2) : -1, hz0 = holeLane === 0 ? lz0 : lz1, hz1 = holeLane === 0 ? lz1 : lz2;
+      const slab = (a, b, c, d) => { if (b - a < .05 || d - c < .05) return; box(k === 0 ? MAT.tile : (top ? MAT.conc : MAT.tile), a, y - (k ? SLAB : .02), c, b, y + .02, d); if (k) { box(MAT.int, a, y - SLAB - .01, c, b, y - SLAB, d, 0xf2f0ea); const p = L2W(a, c), q = L2W(b, d); CEIL.push({ x0: Math.min(p[0], q[0]), x1: Math.max(p[0], q[0]), z0: Math.min(p[1], q[1]), z1: Math.max(p[1], q[1]), y: gy + y - SLAB - .01 }); } floor(a, c, b, d, y + .02); };
       if (holeLane < 0) slab(x0, x1, z0, z1);
       else { slab(x0, x1, hz1, z1); slab(x0, x1, z0, hz0); slab(x0, sxa, hz0, hz1); slab(sxb, x1, hz0, hz1);
         // guarda-corpo em volta do buraco
         box(MAT.rail, sxa, y, hz1 - .03, sxb, y + 1, hz1 + .03); col(sxa, hz1 - .05, sxb, hz1 + .05, y, y + 1); }
+      if (top && gable) { roofGable(y); break; }
       if (top) { // terraço: mureta e laje exposta
         for (const [a, b] of [[z0, z0 + T_], [z1 - T_, z1]]) { box(MAT.ext, x0, y, a, x1, y + 1.05, b, exterior); col(x0, a, x1, b, y, y + 1.05); }
         for (const [a, b] of [[x0, x0 + T_], [x1 - T_, x1]]) { box(MAT.ext, a, y, z0, b, y + 1.05, z1, exterior); col(a, z0, b, z1, y, y + 1.05); }
@@ -132,16 +136,24 @@
       }
       // escada até o próximo andar (faixa k%2: ida +x / volta -x)
       const lane = k % 2, a = lane === 0 ? lz0 : lz1, b = lane === 0 ? lz1 : lz2, up = lane === 0;
-      const ns = 16, sl = STEP_L / ns, sh = FH / ns;
+      const ns = 16, sl = STEP_L / ns, sh = FH / ns, mkStair = !(gable && k === NF - 1);
+      if (mkStair) {
       for (let i = 0; i < ns; i++) { const xs = up ? sxa + i * sl : sxb - (i + 1) * sl; box(MAT.conc, xs, y, a + .02, xs + sl, y + (i + 1) * sh, b - .02, 0xc9c5bd); }
       ramp(sxa, a, sxb, b, y + .02, y + FH + .02, true, !up);
       // corrimão do lado de dentro
       box(MAT.rail, sxa, y + 1, (lane === 0 ? b : a) - .03, sxb, y + 1.05, (lane === 0 ? b : a) + .03);
       // parede entre as faixas (meia altura) para não cair de uma faixa na outra
       if (lane === 0) { box(MAT.int, sxa + .8, y, lz1 - .06, sxb - .8, y + 1, lz1 + .06, 0xf2f0ea); col(sxa + .8, lz1 - .08, sxb - .8, lz1 + .08, y, y + 1); }
+      }
       // ---------- paredes do andar ----------
       const front = winsOn(x0 + .6, x1 - .6, k === 0 ? 0 : null, 1.0, 1.3), back = winsOn(sx1 + .3, x1 - .6, null, 1.1, 1.2), side = winsOn(z0 + .6, z1 - .6, null, 1.0, 1.3);
+      const balc = S.balcony && k > 0;
       if (k === 0) front.push([-.6, .6, 0, 2.25]);
+      else if (balc) { for (let i = front.length - 1; i >= 0; i--) if (Math.abs((front[i][0] + front[i][1]) / 2) < 1.4) front.splice(i, 1); front.push([-.6, .6, 0, 2.2]);
+        // varanda: piso, mureta e corrimão
+        const bw = 1.9, bd = 1.3; box(MAT.conc, -bw, y - .2, z1, bw, y + .02, z1 + bd, 0xb9b5ad); floor(-bw, z1, bw, z1 + bd, y + .02);
+        for (const q of [[-bw, z1 + bd - .12, bw, z1 + bd], [-bw, z1, -bw + .12, z1 + bd], [bw - .12, z1, bw, z1 + bd]]) { box(MAT.ext, q[0], y, q[1], q[2], y + .95, q[3], exterior); col(q[0], q[1], q[2], q[3], y, y + 1.05); }
+        box(MAT.rail, -bw - .02, y + .95, z1 + bd - .14, bw + .02, y + 1.02, z1 + bd + .02); }
       wall(true, x0, x1, z1, y, FH, front, MAT.ext, MAT.int, true);
       wall(true, x0, x1, z0, y, FH, back, MAT.ext, MAT.int, true);
       wall(false, z0 + T_ / 2, z1 - T_ / 2, x0, y, FH, side.filter(o => o[1] < lz2 - .3 || o[0] > lz2 + .3 ? true : false), MAT.ext, MAT.int, true);
@@ -154,6 +166,15 @@
       // detalhes de cada andar: rodapé escuro e lâmpada
       box(MAT.dark, ix0, y + .02, iz1 - .03, ix1, y + .12, iz1, 0x333333);
       LAMPS.push({ x: L2W(0, (cz + iz1) / 2)[0], y: gy + y + 2.6, z: L2W(0, (cz + iz1) / 2)[1] });
+    }
+    // telhado de duas águas (cumeeira ao longo de X)
+    function roofGable(y) {
+      const rh = D * .26, hz = D / 2 + .45, a = Math.atan(rh / (D / 2)), Lr = hz / Math.cos(a);
+      const tint = (geo, c) => { const n = geo.attributes.position.count, cc = new Float32Array(n * 3), t = new T.Color(c).convertSRGBToLinear(); for (let i = 0; i < n; i++) { cc[i * 3] = t.r; cc[i * 3 + 1] = t.g; cc[i * 3 + 2] = t.b; } geo.setAttribute('color', new T.BufferAttribute(cc, 3)); return geo; };
+      for (const sg of [1, -1]) { const m = new T.Mesh(tint(new T.BoxGeometry(W + .7, .12, Lr), 0xffffff), MAT.roof); m.position.set(0, y + rh - (hz / 2) * Math.tan(a) + .08, sg * hz / 2); m.rotation.x = sg * a; m.castShadow = m.receiveShadow = true; g.add(m); }
+      const sh = new T.Shape(); sh.moveTo(-D / 2, 0); sh.lineTo(D / 2, 0); sh.lineTo(0, rh); sh.lineTo(-D / 2, 0);
+      for (const [sx, ry] of [[x0 + T_ / 2 - .02, -Math.PI / 2], [x1 - T_ / 2 + .02, Math.PI / 2]]) { const m = new T.Mesh(tint(new T.ShapeGeometry(sh), exterior), MAT.ext); m.position.set(sx, y, 0); m.rotation.y = ry; m.castShadow = true; g.add(m); }
+      box(MAT.frame, x0 - .35, y + rh + .02, -.1, x1 + .35, y + rh + .2, .1, 0x5a2a1c);
     }
     // marquise sobre a entrada
     box(MAT.conc, -1.2, 2.45, z1, 1.2, 2.6, z1 + 1.1, 0xb8b4ac); box(MAT.brick, -1.3, 0, z1 - .05, -1.15, .12, z1 + 1.2); box(MAT.conc, -1.3, 0, z1, 1.3, .12, z1 + 1.2, 0xa9a59d); floor(-1.3, z1, 1.3, z1 + 1.2, .12);
@@ -173,7 +194,7 @@
       for (const [, l] of bySize) DZW.add(g, l.map(q => [q[0], q[1], q[2], q[3]]), l[0][4] - .04, l[0][5] - .04); }
     // área da construção: grama não nasce dentro e a câmera não atravessa as paredes
     const a = L2W(x0, z0), b = L2W(x1, z1), fp = { x0: Math.min(a[0], b[0]), x1: Math.max(a[0], b[0]), z0: Math.min(a[1], b[1]), z1: Math.max(a[1], b[1]) };
-    FP.push(fp); S.fp = fp; S.g = g;
+    fp.S = S; FP.push(fp); S.fp = fp; S.g = g; S.gy = gy; S.FH = FH; S.SLAB = SLAB;
     // pontos para loot (um por cômodo e andar)
     S.spots = []; for (let k = 0; k < NF; k++) S.spots.push([...L2W((sx1 + x1) / 2, (lz2 + z1) / 2), gy + k * FH], [...L2W(x1 - 1.2, z1 - 1.2), gy + k * FH]);
   }

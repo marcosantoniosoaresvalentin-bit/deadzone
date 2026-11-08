@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 3.9.1 — mais construções e câmera dentro dos prédios
+- Vila com **6 construções com interior**: 2 prédios (3 e 4 andares), sobrados com
+  **telhado de telha** e casas/prédio com **varandas** (dá para sair nelas pelo andar).
+- **Câmera dentro das construções**: não atravessa mais o teto (não dá para ver o andar de
+  cima), não entra nos degraus da escada e não sai pelas paredes; na escada ela se aproxima
+  do personagem.
+
 ## 3.9.0 — prédios com interior (dá para entrar em todos os andares)
 - As casas antigas (só tinham o lado de fora) saíram. No lugar, **3 construções com interior
   completo**, feitas por código: um **prédio de 3 andares + terraço** e **2 sobrados**.
