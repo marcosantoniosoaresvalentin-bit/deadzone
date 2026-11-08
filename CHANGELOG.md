@@ -1,5 +1,23 @@
 # Histórico de versões
 
+## 3.17.0 — armas reais, sons reais de tiro, zona mais lenta e mapa corrigido
+- **Armas reais 3D**: 20 modelos baixados (licença livre) no lugar das armas feitas no código:
+  8 fuzis/submetralhadoras (M4A1, AK-12, SCAR-H, Galil ACE, MPX, PP-19, Micro UZI, MP9),
+  4 escopetas (M870, Serrada, Saiga-12, AA-12), 4 pistolas (Makarov, P320, CZ 75, M9) e
+  4 snipers (M110, SVD, M82, KSVK). Tamanho real na mão, no chão e nas costas; cada uma tem
+  empunhadura, mão de apoio e mira medidas no próprio modelo. Bots também usam modelos variados.
+- **Arma nas costas** encostada no corpo, deitada de lado e na diagonal (não flutua mais).
+- **Sacar a arma 2x mais rápido** (0,3 s).
+- **Sons reais de tiro** (gravações de armas de verdade, licença CC0): um som por arma, mais
+  abafado de longe, com direção; silenciador abafa o tiro.
+- **Zona mais lenta**: primeiro fechamento só depois de ~4,5 min e círculo maior (não fecha mais a
+  cidade toda); partida de ~16 min de zona; contador em minutos e segundos.
+- **Mapa**: carro não explode mais na ponte (parede invisível removida); estradas sem rampas
+  absurdas (máx. 8% de subida) e sem asfalto enterrado na base; escada da torre de vigia nova
+  (reta, de aço, toda visível); menos carros (12).
+- **Online**: amigo aparece no lobby mesmo com relógio do celular diferente; convidado carrega
+  junto e cai na mesma partida do líder.
+
 ## 3.16.0 — desempenho, configurações gráficas, bots e jogar com amigos
 - **Configurações → Gráficos**: Qualidade (**Baixa / Média / Alta / Ultra**), **Distância de
   renderização** (Curta 190 m / Média 300 m / Longa 450 m / Máxima 650 m), Sombras ligadas/desligadas,
