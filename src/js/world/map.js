@@ -22,6 +22,9 @@ const rdT=ctex(128,256,(g,w,h)=>{g.fillStyle='#46494e';g.fillRect(0,0,w,h);for(l
 // heliportos (o terreno fica plano em volta deles)
 const HPS=[['Heliponto Norte',MAPH*.45,-MAPH*.5],['Heliponto Sul',-MAPH*.45,MAPH*.5]];
 // o terreno (relevo, praia e mar) fica em world/terrain.js
+// construções colocadas no mapa (o terreno fica plano embaixo). Modelos em world/buildings.js
+// rot: só múltiplos de 90° (a colisão das paredes usa caixas alinhadas com os eixos)
+const BLDS=[{id:'casa1',model:'house',x:30,z:-135,rot:0,flat:11}];
 
 // ---- dados do mapa (vazios) que outros sistemas consultam ----
 const CX=[],CZ=[],BP=42,LK=[];

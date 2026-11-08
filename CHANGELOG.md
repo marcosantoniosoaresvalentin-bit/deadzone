@@ -1,5 +1,14 @@
 # Histórico de versões
 
+## 3.8.0 — primeira construção
+- **Casa de madeira** ("Old house", modelo pronto CC-BY 4.0) no campo ao norte da ilha
+  (texturas reduzidas: 105 MB → 1,6 MB). Terreno nivelado embaixo dela.
+- **Porta de verdade**: a folha da porta é recortada do modelo e gira na dobradiça
+  (abre/fecha com o botão de porta).
+- **Paredes sólidas**: a colisão é gerada "escaneando" o modelo na altura das pernas; janelas e
+  porta aberta deixam passar. Vale para as próximas construções.
+- **Piso de madeira** por dentro; grama não nasce dentro; câmera não atravessa as paredes.
+
 ## 3.7.7
 - **Personagem não sai mais do carro quando ele cai de lado**: o ajuste da altura do quadril era
   feito "para baixo no mundo"; com o carro de lado isso empurrava o personagem pela lateral.

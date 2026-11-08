@@ -111,6 +111,8 @@ Detalhes técnicos em [docs/ARQUITETURA.md](docs/ARQUITETURA.md).
 - Avião C-130: "YC-130 (Prototype of C-130)" por [KOG_THORNS](https://sketchfab.com/ioai25312),
   [Sketchfab](https://sketchfab.com/3d-models/yc-130prototype-of-c-130-11d237757851434ab5cb853db80376bb),
   licença [CC-BY 4.0](http://creativecommons.org/licenses/by/4.0/) (texturas reduzidas e convertidas para WebP).
+- Casa de madeira: "Old house" por [Ashkod](https://sketchfab.com/Ashkod), licença
+  [CC-BY 4.0](http://creativecommons.org/licenses/by/4.0/) (texturas reduzidas e convertidas para WebP).
 - Paraquedas: velame e linhas do parapente "paraglider-red-ridge" da
   [SwissAirfields](https://github.com/SwissAirfields/SwissAirfieldsFS2020) (CC0).
 - Veículos (buggy e helicóptero): biblioteca Microsoft Remix 3D
