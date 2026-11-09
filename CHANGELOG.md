@@ -1,5 +1,19 @@
 # Histórico de versões
 
+## 3.19.0 — tela do jogo, vegetação, mapas novos dos modos e asfalto
+- **Tela do jogo** no estilo battle royale: bússola com graus, Vivos/Abates em quadrinhos, relógio da zona
+  (fora da zona mostra a distância em vermelho), armas com foto 3D nos espaços, ícones de capacete e colete,
+  painel de veículo (velocidade, combustível, estado). Sem instruções longas e sem emoji nas mensagens.
+- **Vegetação**: bosques de árvores e pinheiros, arbustos e pedras nos campos (otimizado: some de longe).
+- **Mapas novos dos modos**: **Duelo** no **Pátio de Containers** e **Mata-mata em Equipe** nos
+  **Armazéns do Porto** (cada um numa ilhazinha própria, com muro em volta).
+- **Telas de carregamento e abertura** com imagens do próprio jogo, logo, dica e barra fina; menu de mapa e
+  modo com fotos.
+- **Asfalto**: estradas chegam até a primeira rua das cidades (sem pedaço de grama no meio); estrada do
+  porto sobe em diagonal até Cerro Azul; sem toco de estrada na praia; bem menos faixas de pedestre.
+- **Nomes**: locais com nomes realistas (Base Militar, Escola, Porto, Galpões, Posto de Gasolina, Fazenda,
+  Pedreira, Praia, Usina, Nova Esperança, Cerro Azul, Monte Alto, Vila Rubra, Zênite).
+
 ## 3.18.2 — luneta 2x e amigos
 - **Luneta 2x**: a cruz da mira era desenhada na tela inteira e as pontinhas passavam da lente. Agora a
   retícula fica desenhada dentro da própria lente.

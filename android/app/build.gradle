@@ -10,8 +10,8 @@ android {
         applicationId 'com.deadzone.game'
         minSdk 24
         targetSdk 35
-        versionCode 48
-        versionName '3.18.2'
+        versionCode 49
+        versionName '3.19.0'
     }
 
     // Assinatura: no GitHub Actions a chave vem do cache (variáveis DZ_KEYSTORE/DZ_KS_PASS);
