@@ -9,7 +9,8 @@ const MAPH=250;          // metade do lado do mapa, em metros
 const PLV=30;            // velocidade do avião (m/s)
 // LIMITES do mapa (ilha principal no centro + Ilha Zênite a oeste, ligada por uma ponte)
 const MAPB={x0:-630,x1:265,z0:-265,z1:265},MCX=(MAPB.x0+MAPB.x1)/2,MCZ=(MAPB.z0+MAPB.z1)/2,MAPR=Math.max(MAPB.x1-MCX,MAPB.z1-MCZ);
-const MCLX=(v,m)=>Math.max(MAPB.x0+m,Math.min(MAPB.x1-m,v)),MCLZ=(v,m)=>Math.max(MAPB.z0+m,Math.min(MAPB.z1-m,v));
+/* nas arenas (mapas separados, longe da ilha) não prende nos limites da ilha principal */
+const MCLX=(v,m)=>window.DZAR_ON?v:Math.max(MAPB.x0+m,Math.min(MAPB.x1-m,v)),MCLZ=(v,m)=>window.DZAR_ON?v:Math.max(MAPB.z0+m,Math.min(MAPB.z1-m,v));
 const PLT=(2*(MAPR+60))/PLV; // tempo até o avião atravessar o mapa (s)
 
 // ---- materiais básicos usados pelo resto do jogo (veículos, lobby, bake) ----
@@ -112,10 +113,11 @@ const ROADLINES=[
 const BRIDGE={z:-78,x0:-238,x1:-372,y:6};
 const BRIDGE_FLATS=[{id:'pontA',x0:-250,x1:-226,z0:-90,z1:-66,bl:16,hFix:6},{id:'pontB',x0:-384,x1:-360,z0:-90,z1:-66,bl:16,hFix:6}];
 // tudo que precisa de chão plano (o terreno lê esta lista)
-// ARENAS (ilhas pequenas no mar, ao sul da Zênite): Duelo = Pátio de Containers · Mata-mata = Armazéns do Porto
-const ARENAS={duel:{id:'arDuel',n:'Pátio de Containers',x:-365,z:190,hw:14,hd:34,RX:40,RZ:62,h:3},tdm:{id:'arTdm',n:'Armazéns do Porto',x:-525,z:176,hw:62,hd:62,RX:86,RZ:86,h:3}};
+// ARENAS = MAPAS SEPARADOS (cada um numa ilha própria, a 5 km da ilha principal, fora do alcance da vista e do mapa)
+// Duelo = Pátio de Containers · Mata-mata em Equipe = Armazéns do Porto
+const ARENAS={duel:{id:'arDuel',n:'Pátio de Containers',x:5000,z:0,hw:14,hd:34,RX:40,RZ:62,h:3},tdm:{id:'arTdm',n:'Armazéns do Porto',x:5000,z:3000,hw:62,hd:62,RX:86,RZ:86,h:3}};
 const ARENA_FLATS=Object.values(ARENAS).map(a=>({id:a.id,x0:a.x-a.hw-4,x1:a.x+a.hw+4,z0:a.z-a.hd-4,z1:a.z+a.hd+4,bl:14,hFix:a.h,arena:1}));
-const FLATS=TOWNS.concat(SITES,BRIDGE_FLATS,ARENA_FLATS);
+const FLATS=TOWNS.concat(SITES,BRIDGE_FLATS);
 // nomes no mapa grande (como no mapa antigo)
 const MAPNAMES=TOWNS.map(t=>({n:t.n,x:t.x,z:t.z})).concat(SITES.map(t=>({n:t.n,x:t.x,z:t.z})));
 // ---- pontos fixos do mapa ----

@@ -1,6 +1,6 @@
 /* Deadzone · vehicles/glider.js
- * PLANADOR (motoplanador): modelo baixado "UNDERPOLY: Free Sailplane Glider" (CC-BY 4.0) + motor com hélice
- * que sai das costas da cabine (como os motoplanadores de verdade).
+ * PLANADOR (ultraleve de asa-delta, estilo battle royale): trike de 3 rodas com 2 bancos, motor e hélice atrás,
+ * asa-delta de 10 m em cima. Modelos do projeto "Deltaplan" (Grigory Latyshev, MIT), recoloridos no nosso estilo.
  *  - 3 planadores parados em retas de estrada (servem de pista), espalhados pelo mapa.
  *  - Perto dele aparece o botão PILOTAR.
  *  - Botões ACELERAR e FREAR; analógico para CIMA sobe, para BAIXO desce, para os LADOS vira.
@@ -10,49 +10,59 @@
  * PC: W/S sobe/desce, A/D vira, E acelera, Q freia, F entra/sai.
  */
 (function () {
-  const GL = [], S_ = .7;
+  const GL = [];
   let SRC = null, cur_ = null, near_ = null, thrB = 0, brkB = 0, lastT = 0, camY = 0;
   window.GLIDERS = GL;
 
-  // ---------- modelo ----------
+  // ---------- modelo: trike de asa-delta (ultraleve com motor atrás), estilo battle royale ----------
+  // trike e asa: projeto "Deltaplan" (Grigory Latyshev, MIT) — gerados por script; cores trocadas para o nosso estilo
   function build() {
     const g = new T.Group();
     if (SRC) {
-      const m = SRC.clone(true), inner = new T.Group(); inner.add(m); inner.scale.setScalar(S_);
+      const m = SRC.clone(true), inner = new T.Group(); inner.add(m);
       m.traverse(o => { if (o.isMesh) { o.castShadow = true; if (o.material) { o.material = o.material.clone(); o.material.envMapIntensity = .8; } } });
-      inner.rotation.y = SRC.userData.ry || 0; inner.position.y = -(SRC.userData.minY || 0) * S_; g.add(inner);
-    } else { // reserva (se o modelo não carregar): fuselagem e asas simples
-      const M = new T.MeshStandardMaterial({ color: 0xf2f2f2, roughness: .4 });
-      const f = new T.Mesh(new T.CylinderGeometry(.35, .12, 6, 10), M); f.rotation.x = Math.PI / 2; f.position.y = .7; g.add(f);
-      const w = new T.Mesh(new T.BoxGeometry(10.5, .08, .9), M); w.position.set(0, .95, .4); g.add(w);
-      const t = new T.Mesh(new T.BoxGeometry(.08, 1.2, .8), M); t.position.set(0, 1.3, -2.8); g.add(t);
+      inner.rotation.y = Math.PI; inner.position.y = -SRC.userData.minY; g.add(inner);
+      let hub = null; m.traverse(o => { if (o.name === 'Propeller') hub = o; });
+      if (hub) { const disc = new T.Mesh(new T.CircleGeometry(.85, 24), new T.MeshBasicMaterial({ color: 0x222222, transparent: true, opacity: 0, depthWrite: false, side: T.DoubleSide })); hub.add(disc); g.userData.hub = hub; g.userData.disc = disc; }
+      // piloto sentado no banco da frente (só aparece com alguém pilotando)
+      try { const pg = mkBot(); pg.cn && (pg.cn.visible = false); pg.scale.setScalar(.98); pg.position.set(0, SRC.userData.seatY - SRC.userData.minY, -SRC.userData.seatZ); g.add(pg); g.userData.pilot = pg; pg.visible = false; seat(pg); } catch (e) { }
+    } else { // reserva (se o modelo não carregar)
+      const M = new T.MeshStandardMaterial({ color: 0xd8d2c4, roughness: .5 });
+      const w = new T.Mesh(new T.ConeGeometry(5, 2.6, 3), M); w.rotation.set(-Math.PI / 2, 0, 0); w.scale.set(1, 1, .08); w.position.set(0, 3, 0); g.add(w);
+      const f = new T.Mesh(new T.BoxGeometry(.8, .7, 2.6), M); f.position.y = .7; g.add(f);
+      const hub = new T.Group(); hub.position.set(0, .9, -1.4); g.add(hub);
+      const disc = new T.Mesh(new T.CircleGeometry(.8, 24), new T.MeshBasicMaterial({ color: 0x222222, transparent: true, opacity: 0, depthWrite: false, side: T.DoubleSide })); hub.add(disc); g.userData.hub = hub; g.userData.disc = disc;
     }
-    // motor retrátil com hélice, nas costas da cabine
-    const pyl = new T.Group(); pyl.position.set(0, (SRC ? SRC.userData.topY : 1.1) * S_ - .05, (SRC ? SRC.userData.mastZ : .3) * S_); g.add(pyl);
-    const MM = new T.MeshStandardMaterial({ color: 0x2b2f34, metalness: .6, roughness: .4 });
-    const mast = new T.Mesh(new T.BoxGeometry(.07, .55, .16), MM); mast.position.y = .27; pyl.add(mast);
-    const pod = new T.Mesh(new T.CylinderGeometry(.11, .08, .5, 10), MM); pod.rotation.x = Math.PI / 2; pod.position.set(0, .58, 0); pyl.add(pod);
-    const hub = new T.Group(); hub.position.set(0, .58, .28); pyl.add(hub);
-    const BM = new T.MeshStandardMaterial({ color: 0x1a1c1f, roughness: .5 });
-    for (const s of [-1, 1]) { const b = new T.Mesh(new T.BoxGeometry(.06, .55, .015), BM); b.position.y = s * .28; b.rotation.y = s * .25; hub.add(b); }
-    const disc = new T.Mesh(new T.CircleGeometry(.58, 24), new T.MeshBasicMaterial({ color: 0x222222, transparent: true, opacity: 0, depthWrite: false, side: T.DoubleSide })); disc.position.z = .01; hub.add(disc);
-    g.userData.hub = hub; g.userData.disc = disc;
     return g;
+  }
+  // pose sentada: pernas para a frente, mãos na barra
+  function seat(pg) { const r = pg.rig; if (!r) return; r.loco = null; r.hips.position.y = .5; r.tor.rotation.x = -.08;
+    for (const L of [r.lg1, r.lg2]) { L.th.rotation.x = -1.35; L.kn.rotation.x = .9; }
+    r.aR.sh.rotation.set(-1.15, 0, .18); r.aL.sh.rotation.set(-1.15, 0, -.18); r.aR.el.rotation.x = r.aL.el.rotation.x = -.35; r.head.rotation.x = -.1; }
+  // nossas cores: vela recolorida (areia, oliva e laranja) já vem no arquivo; carenagem cinza-chumbo
+  function restyle(o) {
+    const mt = o.material; if (!mt) return; const n = mt.name || '';
+    if (/^Sail/.test(n)) { mt.side = T.DoubleSide; mt.roughness = .85; }
+    else if (/Composite/.test(n)) { mt.color = new T.Color(0x3b4148).convertSRGBToLinear(); mt.roughness = .5; mt.metalness = .2; }
+    else if (/Soft/.test(n)) { mt.color = new T.Color(0x2a2d30).convertSRGBToLinear(); }
+    else if (/^Tube/.test(n)) { mt.color = new T.Color(0x9aa0a6).convertSRGBToLinear(); mt.metalness = .7; mt.roughness = .35; }
   }
   function load() {
     if (!T.GLTFLoader) { spawn(); return; }
-    new T.GLTFLoader().load('assets/models/vehicles/glider.glb', gl => {
-      const s = gl.scene; s.updateMatrixWorld(true);
-      const bb = new T.Box3().setFromObject(s), pts = []; let topZ = 0, n = 0;
-      // cauda = parte mais alta (leme): o nariz fica do outro lado e vira para +z
-      s.traverse(o => { if (!o.isMesh) return; const p = o.geometry.attributes.position, v = new T.Vector3(); for (let i = 0; i < p.count; i += 3) { v.fromBufferAttribute(p, i).applyMatrix4(o.matrixWorld); if (v.y > bb.max.y - .35) { topZ += v.z; n++; } } });
-      const tailZ = n ? topZ / n : bb.min.z; const ry = tailZ > (bb.min.z + bb.max.z) / 2 ? Math.PI : 0;
-      // altura do dorso da fuselagem perto do centro (onde fica o motor)
-      let topY = 0; const v = new T.Vector3(), c = (bb.min.z + bb.max.z) / 2, len = bb.max.z - bb.min.z;
-      s.traverse(o => { if (!o.isMesh) return; const p = o.geometry.attributes.position; for (let i = 0; i < p.count; i++) { v.fromBufferAttribute(p, i).applyMatrix4(o.matrixWorld); if (Math.abs(v.x) < .3 && Math.abs(v.z - (c - (ry ? -1 : 1) * len * .05)) < .25) topY = Math.max(topY, v.y); } });
-      s.userData = { ry, minY: bb.min.y, topY: (topY || bb.max.y * .5) - bb.min.y, mastZ: -len * .08 };
-      SRC = s; spawn();
-    }, undefined, e => { console.warn('planador', e); spawn(); });
+    const L = new T.GLTFLoader(); let tri = null, wing = null;
+    const done = () => {
+      if (!tri || !wing) return;
+      const root = new T.Group();
+      // só o nível de detalhe mais alto do trike
+      const kill = []; tri.traverse(o => { if (/_LOD[12]$/.test(o.name)) kill.push(o); }); for (const o of kill) o.parent.remove(o);
+      root.add(tri); root.add(wing); root.traverse(o => { if (o.isMesh) restyle(o); }); root.updateMatrixWorld(true);
+      const bb = new T.Box3().setFromObject(tri);
+      root.userData = { minY: bb.min.y, seatY: -1.62, seatZ: -0.45 };
+      SRC = root; spawn();
+    };
+    const fail = e => { console.warn('planador', e); if (!SRC) spawn(); };
+    L.load('assets/models/vehicles/trike.glb', g => { tri = g.scene; done(); }, undefined, fail);
+    L.load('assets/models/vehicles/trike_wing.glb', g => { wing = g.scene; done(); }, undefined, fail);
   }
 
   // ---------- onde ficam: retas de estrada longe de construções ----------
@@ -154,6 +164,7 @@
     }
     c.air = c.y > g2 + .5 ? 1 : 0;
     c.g.position.set(c.x, c.y, c.z); c.g.rotation.set(0, 0, 0); c.g.rotateY(c.yaw); c.g.rotateX(-c.pitch); c.g.rotateZ(c.roll);
+    { const pg = c.g.userData.pilot; if (pg) { const on = cur_ === c; if (pg.visible !== on) pg.visible = on; if (on) seat(pg); } }
     const hub = c.g.userData.hub; if (hub) { hub.rotation.z += dt * (6 + 60 * c.thr); c.g.userData.disc.material.opacity = .25 * c.thr; }
     // som do motor
     if (pil && c.thr > .1) { c.sn = (c.sn || 0) - dt; if (c.sn <= 0) { c.sn = .09; try { sfx(220 + 160 * c.thr, .09 * c.thr, .08, 0); } catch (e) { } } }
@@ -170,7 +181,7 @@
     _lb(t);
     if (mode === 'glide' && cur_) { // câmera atrás do planador
       const c = cur_; camY += (((c.yaw - camY + Math.PI * 3) % (Math.PI * 2)) - Math.PI) * Math.min(1, dt * 3);
-      const d = 11 + c.spd * .08, h = 3.2; cam.position.set(c.x - Math.sin(camY) * d, Math.max(GY(c.x - Math.sin(camY) * d, c.z - Math.cos(camY) * d, c.y + 5) + 1.5, c.y + h + Math.sin(-c.pitch) * 2), c.z - Math.cos(camY) * d);
+      const d = 14 + c.spd * .08, h = 4.2; cam.position.set(c.x - Math.sin(camY) * d, Math.max(GY(c.x - Math.sin(camY) * d, c.z - Math.cos(camY) * d, c.y + 5) + 1.5, c.y + h + Math.sin(-c.pitch) * 2), c.z - Math.cos(camY) * d);
       cam.lookAt(c.x + Math.sin(c.yaw) * 6, c.y + 1.4, c.z + Math.cos(c.yaw) * 6);
       if (cam.far < 600) { cam.far = 800; cam.updateProjectionMatrix(); }
       // zona também machuca no planador

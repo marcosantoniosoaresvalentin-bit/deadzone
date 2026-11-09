@@ -50,8 +50,9 @@ const TER=(()=>{
  // ILHAS DAS ARENAS: retângulo arredondado (comprido no Duelo), chão baixo e plano
  const ISL=(typeof ARENAS!=='undefined'?Object.values(ARENAS):[]);
  function coastA(A,x,z){const p=5,n=Math.pow(Math.pow(Math.abs(x-A.x)/A.RX,p)+Math.pow(Math.abs(z-A.z)/A.RZ,p),1/p),a=Math.atan2(z-A.z,x-A.x),cn=fbm(Math.cos(a)*2+A.x*.01,Math.sin(a)*2+A.z*.01)*.6;return (1-n)*Math.min(A.RX,A.RZ)-cn*6}
+ // altura das ilhas das arenas (mapas separados, fora da grade da ilha principal)
+ window.ARENAH=function(x,z){for(const A of ISL){if(Math.abs(x-A.x)<A.hw+7&&Math.abs(z-A.z)<A.hd+7)return A.h;const t=coastA(A,x,z);if(t>-80){if(t<=0)return Math.max(-14,.35+t*.09);const beach=.35+Math.min(t,22)*.085,k=ss(8,22,t);return beach+Math.max(0,A.h+(fbm(x/30,z/30)-.5)*.8-beach)*k}}return -14};
  function rawH(x,z){
-  for(const A of ISL){const t=coastA(A,x,z);if(t>-40){const o=coastDist(x,z),o2=coast2(x,z);if(t>=o&&t>=o2){if(t<=0)return Math.max(-14,.35+t*.09);const beach=.35+Math.min(t,22)*.085,k=ss(8,22,t);return beach+Math.max(0,A.h+(fbm(x/30,z/30)-.5)*.8-beach)*k}}}
   const t2=coast2(x,z),t1=coastDist(x,z);
   if(t2>t1){const t=t2;if(t<=0)return Math.max(-14,.35+t*.09-Math.max(0,-t-30)*.05);const beach=.35+Math.min(t,22)*.085,k=ss(12,40,t);return beach+Math.max(0,landH2(x,z)-beach)*k}
   const t=t1;
@@ -113,6 +114,7 @@ const TER=(()=>{
   return best};
  // mesma triangulação do PlaneGeometry: altura idêntica à malha
  function terh(x,z){
+  if(x>3500)return ARENAH(x,z);
   const fx=(x-OX)/S,fz=(z-OZ)/S;if(fx<0||fz<0||fx>=NX-1||fz>=NZ-1)return -14;
   const i=Math.floor(fx),j=Math.floor(fz),u=fx-i,v=fz-j,a=H[idx(i,j)],b=H[idx(i,j+1)],c=H[idx(i+1,j+1)],d=H[idx(i+1,j)];
   return u+v<=1?a+(d-a)*u+(b-a)*v:c+(b-c)*(1-u)+(d-c)*(1-v);

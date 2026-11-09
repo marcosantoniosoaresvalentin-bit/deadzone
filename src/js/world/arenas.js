@@ -23,7 +23,7 @@
     if (rep) { const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * Math.max(x1 - x0, z1 - z0) / rep, uv.getY(i) * (y1 - y0) / rep); }
     const me = new T.Mesh(g, m); me.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); me.castShadow = true; me.receiveShadow = true; me.matrixAutoUpdate = false; me.updateMatrix(); sc.add(me); ADD.push(me); return me;
   }
-  const col = (x0, z0, x1, z1, yb, yt) => addBox({ x0: Math.min(x0, x1), x1: Math.max(x0, x1), z0: Math.min(z0, z1), z1: Math.max(z0, z1), yb, yt, w: 1 });
+  const col = (x0, z0, x1, z1, yb, yt) => { try { for (const A of Object.values(ARENAS)) if (inA(A, x0, z0)) lay(A, [Math.min(x0, x1), Math.min(z0, z1), Math.max(x0, x1), Math.max(z0, z1)], yt - yb > 2.2 ? '#cfc6b0' : '#a89f8c'); } catch (e) { } return addBox({ x0: Math.min(x0, x1), x1: Math.max(x0, x1), z0: Math.min(z0, z1), z1: Math.max(z0, z1), yb, yt, w: 1 }); };
   // container 2,44 × 2,6 × 6,06 m (ao longo de x ou z); empilha com "lv"
   function cont(x, z, alongX, H0, lv, ci) {
     const L = 6.06, W = 2.44, Hc = 2.6, y0 = H0 + lv * Hc, hx = alongX ? L / 2 : W / 2, hz = alongX ? W / 2 : L / 2;
@@ -55,6 +55,31 @@
     crate(x - hw * .4, z - hd * .3, H0, 1.4); crate(x + hw * .35, z + hd * .3, H0, 1.4); crate(x + hw * .35 + 1.4, z + hd * .3, H0, 1.4);
     if (alongX) { cont(x, z - hd * .45, true, H0, 0, 4); } else { cont(x - hw * .45, z, false, H0, 0, 4); }
   }
+
+  // ======================= CADA ARENA É UM MAPA SEPARADO =======================
+  // ilha própria (terreno + mar), longe da ilha principal: de lá não se vê a ilha e vice-versa
+  const LAYOUT = {}; // retângulos para o minimapa/mapa da arena
+  const lay = (A, r, c) => { (LAYOUT[A.id] = LAYOUT[A.id] || []).push([r[0], r[1], r[2], r[3], c]); };
+  function island(A) {
+    const E = Math.max(A.RX, A.RZ) + 70, S = 3, n = Math.round(2 * E / S);
+    const g = new T.PlaneGeometry(2 * E, 2 * E, n, n); g.rotateX(-Math.PI / 2); g.translate(A.x, 0, A.z);
+    const P = g.attributes.position, C = new Float32Array(P.count * 3), cs = new T.Color(0xd8c79a).convertSRGBToLinear(), cg = new T.Color(0x6f9a4a).convertSRGBToLinear(), cr = new T.Color(0x8d8a7e).convertSRGBToLinear();
+    for (let i = 0; i < P.count; i++) { const x = P.getX(i), z = P.getZ(i), h = ARENAH(x, z); P.setY(i, h); const c = h < 1.4 ? cs : (Math.sin(x * .37 + Math.cos(z * .21) * 3) * Math.cos(z * .29) > .55 ? cr : cg); C[i * 3] = c.r; C[i * 3 + 1] = c.g; C[i * 3 + 2] = c.b; }
+    g.setAttribute('color', new T.BufferAttribute(C, 3)); g.computeVertexNormals();
+    const me = new T.Mesh(g, new T.MeshStandardMaterial({ vertexColors: true, roughness: .95 })); me.receiveShadow = true; me.matrixAutoUpdate = false; me.updateMatrix(); sc.add(me);
+    const wm = new T.MeshStandardMaterial({ color: lin(0x2f6f9a), metalness: .5, roughness: .12, transparent: true, opacity: .82 }); try { if (window.DZR) DZR.waterMat(wm); wm.opacity = .82; } catch (e) { }
+    const sea = new T.Mesh(new T.PlaneGeometry(2400, 2400), wm); sea.rotation.x = -Math.PI / 2; sea.position.set(A.x, 0, A.z); sc.add(sea);
+    const deep = new T.Mesh(new T.PlaneGeometry(2400, 2400), new T.MeshStandardMaterial({ color: lin(0x0d3550), roughness: .97 })); deep.rotation.x = -Math.PI / 2; deep.position.set(A.x, -14.05, A.z); deep.renderOrder = -3; sc.add(deep);
+    // imagem vista de cima (minimapa e mapa grande da arena)
+    const W = 512, cv_ = document.createElement('canvas'); cv_.width = cv_.height = W; const g2 = cv_.getContext('2d'), im = g2.createImageData(W, W), d = im.data;
+    for (let py = 0; py < W; py++) for (let px = 0; px < W; px++) { const x = A.x - E + (px + .5) / W * 2 * E, z = A.z - E + (py + .5) / W * 2 * E, h = ARENAH(x, z), o = (py * W + px) * 4; const c = h < 0 ? [40, 100, 150] : h < 1.4 ? [214, 198, 156] : [96, 130, 70]; d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255; }
+    g2.putImageData(im, 0, 0); cv_.x0 = A.x - E; cv_.z0 = A.z - E; cv_.E = E; A.img = cv_;
+  }
+  const inA = (A, x, z) => Math.abs(x - A.x) < 700 && Math.abs(z - A.z) < 700;
+  const curA = () => { try { const c = mode === 'plane' ? plane.position : P; for (const A of Object.values(ARENAS)) if (inA(A, c.x, c.z)) return A; } catch (e) { } return null; };
+  window.dzArenaAt = curA;
+  // as peças do mapa entram na imagem da arena
+  island(ARENAS.duel); island(ARENAS.tdm);
 
   // ======================= DUELO: PÁTIO DE CONTAINERS =======================
   { const A = ARENAS.duel, H0 = TERH(A.x, A.z); pad(A, H0);
@@ -95,4 +120,40 @@
   // pontos de nascimento das equipes: dentro do mapa, um de cada lado (sempre iguais nos dois aparelhos)
   if (typeof window.sqPads === 'function') { const o = window.sqPads; window.sqPads = function (cx, cz, rnd) { if (Math.abs(cx - ARENAS.tdm.x) < 1 && Math.abs(cz - ARENAS.tdm.z) < 1) { rnd(); return [[cx, cz - 52], [cx, cz + 52]]; } return o.apply(this, arguments); }; }
   window.DZARENAS = { duel: CDUEL, tdm: CTDM };
+
+  // sinal "está numa arena": libera a trava dos limites da ilha principal
+  setInterval(() => { const on = !!curA() && mode !== 'lobby'; if (!!window.DZAR_ON !== on) window.DZAR_ON = on ? 1 : 0; }, 100);
+  for (const f of ['startMatch', 'sqStart']) if (typeof window[f] === 'function') { const o = window[f]; window[f] = function () { window.DZAR_ON = 1; return o.apply(this, arguments); }; }
+
+  // minimapa: dentro da arena desenha a ilha da arena (por cima do mar), com as peças
+  const drawArena = (g2, A, X, Z, k) => {
+    const im = A.img; g2.drawImage(im, X(im.x0), Z(im.z0), 2 * im.E * k, 2 * im.E * k);
+    g2.fillStyle = '#9a9890'; g2.fillRect(X(A.x - A.hw - 3), Z(A.z - A.hd - 3), (A.hw * 2 + 6) * k, (A.hd * 2 + 6) * k);
+    for (const r of (LAYOUT[A.id] || [])) { g2.fillStyle = r[4]; g2.fillRect(X(r[0]), Z(r[1]), Math.max(1, (r[2] - r[0]) * k), Math.max(1, (r[3] - r[1]) * k)); }
+  };
+  window.addEventListener('load', () => {
+    const _mm = window.dzMMExtra;
+    window.dzMMExtra = function (mx, X, Z, ra) {
+      const A = curA(); if (A) { const k = X(1) - X(0); mx.save(); mx.fillStyle = '#1e4e82'; mx.fillRect(-400, -400, 800, 800); drawArena(mx, A, X, Z, k);
+        try { if (inA(A, zX, zZ)) { mx.strokeStyle = 'rgba(120,190,255,.95)'; mx.lineWidth = 2.5; mx.beginPath(); mx.arc(X(zX), Z(zZ), zR * k, 0, 7); mx.stroke(); } } catch (e) { } mx.restore(); }
+      try { if (_mm) return _mm.apply(this, arguments); } catch (e) { }
+    };
+  });
+  // mapa grande: dentro da arena mostra só o mapa da arena
+  const _om = window.openMap;
+  if (typeof _om === 'function') {
+    window.openMap = function () {
+      const A = curA(); if (!A || mode === 'lobby' || mode === 'dead') return _om.apply(this, arguments);
+      bmap.style.display = 'flex'; const dpr = Math.min(2, devicePixelRatio || 1), W = innerWidth, H = innerHeight;
+      bmc.style.width = W + 'px'; bmc.style.height = H + 'px'; bmc.width = Math.round(W * dpr); bmc.height = Math.round(H * dpr); BG = null;
+      const draw = () => {
+        if (bmap.style.display !== 'flex' || !curA()) { clearInterval(iv); return; }
+        const Wc = bmc.width, Hc = bmc.height, E = Math.max(A.hw, A.hd) + 20, k = Math.min(Wc, Hc) / (2 * E), X = x => Wc / 2 + (x - A.x) * k, Y = z => Hc / 2 + (z - A.z) * k, d = dpr;
+        bmg.fillStyle = '#1e4e82'; bmg.fillRect(0, 0, Wc, Hc); drawArena(bmg, A, X, Y, k);
+        bmg.fillStyle = '#fff'; bmg.strokeStyle = '#000'; bmg.lineWidth = 3 * d; bmg.font = 'bold ' + Math.round(15 * d) + 'px sans-serif'; bmg.textAlign = 'center'; bmg.strokeText(A.n, Wc / 2, 26 * d); bmg.fillText(A.n, Wc / 2, 26 * d);
+        const s_ = d * 1.4; bmg.save(); bmg.translate(X(P.x), Y(P.z)); bmg.rotate(Math.atan2(Math.cos(yaw), Math.sin(yaw)) + Math.PI / 2); bmg.fillStyle = '#fff'; bmg.lineWidth = 2 * d; bmg.beginPath(); bmg.moveTo(0, -11 * s_); bmg.lineTo(8 * s_, 9 * s_); bmg.lineTo(0, 4 * s_); bmg.lineTo(-8 * s_, 9 * s_); bmg.closePath(); bmg.stroke(); bmg.fill(); bmg.restore();
+      };
+      draw(); const iv = setInterval(draw, 150);
+    };
+  }
 })();

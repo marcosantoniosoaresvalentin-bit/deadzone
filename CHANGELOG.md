@@ -1,5 +1,14 @@
 # Histórico de versões
 
+## 3.25.0 — mapas separados para Duelo e Mata-mata, planador novo
+- **Mapas separados**: o Duelo (Pátio de Containers) e o Mata-mata em Equipe (Armazéns do Porto) saíram da ilha
+  principal. Cada um agora é um mapa próprio, numa ilha sozinha, muito longe (não aparece no mapa principal,
+  não dá para ver nem chegar nelas na partida clássica). Cada arena tem seu terreno, mar, minimapa e mapa grande.
+- **Planador novo, estilo PUBG**: ultraleve de asa-delta — carrinho de 3 rodas com 2 bancos, motor e hélice
+  atrás e asa-delta de 10 m em cima; o piloto aparece sentado segurando a barra. Vela recolorida no nosso estilo
+  (areia, oliva e laranja). Modelo do projeto Deltaplan (MIT).
+- Tirado o texto de instrução do mapa grande.
+
 ## 3.24.0 — marcação para o time e comunicação rápida
 - **Botão de marcar** (pino, ao lado da mochila): marca o ponto para onde a mira aponta.
   Se a mira estiver em cima de um inimigo, vira marcação vermelha de inimigo.
