@@ -1,5 +1,13 @@
 # Histórico de versões
 
+## 3.27.0 — Passe Deadzone (níveis e recompensas) e skins de arma
+- **Passe Deadzone** (toque no painel "Passe de Batalha" do lobby): 30 níveis, cada um com uma recompensa
+  para resgatar — moedas, roupas, paraquedas e skins de arma. O nível vem do XP das partidas.
+  Botão "Resgatar tudo"; pontinho vermelho no painel quando há recompensa esperando. Sem dinheiro de verdade.
+- **Skins de arma** (aba no passe): Floresta, Deserto, Urbano, Ártico, Tigre, Carbono, Neon, Noturno e Ouro.
+  A skin equipada aparece nas suas armas — na mão, nas costas e na mira (lunetas e silenciador ficam pretos).
+- Roupas e paraquedas liberados pelo passe ficam disponíveis para equipar no inventário.
+
 ## 3.26.0 — tela de fim de partida nova
 - **Tela de fim de partida** refeita (sem a imagem pronta antiga):
   - colocação grande (#12/100, dourada na vitória), ELIMINADO ou VITÓRIA!;
