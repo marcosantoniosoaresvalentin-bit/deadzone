@@ -1,5 +1,17 @@
 # Histórico de versões
 
+## 3.23.0 — caixa de suprimentos e tela sem mensagens
+- **Caixa de suprimentos** (partida clássica): um avião de carga cruza o céu e solta uma caixa de
+  paraquedas listrado dentro da zona segura (a primeira 2 min após o salto, depois a cada 2 min e meio, até 4).
+  - Cai devagar, solta uma coluna de fumaça vermelha e aparece no minimapa e no mapa (marcador vermelho).
+  - Dentro: uma arma rara (M82, SCAR-H, AA-12 ou M110) com 2 caixas de munição, capacete, colete,
+    2 kits médicos, luneta, silenciador ou granada, e escudo de campo ou bandagem.
+  - Botão **Abrir** perto dela; a tampa abre e os itens ficam no chão em volta. A caixa serve de cobertura.
+  - Bots inimigos por perto correm para a caixa.
+  - Online: todos veem o mesmo avião e a mesma caixa; só quem abre fica com os itens.
+- **Sem mensagens na tela**: o jogo não mostra mais nenhum texto no meio da tela (dicas, avisos, "pegue",
+  "caixa aberta" etc.). O painel de derrubado/reanimação mostra só as barras e o nome de quem está reanimando.
+
 ## 3.22.0 — derrubado e reanimação no time
 - **Derrubado**: na partida clássica com equipe, quem cai com algum aliado ainda de pé não morre na hora.
   Fica derrubado (deitado rastejando, sem arma, sem kit), com uma barra vermelha de sangramento (~45 s).

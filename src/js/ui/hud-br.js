@@ -122,5 +122,5 @@ body.dzVehOn #wpt{opacity:0}
   const BLOCK = /Arraste a tela|Queda livre|Paraquedas:|Planador:|Toque em (Abrir|Subir|Descer)|Pousou! Procure|Equipado automaticamente|segure ATIRAR|segure LANÇAR|selecionad[oa]|Pouse para sair|Ligando o motor|na mão · /i;
   const EMO = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}]/gu;
   const _s = say;
-  say = function (m, d) { if (m == null) return; m = String(m); if (BLOCK.test(m)) return; m = m.replace(EMO, '').replace(/\s{2,}/g, ' ').trim(); if (!m) return; return _s.call(this, m, Math.min(d == null ? 1.5 : d, 3)); };
+  say = function (m, d) { return; /* sem mensagens no meio da tela: o jogo não fica explicando nada */ if (m == null) return; m = String(m); if (BLOCK.test(m)) return; m = m.replace(EMO, '').replace(/\s{2,}/g, ' ').trim(); if (!m) return; return _s.call(this, m, Math.min(d == null ? 1.5 : d, 3)); };
 })();

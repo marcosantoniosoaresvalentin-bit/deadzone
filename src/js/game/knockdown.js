@@ -184,7 +184,7 @@
       let by = null, pr = 0;
       for (const b of comps()) if (b.rvT && b.rvT.k === 'P' && b.rvp > 0) { by = b.nm || 'Aliado'; pr = b.rvp / RV_TIME; }
       if (!by && RVBY) { by = RVBY.nm; pr = Math.min(1, (now() - RVBY.t0) / RV_TIME); }
-      KO.querySelector('.tx').textContent = by ? by + ' está te reanimando...' : 'Rasteje até um lugar seguro e espere um aliado';
+      KO.querySelector('.tx').textContent = by || '';
       const rv = KO.querySelector('.rv'); rv.style.display = by ? 'block' : 'none'; if (by) rv.firstChild.style.width = (pr * 100) + '%';
       if (hpi) { hpi.style.width = Math.max(0, KN.hp) + '%'; hpi.style.background = '#e0352b'; }
     } else { if (KO.style.display !== 'none') KO.style.display = 'none'; if (hpi && hpi.style.background) hpi.style.background = ''; }
@@ -194,7 +194,7 @@
       if (KN || mode !== 'ground' || !alive_(RV.T) || dd > RV_DIST + .4) cancelRV();
       else {
         RV.t += dt; try { st = 1; firing = 0; } catch (e) { }
-        RP.style.display = 'block'; RP.firstChild.textContent = 'Reanimando ' + nmT(RV.T) + '... ' + Math.max(0, RV_TIME - RV.t).toFixed(1) + ' s'; RP.querySelector('u').style.width = Math.min(100, RV.t / RV_TIME * 100) + '%';
+        RP.style.display = 'block'; RP.firstChild.textContent = nmT(RV.T); RP.querySelector('u').style.width = Math.min(100, RV.t / RV_TIME * 100) + '%';
         if (RV.t >= RV_TIME) { const T = RV.T; RV = null; reviveT(T, myName()); try { st = 0; } catch (e) { } }
       }
     }
