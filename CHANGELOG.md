@@ -1,5 +1,14 @@
 # Histórico de versões
 
+## 3.30.0 — passos por tipo de chão, portas arrombadas e planador no online
+- **Sons de passos** seus e dos inimigos, diferentes para grama/terra, areia, asfalto, concreto, madeira (dentro
+  das casas), metal (containers, torres, escadas) e água rasa. Os dos inimigos vêm com direção (esquerda/direita)
+  e ficam mais altos quanto mais perto (até ~35 m); agachado pisa mais baixo, deitado não faz barulho.
+- **Portas arrombadas**: tiro ou explosão abre a porta fechada na hora, com estrondo.
+  (Os vidros das janelas já quebravam com tiro, explosão e ao passar por eles.)
+- **Planador no online**: os 3 planadores ficam nos mesmos lugares para todos; quando alguém voa, os outros
+  veem o planador no ar com o piloto sentado e a hélice girando; ninguém entra num planador que outro está pilotando.
+
 ## 3.29.0 — espectador melhor, clima e horário
 - **Espectador** (botão ASSISTIR na tela de fim de partida): segue primeiro quem te eliminou, depois os
   aliados e depois os mais próximos. Câmera atrás do jogador assistido, acompanhando para onde ele olha

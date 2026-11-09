@@ -79,7 +79,8 @@
         if (ok) cand.push({ x, z, yaw: Math.atan2(ux, uz) });
       } }
     } catch (e) { }
-    const pick = []; for (let k = 0; k < 400 && pick.length < 3 && cand.length; k++) { const c = cand[Math.floor(Math.random() * cand.length)]; if (pick.every(q => Math.hypot(q.x - c.x, q.z - c.z) > 160)) pick.push(c); }
+    let sd_ = 20251109; const rr = () => (sd_ = (sd_ * 1664525 + 1013904223) >>> 0) / 4294967296; // sorteio fixo: todos os jogadores têm os mesmos planadores
+    const pick = []; for (let k = 0; k < 400 && pick.length < 3 && cand.length; k++) { const c = cand[Math.floor(rr() * cand.length)]; if (pick.every(q => Math.hypot(q.x - c.x, q.z - c.z) > 160)) pick.push(c); }
     for (const c of pick) add(c.x, c.z, c.yaw);
   }
   function add(x, z, yaw) { const g = build(), y = GY(x, z, 60); g.position.set(x, y, z); g.rotation.y = yaw; sc.add(g); GL.push({ g, x, y, z, yaw, pitch: 0, roll: 0, spd: 0, vy: 0, thr: 0, fuel: 100, hp: 100, dead: 0, air: 0 }); }
@@ -192,7 +193,7 @@
   // ---------- botões / painel a cada instante ----------
   setInterval(() => {
     near_ = null;
-    if (mode === 'ground') { let bd = 5.5; for (const c of GL) { if (c.dead || c.air) continue; const d = Math.hypot(c.x - P.x, c.z - P.z); if (d < bd && Math.abs(c.y - P.y) < 3) { bd = d; near_ = c; } } }
+    if (mode === 'ground') { let bd = 5.5; for (const c of GL) { if (c.dead || c.air) continue; const d = Math.hypot(c.x - P.x, c.z - P.z); if (d < bd && Math.abs(c.y - P.y) < 3 && !(c.rem && performance.now() - c.rem.t < 1500)) { bd = d; near_ = c; } } }
     bIn.style.display = near_ ? 'flex' : 'none';
     const on = mode === 'glide' && !!cur_;
     bAcc.style.display = bBrk.style.display = bOut.style.display = on ? 'flex' : 'none'; hud.style.display = on ? 'flex' : 'none';
@@ -205,7 +206,31 @@
     }
   }, 120);
   // aparece no minimapa como um ponto branco
-  window.DZGL = { list: GL, enter, exit };
+  // ---------- online: todos veem o planador voando (com piloto e hélice) ----------
+  const netOn = () => { try { return typeof N !== 'undefined' && N && N.mode === 'classic'; } catch (e) { return false; } };
+  const gsend = m => { try { if (netOn()) { m.t = 'gl'; gp(m, 0); } } catch (e) { } };
+  let lastSend = 0, wasPil = null;
+  setInterval(() => {
+    const c = cur_; const now = performance.now();
+    if (c && mode === 'glide') { wasPil = c; if (now - lastSend > 95) { lastSend = now; gsend({ i: GL.indexOf(c), x: +c.x.toFixed(2), y: +c.y.toFixed(2), z: +c.z.toFixed(2), a: +c.yaw.toFixed(3), p: +c.pitch.toFixed(3), r: +c.roll.toFixed(3), th: +c.thr.toFixed(2), d: c.dead ? 1 : 0 }); } }
+    else if (wasPil) { const c2 = wasPil; wasPil = null; gsend({ i: GL.indexOf(c2), x: +c2.x.toFixed(2), y: +c2.y.toFixed(2), z: +c2.z.toFixed(2), a: +c2.yaw.toFixed(3), p: 0, r: 0, th: 0, e: 1, d: c2.dead ? 1 : 0 }); }
+  }, 50);
+  function grx(m) {
+    const c = GL[m.i]; if (!c || c === cur_) return;
+    if (m.d && !c.dead) { try { boom(c); } catch (e) { c.dead = 1; } }
+    c.rem = m.e ? null : { t: performance.now(), x: m.x, y: m.y, z: m.z, a: m.a, p: m.p, r: m.r, th: m.th };
+    if (m.e) { c.x = m.x; c.y = m.y; c.z = m.z; c.yaw = m.a; c.pitch = 0; c.roll = 0; c.thr = 0; c.spd = 0; c.ab = 0; c.g.position.set(c.x, c.y, c.z); c.g.rotation.set(0, c.yaw, 0); const pg = c.g.userData.pilot; if (pg) pg.visible = false; }
+  }
+  // move suave até a última posição recebida
+  setInterval(() => {
+    for (const c of GL) { const R = c.rem; if (!R || c === cur_) continue; if (performance.now() - R.t > 3000) { c.rem = null; continue; }
+      const k = .35; c.x += (R.x - c.x) * k; c.y += (R.y - c.y) * k; c.z += (R.z - c.z) * k; c.yaw += ((((R.a - c.yaw) + Math.PI * 3) % (Math.PI * 2)) - Math.PI) * k; c.pitch += (R.p - c.pitch) * k; c.roll += (R.r - c.roll) * k; c.thr = R.th; c.ab = 0;
+      c.g.position.set(c.x, c.y, c.z); c.g.rotation.set(0, 0, 0); c.g.rotateY(c.yaw); c.g.rotateX(-c.pitch); c.g.rotateZ(c.roll);
+      const hub = c.g.userData.hub; if (hub) { hub.rotation.z += .033 * (6 + 60 * c.thr); c.g.userData.disc.material.opacity = .25 * c.thr; }
+      const pg = c.g.userData.pilot; if (pg) { if (!pg.visible) pg.visible = true; seat(pg); } }
+  }, 33);
+  window.addEventListener('load', () => { try { const _r = clRx; clRx = function (m) { if (m && m.t === 'gl') { grx(m); return; } return _r.apply(this, arguments); }; } catch (e) { } });
+  window.DZGL = { list: GL, enter, exit, boom, grx };
 
   const go = () => { if (window.__dzWorldDone && typeof ROADS !== 'undefined') load(); else setTimeout(go, 500); };
   go();
