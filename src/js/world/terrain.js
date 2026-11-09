@@ -77,7 +77,7 @@ const TER=(()=>{
   const bD=new Float32Array(NX*NZ).fill(1e9),bH=new Float32Array(NX*NZ);window.ROADS=[];const ALL=[];
   const FL_=(typeof FLATS!=='undefined'?FLATS:[]),flatAt=(x,z)=>{for(const A of FL_)if(x>=A.x0-12&&x<=A.x1+12&&z>=A.z0-12&&z<=A.z1+12)return A.h;return null},inFlat=(x,z)=>FL_.some(A=>x>=A.x0-5&&x<=A.x1+5&&z>=A.z0-5&&z<=A.z1+5);
   const inFlatS=(x,z)=>{for(const A of FL_)if(x>=A.x0-3&&x<=A.x1+3&&z>=A.z0-3&&z<=A.z1+3)return A;return null};
-  const G_=.075;   // inclinação máxima da pista (7,5%)
+  const G_=.1;   // inclinação máxima da pista (7,5%)
   for(const L of ROADLINES){const cv=new T.CatmullRomCurve3(L.map(p=>new T.Vector3(p[0],0,p[1])),false,'centripetal'),len=cv.getLength(),n=Math.max(2,Math.round(len/2)),pts=cv.getSpacedPoints(n);
    const ds=len/n,inF=pts.map(p=>inFlatS(p.x,p.z));
    // pontos fixos: dentro de cidade/local (altura do chão de lá) e encontro com outra estrada
@@ -91,7 +91,9 @@ const TER=(()=>{
    for(let it=0;it<3;it++){for(let k=1;k<hs.length;k++)if(pin[k]==null)hs[k]=Math.max(hs[k-1]-G_*ds,Math.min(hs[k-1]+G_*ds,hs[k]));for(let k=hs.length-2;k>=0;k--)if(pin[k]==null)hs[k]=Math.max(hs[k+1]-G_*ds,Math.min(hs[k+1]+G_*ds,hs[k]))}
    // suaviza as quebras (mantém os fixos)
    for(let it=0;it<3;it++){const o=hs.slice();for(let k=1;k<hs.length-1;k++)if(pin[k]==null)hs[k]=(o[k-1]+o[k]*2+o[k+1])/4}
-   const R={pts:pts.map((p,k)=>[p.x,p.z,hs[k],inF[k]&&!/^pont/.test(inF[k].id||'')?1:0])};ROADS.push(R);for(const q of R.pts)ALL.push(q);
+   /* não desenha estrada só onde já existe chão pronto: dentro das RUAS da cidade (não na área toda dela, senão sobra um pedaço de grama entre a estrada e a primeira rua) e dentro do pátio dos locais */
+   const onGrid=(A,x,z)=>{if(!A.XL)return true;const hw=(A.RW||8)/2+.5;return x>=Math.min(...A.XL)-hw&&x<=Math.max(...A.XL)+hw&&z>=Math.min(...A.ZL)-hw&&z<=Math.max(...A.ZL)+hw};
+   const R={pts:pts.map((p,k)=>[p.x,p.z,hs[k],inF[k]&&!/^pont/.test(inF[k].id||'')&&onGrid(inF[k],p.x,p.z)?1:0])};ROADS.push(R);for(const q of R.pts)ALL.push(q);
    pts.forEach((p,k)=>{const i0=Math.floor((p.x-22-OX)/S),i1=Math.ceil((p.x+22-OX)/S),j0=Math.floor((p.z-22-OZ)/S),j1=Math.ceil((p.z+22-OZ)/S);
     for(let j=Math.max(0,j0);j<=Math.min(NZ-1,j1);j++)for(let i=Math.max(0,i0);i<=Math.min(NX-1,i1);i++){const d=Math.hypot(OX+i*S-p.x,OZ+j*S-p.z),q=idx(i,j);if(d<bD[q]){bD[q]=d;bH[q]=hs[k]}}})}
   for(let q=0;q<NX*NZ;q++){const d=bD[q];if(d>22)continue;if(inFlat(OX+(q%NX)*S,OZ+Math.floor(q/NX)*S))continue;/* não mexe no chão plano de cidade/local */const k=d<=10?1:1-ss(10,22,d);H[q]=H[q]*(1-k)+(bH[q]-.02)*k}

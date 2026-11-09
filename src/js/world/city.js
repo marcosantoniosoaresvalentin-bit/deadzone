@@ -102,7 +102,10 @@
       else { strip(x0 + gap, z0 + e, x1 - gap, z0 + e + lw, wht); strip(x0 + gap, z1 - e - lw, x1 - gap, z1 - e, wht); const cz = (z0 + z1) / 2; for (let x = x0 + 2; x + 3 < x1 - 1; x += 6) strip(x, cz - .08, x + 3, cz + .08, yel); }
     }
     // faixa de pedestre na entrada de cada cruzamento
-    for (const [x0, z0, x1, z1] of quads.i) { const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, xi = xs.findIndex(v => Math.abs(v - cx) < 1), zi = zs.findIndex(v => Math.abs(v - cz) < 1), sk = (a, b) => !!(C.skipV && C.skipV[a + '_' + b]), N_ = cz > zs[0] + 1 && !sk(xi, zi - 1), S_ = cz < zs[zs.length - 1] - 1 && !sk(xi, zi), W_ = cx > xs[0] + 1, E_ = cx < xs[xs.length - 1] - 1;
+    for (const [x0, z0, x1, z1] of quads.i) { const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, xi = xs.findIndex(v => Math.abs(v - cx) < 1), zi = zs.findIndex(v => Math.abs(v - cz) < 1), sk = (a, b) => !!(C.skipV && C.skipV[a + '_' + b]), N_0 = cz > zs[0] + 1 && !sk(xi, zi - 1), S_0 = cz < zs[zs.length - 1] - 1 && !sk(xi, zi), W_0 = cx > xs[0] + 1, E_0 = cx < xs[xs.length - 1] - 1;
+      /* poucas faixas: só nos cruzamentos de dentro da cidade e só em 2 lados (alternando), como em cidade de verdade */
+      const inner = xi > 0 && xi < xs.length - 1 && zi > 0 && zi < zs.length - 1, ns = (xi + zi) % 2 === 0;
+      if (!inner) continue; const N_ = N_0 && ns, S_ = S_0 && ns, W_ = W_0 && !ns, E_ = E_0 && !ns;
       for (let t = x0 + .5; t < x1 - .5; t += 1) { if (N_) strip(t, z0 - 2.2, t + .5, z0 - .4, wht); if (S_) strip(t, z1 + .4, t + .5, z1 + 2.2, wht); }
       for (let t = z0 + .5; t < z1 - .5; t += 1) { if (W_) strip(x0 - 2.2, t, x0 - .4, t + .5, wht); if (E_) strip(x1 + .4, t, x1 + 2.2, t + .5, wht); } }
     const ge = new T.BufferGeometry(); ge.setAttribute('position', new T.Float32BufferAttribute(P, 3)); ge.setAttribute('color', new T.Float32BufferAttribute(Cc, 3)); ge.computeVertexNormals(); ge.computeBoundingSphere();

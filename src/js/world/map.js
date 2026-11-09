@@ -100,13 +100,12 @@ const ROADLINES=[
  [[-80,8],[-80,15]],                                               // portão da base
  [[-182,31],[-182,62],[-162,96],[-160,116]],                       // galpões -> Vila Rubra
  [[-106,180],[-50,184],[15,187],[64,191]],                         // Vila Rubra -> cais
- [[111,206],[141,205]],                                            // cais -> Cerraluz
+ [[78,191],[108,182],[141,171]],                                    // cais -> Cerraluz (sobe em diagonal: o cais é 3 m mais baixo)                                            // cais -> Cerraluz
  [[145,151],[152,105],[172,45],[168,-12]],                         // Cerraluz -> Zonária
  [[22,26],[40,30],[55,30]],                                        // -> fazenda
  [[54,64],[34,63],[19,62]],                                        // Altamorra -> estrada do colégio
  [[-182,-16],[-186,-36],[-190,-54]],                               // galpões -> pedreira
  [[170,-5],[181,-5]],                                              // -> usina
- [[-40,185],[-40,201]],
  [[-226,-78],[-222,-60],[-205,-42],[-188,-36]],                    // pedreira -> ponte
  [[-384,-78],[-398,-82],[-411,-85]]];                              // ponte -> Zênite                                           // -> praia
 // cabeceiras da ponte (chão plano na altura do tabuleiro) — a ponte liga a pedreira à Ilha Zênite
