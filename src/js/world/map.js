@@ -112,7 +112,10 @@ const ROADLINES=[
 const BRIDGE={z:-78,x0:-238,x1:-372,y:6};
 const BRIDGE_FLATS=[{id:'pontA',x0:-250,x1:-226,z0:-90,z1:-66,bl:16,hFix:6},{id:'pontB',x0:-384,x1:-360,z0:-90,z1:-66,bl:16,hFix:6}];
 // tudo que precisa de chão plano (o terreno lê esta lista)
-const FLATS=TOWNS.concat(SITES,BRIDGE_FLATS);
+// ARENAS (ilhas pequenas no mar, ao sul da Zênite): Duelo = Pátio de Containers · Mata-mata = Armazéns do Porto
+const ARENAS={duel:{id:'arDuel',n:'Pátio de Containers',x:-365,z:190,hw:14,hd:34,RX:40,RZ:62,h:3},tdm:{id:'arTdm',n:'Armazéns do Porto',x:-525,z:176,hw:62,hd:62,RX:86,RZ:86,h:3}};
+const ARENA_FLATS=Object.values(ARENAS).map(a=>({id:a.id,x0:a.x-a.hw-4,x1:a.x+a.hw+4,z0:a.z-a.hd-4,z1:a.z+a.hd+4,bl:14,hFix:a.h,arena:1}));
+const FLATS=TOWNS.concat(SITES,BRIDGE_FLATS,ARENA_FLATS);
 // nomes no mapa grande (como no mapa antigo)
 const MAPNAMES=TOWNS.map(t=>({n:t.n,x:t.x,z:t.z})).concat(SITES.map(t=>({n:t.n,x:t.x,z:t.z})));
 // ---- pontos fixos do mapa ----

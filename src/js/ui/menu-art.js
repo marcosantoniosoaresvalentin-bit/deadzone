@@ -10,8 +10,8 @@ html body #mpn #mpm button[data-m]:before{content:'';position:absolute;inset:0;b
 html body #mpn #mpm button[data-m] span{position:relative;z-index:1}
 html body #mpn #mpm button[data-m].sel,html body #mpn #mpc button[data-map].sel{outline:3px solid #f3c35a;outline-offset:-3px;box-shadow:0 0 14px rgba(243,195,90,.6)!important}
 html body #mpn #mpm button[data-m="classic"]{background-image:url(assets/images/load2.jpg)!important}
-html body #mpn #mpm button[data-m="pvp"]{background-image:url(assets/images/load1.jpg)!important}
-html body #mpn #mpm button[data-m="squad"]{background-image:url(assets/images/load3.jpg)!important}
+html body #mpn #mpm button[data-m="pvp"]{background-image:url(assets/images/duel.jpg)!important}
+html body #mpn #mpm button[data-m="squad"]{background-image:url(assets/images/tdm.jpg)!important}
 html body #mpn #mpc button[data-map]{background:#0d1620 center/cover no-repeat!important;text-shadow:0 2px 5px #000}
 html body #mpn #mpc button[data-map="Zona Morta"]{background-image:linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(0,0,0,.65)),url(assets/images/load2.jpg)!important}
 html body #mpn #mpc button[data-map="Aleatório"]{background-image:linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(0,0,0,.65)),url(assets/images/load3.jpg)!important}

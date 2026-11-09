@@ -47,7 +47,11 @@ const TER=(()=>{
  function coast2(x,z){const dx=x-Z2.x,dz=z-Z2.z,p=6,d=Math.pow(Math.pow(Math.abs(dx),p)+Math.pow(Math.abs(dz),p),1/p),a=Math.atan2(dz,dx);
   const cn=fbm(Math.cos(a)*2.4+3,Math.sin(a)*2.4+11)*.7+fbm(Math.cos(a)*7+5,Math.sin(a)*7+2)*.3;return Z2.R+8-cn*26-d}
  function landH2(x,z){return 2+Math.pow(fbm(x/120+9.3,z/120+1.7),1.3)*6+gau(x,z,Z2.x-70,Z2.z+70,40)*14+(fbm(x/40,z/40)-.5)*2}
+ // ILHAS DAS ARENAS: retângulo arredondado (comprido no Duelo), chão baixo e plano
+ const ISL=(typeof ARENAS!=='undefined'?Object.values(ARENAS):[]);
+ function coastA(A,x,z){const p=5,n=Math.pow(Math.pow(Math.abs(x-A.x)/A.RX,p)+Math.pow(Math.abs(z-A.z)/A.RZ,p),1/p),a=Math.atan2(z-A.z,x-A.x),cn=fbm(Math.cos(a)*2+A.x*.01,Math.sin(a)*2+A.z*.01)*.6;return (1-n)*Math.min(A.RX,A.RZ)-cn*6}
  function rawH(x,z){
+  for(const A of ISL){const t=coastA(A,x,z);if(t>-40){const o=coastDist(x,z),o2=coast2(x,z);if(t>=o&&t>=o2){if(t<=0)return Math.max(-14,.35+t*.09);const beach=.35+Math.min(t,22)*.085,k=ss(8,22,t);return beach+Math.max(0,A.h+(fbm(x/30,z/30)-.5)*.8-beach)*k}}}
   const t2=coast2(x,z),t1=coastDist(x,z);
   if(t2>t1){const t=t2;if(t<=0)return Math.max(-14,.35+t*.09-Math.max(0,-t-30)*.05);const beach=.35+Math.min(t,22)*.085,k=ss(12,40,t);return beach+Math.max(0,landH2(x,z)-beach)*k}
   const t=t1;

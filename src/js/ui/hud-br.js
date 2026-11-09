@@ -67,7 +67,8 @@ body.dzVehOn #wpt{opacity:0}
   function tick() {
     const inM = mode !== 'lobby' && mode !== 'dead' && typeof mode !== 'undefined';
     const on = inM && mode !== 'plane' && !document.body.classList.contains('dzinv');
-    cmp.style.display = cmpV.style.display = (inM) ? 'block' : 'none'; ak.style.display = inM ? 'flex' : 'none';
+    const tm_ = (typeof MP !== 'undefined' && MP) || (typeof SQ !== 'undefined' && SQ);
+    cmp.style.display = cmpV.style.display = (inM) ? 'block' : 'none'; ak.style.display = inM && !tm_ ? 'flex' : 'none';
     if (inM) {
       // direção (0 = norte = -z do mapa; 90 = leste = +x)
       let fx = Math.sin(yaw), fz = Math.cos(yaw);
