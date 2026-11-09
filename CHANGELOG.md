@@ -1,5 +1,18 @@
 # Histórico de versões
 
+## 3.22.0 — derrubado e reanimação no time
+- **Derrubado**: na partida clássica com equipe, quem cai com algum aliado ainda de pé não morre na hora.
+  Fica derrubado (deitado rastejando, sem arma, sem kit), com uma barra vermelha de sangramento (~45 s).
+  Inimigos podem finalizar. Se ninguém da equipe estiver de pé, todos os derrubados são eliminados.
+- **Reanimar**: perto de um aliado derrubado aparece o botão verde **Reanimar** (6 s parado ao lado,
+  com barra de progresso). Ele volta com 25 de vida. Quem está derrubado vê "Fulano está te reanimando…".
+- **Bots companheiros** também caem derrubados (de joelhos) e vão até você ou até outro aliado
+  derrubado para reanimar.
+- **Online**: todos da partida veem quem está derrubado, e o parceiro reanima pela rede.
+  Também dá para reanimar os bots companheiros do parceiro.
+- A lista da equipe (à esquerda) marca quem está "derrubado".
+- Duelo e Mata-mata em Equipe continuam sem derrubado (rodadas rápidas).
+
 ## 3.21.1 — escudo no online
 - **Escudo de campo no online**: quando alguém monta um escudo, todos os jogadores da partida veem
   ele abrindo (com som, mais baixo de longe) e ele bloqueia passagem e tiros para todos.

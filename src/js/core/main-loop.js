@@ -100,6 +100,7 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;try{d
    b.g.position.set(b.x,Math.max(b.y,TERH(b.x,b.z)),b.z);b.g.visible=Math.hypot(P.x-b.x,P.z-b.z,P.y-b.y)<220;
    if(b.y<=TERH(b.x,b.z)){b.air=0;b.cn.visible=false;mvE(b,0,0)}continue}
   if(b.dead){b.dt+=dt;deadPose(b,dt);if(b.dt>5)b.g.visible=false;continue}
+  if(b.kn&&window.dzKnBot){dzKnBot(b,dt);continue}/* derrubado: espera reanimação */
   if(Math.hypot(b.x-zX,b.z-zZ)>zR){b.hp-=dt*(1.5+zI*1.2);if(b.hp<=0){killBot(b,0);continue}b.tgt=null;b.tx=zX+(b.zx??(b.zx=R(-40,40)));b.tz=zZ+(b.zz??(b.zz=R(-40,40)));b.wt=3}
   const ex=P.x-b.x,ez=P.z-b.z,dp=Math.hypot(ex,ez);let mv=0;b.g.visible=dp<150;
   let tg=null;if(b.w){b.ft-=dt;if(b.ft<=0){b.ft=.65;b.tg=null;let best2=5625;if(!b.team&&(mode==='ground'||mode==='drive')&&vSnd(0)&&dp*dp+hAl()*hAl()<best2){best2=dp*dp;b.tg='P'}for(const o of bots){if(o===b||o.dead||o.air||(o.team||0)===(b.team||0))continue;const dx_=o.x-b.x,dz_=o.z-b.z,d2=dx_*dx_+dz_*dz_;if(d2<best2){best2=d2;b.tg=o}}ghTg(b,Math.sqrt(best2))}tg=b.tg;if(tg&&tg!=='P'&&(tg.dead||tg.air))tg=b.tg=null;if(tg==='P'&&(mode!=='ground'&&mode!=='drive'||!vSnd(0)))tg=b.tg=null}
@@ -108,6 +109,7 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;try{d
    if(b.cd<=0){b.cd=R(1,1.8);b.kk=1;botShot(b,dp);
     if(tg==='P'){if(Math.random()<.5&&!blocked(b.x,TERH(b.x,b.z)+1.3,b.z,P.x,P.y+1.2,P.z)&&!smokeB(b.x,b.z,P.x,P.z)){hurtP(b.w==='shotgun'?(dp<20?14:3):b.w==='rifle'?7:5,b);if(!b.sil)pingDir(b.x,b.z,'hit')}}
     else if(Math.random()<.4&&!blocked(b.x,TERH(b.x,b.z)+1.3,b.z,tg.x,TERH(tg.x,tg.z)+1.2,tg.z)&&!smokeB(b.x,b.z,tg.x,tg.z))hurtB2(tg,b,b.w==='shotgun'?(td<20?18:5):b.w==='rifle'?9:7)}}
+  else if(b.isCompanion&&window.dzRvBot&&dzRvBot(b,dt)){mv=b.rvMv}/* indo reanimar um aliado */
   else if(!b.w){mv=botLoot(b,dt)}
   else if(b.isCompanion){const followD=Math.hypot(P.x-b.x,P.z-b.z);if(followD>8){botNavigate(b,P.x,P.z,2.7,dt);mv=1}else{mv=0;b.tgt=null}}
   else{b.wt-=dt;if(b.wt<=0||Math.hypot(b.tx-b.x,b.tz-b.z)<1.5){b.tx=b.x+R(-40,40);b.tz=b.z+R(-40,40);b.wt=R(5,10)}

@@ -105,7 +105,7 @@
     Object.assign(S, { x, z, y, r, id, u: 0, boxes: [] }); LIVE.push(S); return S;
   }
   function deploy() {
-    if (busy || mode !== 'ground' || !(bag.shield > 0)) return;
+    if (busy || mode !== 'ground' || !(bag.shield > 0) || (window.dzKnocked && dzKnocked())) return;
     try { if (cast) return; } catch (e) { }
     const fx = Math.sin(yaw), fz = Math.cos(yaw), x = P.x + fx * 1.7, z = P.z + fz * 1.7, y = GY(x, z, P.y + 1);
     if (Math.abs(y - P.y) > .8) { say('Lugar ruim para montar o escudo', 1.5); return; }
