@@ -62,7 +62,7 @@
   };
 
   // ---------- objetos parados congelados + some de longe ----------
-  const CULL = []; let frozen = 0;
+  const CULL = []; let frozen = 0; if (window.__dzVegCull) CULL.push(...window.__dzVegCull); // blocos de vegetação
   function freeze() {
     if (frozen) return; frozen = 1;
     const dyn = new Set(); for (const d of (typeof doors !== 'undefined' ? doors : [])) if (d.piv) dyn.add(d.piv);
