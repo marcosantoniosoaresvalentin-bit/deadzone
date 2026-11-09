@@ -130,7 +130,7 @@
   const PK = $('pk'); PK.classList.add('dz3'); PK.innerHTML = '<div class="top"><b>Mochila</b><div class="cap"><span id="dzCapT"></span><i><u id="dzCapB"></u></i></div><button id="pkx">Fechar</button></div><div class="cols"><div class="col gr"><h5>Chão</h5><div class="ls" id="dzGr"></div></div><div class="col bg"><h5>Mochila</h5><div class="ls" id="dzBg"></div></div><div class="col eq"><h5>Equipamento</h5><div class="ls" id="dzEq"></div></div></div>';
   let SEL = null, QN = 1;
   const nearL = () => loot.filter(o => Math.hypot(o.x - P.x, o.z - P.z) < 3.2 && Math.abs((o.y || 0) - P.y) < 2.6).slice(0, 30);
-  const LBL = { med: 'Usar', band: 'Usar', fuel: 'Abastecer', sc1: 'Equipar', sc2: 'Equipar', sc3: 'Equipar', sil: 'Equipar' };
+  const LBL = { shield: 'Montar', med: 'Usar', band: 'Usar', fuel: 'Abastecer', sc1: 'Equipar', sc2: 'Equipar', sc3: 'Equipar', sil: 'Equipar' };
   const lnm = o => WS[o.t] ? (window.wNm ? wNm(o) : WS[o.t].n) : o.t === 'ammo' ? 'Munição ' + (CAL[o.cal] || '') : (LN[o.t] || BN[TK[o.t] && TK[o.t][0]] || o.t);
   function render() {
     // capacidade
@@ -163,7 +163,7 @@
     const t = ev.target; if (t.matches && t.matches('input[type=range]')) return;
     if (t.closest('#pkx')) { ev.preventDefault(); PK.style.display = 'none'; SEL = null; return; }
     const g = t.closest('[data-g]'); if (g) { const o = loot.find(l => String(l.id) === g.dataset.g); if (o) { try { take(o); } catch (e) { } } render(); return; }
-    const ub = t.closest('[data-use]'); if (ub) { const k = ub.dataset.use; if (k[0] === 's' && k !== 'smoke') equipAtt(k); else if (k === 'band' || k === 'med') { useItem(k); PK.style.display = 'none'; } else if (k === 'fuel') refuel(); drawBag(); drawSlots(); render(); return; }
+    const ub = t.closest('[data-use]'); if (ub) { const k = ub.dataset.use; if (k[0] === 's' && k !== 'smoke' && k !== 'shield') equipAtt(k); else if (k === 'band' || k === 'med') { useItem(k); PK.style.display = 'none'; } else if (k === 'fuel') refuel(); else if (k === 'shield' && window.dzShield) { PK.style.display = 'none'; dzShield.deploy(); } drawBag(); drawSlots(); render(); return; }
     const db = t.closest('[data-drop]'); if (db) { dropN(db.dataset.drop, QN); SEL = null; QN = 1; render(); return; }
     const b = t.closest('[data-b]'); if (b) { SEL = SEL === b.dataset.b ? null : b.dataset.b; QN = 1; render(); return; }
     const u = t.closest('[data-u]'); if (u) { const q = slots[+u.dataset.i], k = u.dataset.u; if (bagUsed() + W[k] > CAPS[bagLv]) say('Mochila cheia', 2); else { bag[k]++; if (k === 'sil') q.sil = 0; else q.sc = 0; } drawSlots(); render(); return; }

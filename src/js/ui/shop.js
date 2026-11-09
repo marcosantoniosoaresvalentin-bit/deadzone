@@ -94,6 +94,7 @@
     { cat: 'eq', name: 'Colete', price: 12, desc: 'Colete balístico com durabilidade total.', pic: P_('vest'), give: () => give('vest', { d: 100 }) },
     { cat: 'eq', name: 'Mochila Nv.2', price: 8, desc: 'Mais espaço para itens.', pic: P_('bp2'), give: () => give('bp2') },
     { cat: 'eq', name: 'Mochila Nv.3', price: 15, desc: 'Mochila grande: o máximo de espaço.', pic: P_('bp3'), give: () => give('bp3') },
+    { cat: 'eq', name: 'Escudo de campo', price: 14, desc: 'Escudo de aço dobrável: monte no chão, abre o centro e duas escamas de cada lado. Dá para recolher e usar de novo.', pic: P_('shield'), give: () => give('shield') },
     { cat: 'ac', name: 'Mira holográfica', price: 6, desc: 'Mira 1x para fuzis e snipers.', pic: P_('scope1'), give: () => give('scope1') },
     { cat: 'ac', name: 'Luneta 2x', price: 8, desc: 'Aproxima 2 vezes.', pic: P_('scope2'), give: () => give('scope2') },
     { cat: 'ac', name: 'Luneta 8x', price: 15, desc: 'Só para snipers. Aproxima 8 vezes.', pic: P_('scope8'), give: () => give('scope8') },

@@ -1,5 +1,16 @@
 # Histórico de versões
 
+## 3.21.0 — escudo de campo
+- **Escudo de campo** (novo item da mochila, 5 de peso): não é usado na mão; é montado no chão.
+  - Toque em **Montar** na mochila ou no botão redondo **Escudo** (aparece quando há um na mochila).
+  - Abre por etapas: primeiro sobe a placa do meio (com visor de vidro), depois abrem as duas
+    escamas de aço de cada lado, uma de cada vez, cada uma da largura do escudo, com som de metal.
+  - Montado, bloqueia a passagem e os tiros (dos dois lados), na altura do peito.
+  - Perto dele aparece o botão **Recolher**: as escamas fecham e o escudo volta para a mochila,
+    pronto para montar de novo.
+- Escudos espalhados pelo mapa (mais nos locais de loot bom) e à venda na loja (Equipamento, 14 moedas).
+- Observação: no modo online, o escudo aparece só para quem montou.
+
 ## 3.20.1 — acessórios e itens realistas, mais calibres, sem gel
 - **Lunetas 2x e 8x e silenciador**: modelos 3D baixados (Quaternius, CC0), encaixados certinho em cada
   arma (anéis no trilho, ocular virada para o olho; rosca do silenciador na ponta do cano). Os mesmos
