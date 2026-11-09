@@ -1,5 +1,16 @@
 # Histórico de versões
 
+## 3.28.0 — missões diárias e patente
+- **Patente** (botão Ranking do lobby): Bronze, Prata, Ouro, Platina, Diamante e Mestre (a cada 1.200 pontos).
+  Cada partida clássica dá pontos pela colocação e pelos abates, mas cobra mais pontos nas patentes altas —
+  ir mal faz perder pontos e dá para cair de patente. O emblema da patente aparece no perfil do lobby e a
+  variação de pontos aparece na tela de fim de partida.
+- **Missões diárias** (botão Missões do lobby): 3 missões por dia, trocam à meia-noite. Mais difíceis que antes
+  e com a meta multiplicada pela patente (Bronze ×1 até Mestre ×3); recompensa de XP e moedas também cresce.
+  Exemplos: eliminar inimigos, causar dano, ficar no top 10/top 5, reanimar aliados, abrir caixas de
+  suprimentos, tiros na cabeça, percorrer km, sobreviver 12 min, abates/dano numa única partida e (a partir
+  do Ouro) vencer uma partida. Pontinho vermelho no botão quando há missão para resgatar.
+
 ## 3.27.0 — Passe Deadzone (níveis e recompensas) e skins de arma
 - **Passe Deadzone** (toque no painel "Passe de Batalha" do lobby): 30 níveis, cada um com uma recompensa
   para resgatar — moedas, roupas, paraquedas e skins de arma. O nível vem do XP das partidas.

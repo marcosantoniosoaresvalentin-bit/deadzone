@@ -101,7 +101,7 @@
   }
   function open(D, mine) {
     if (D.opened) return; D.opened = true; D.ot = 0; D.lidT = 0;
-    if (mine) { spill(D); say('Caixa aberta! Pegue os itens no chão', 2); send({ a: 'o', id: D.id }); }
+    if (mine) { try { DZSTAT.ad = (DZSTAT.ad || 0) + 1; } catch (e) { } spill(D); say('Caixa aberta! Pegue os itens no chão', 2); send({ a: 'o', id: D.id }); }
     try { sfx(520, .3 * Math.max(.1, 1 - Math.hypot(D.x - P.x, D.z - P.z) / 60), .2, 0); } catch (e) { }
   }
   function removeAll() {
