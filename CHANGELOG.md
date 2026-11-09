@@ -1,5 +1,21 @@
 # Histórico de versões
 
+## 3.18.0 — planador, mochila e menus estilo battle royale, equipe junta
+- **Planador (motoplanador)**: modelo baixado "UNDERPOLY: Free Sailplane Glider" (CC-BY 4.0), diferente do
+  planador do PUBG, com motor e hélice nas costas da cabine. 3 no mapa, parados em retas de estrada.
+  Botões **Acelerar** e **Frear**; analógico para cima sobe, para baixo desce, para os lados vira.
+  Decola com ~50 km/h; sem velocidade perde sustentação; nivela sozinho perto do chão para pousar fácil.
+  Sair no ar = salto de paraquedas. Painel com velocidade, altura, motor, combustível e estado.
+- **Mochila estilo battle royale**: três colunas — Chão | Mochila | Equipamento — com a foto 3D de cada item,
+  armas com acessórios, capacete, colete e mochila; **descartar com quantidade**.
+- **Munição por calibre**: 5.56, 7.62, 9 mm, calibre 12 e .50; cada arma usa a sua e a munição que nasce
+  ao lado de uma arma é do calibre dela.
+- **Menus rápidos** ao lado das armas: **cura** (bandagem, kit) à esquerda e **arremessáveis** (granada,
+  fumaça, gelo, faca) à direita, com lista vertical e ícones desenhados (sem emoji).
+- **Equipe**: lista no lado esquerdo com o nome e a vida de cada um; nome do parceiro em cima da cabeça;
+  no avião, botão **Seguir** (pula junto com o parceiro, cai do lado dele e abre o paraquedas junto).
+- **Estradas**: o asfalto volta a ligar a ponte às estradas nas duas pontas (não fica mais pedaço solto).
+
 ## 3.17.2 — ilha Zênite pelo céu, dupla na mesma partida e nome do parceiro
 - **Parede invisível no céu**: em queda livre/paraquedas não dava para atravessar o mar até a Ilha
   Zênite. Agora alto no céu passa por cima do mar; só bem perto da água é que não deixa cair no mar.

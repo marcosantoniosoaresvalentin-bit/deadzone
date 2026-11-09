@@ -117,6 +117,12 @@ Detalhes técnicos em [docs/ARQUITETURA.md](docs/ARQUITETURA.md).
   [SwissAirfields](https://github.com/SwissAirfields/SwissAirfieldsFS2020) (CC0).
 - Veículos (buggy e helicóptero): biblioteca Microsoft Remix 3D
   (CC0), via [Ethereal Engine Open Asset Kit](https://github.com/ir-engine/ir-engine-assets-basic).
+- Planador: "UNDERPOLY: Free Sailplane Glider" por [UNDERPOLY Project](https://sketchfab.com/underpolyproject),
+  [Sketchfab](https://sketchfab.com/3d-models/underpoly-free-sailplane-glider-45ffefc38fcf4e76a9d0c2a4e76262ef),
+  licença [CC-BY 4.0](http://creativecommons.org/licenses/by/4.0/) (motor com hélice adicionado por código).
+- Armas: "Flat Guns West" e "Flat Guns East" ([OpenGameArt](https://opengameart.org/content/cc0-flat-guns-west), CC0),
+  via [fps-asset-kit](https://github.com/petroulacl/fps-asset-kit) (materiais trocados por código).
+- Sons de tiro: Free Firearm Sound Library (CC0), via fps-asset-kit.
 - Texturas de grama, tijolo e ondas da água: exemplos do three.js.
 - Folhas, agulhas, casca, pedra, telhas e reboco: geradas por código.
 
