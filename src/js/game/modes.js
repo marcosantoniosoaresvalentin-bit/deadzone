@@ -3,7 +3,7 @@
  */
 // ===== v13: mapa único, cidade aleatória, spawns longe, gelo, MVP =====
 let RGX=0;const MAPNAME='Zona Morta',rndCity=()=>CITIES[Math.random()*CITIES.length|0].n;GMAP=MAPNAME;
-mapLbl=function(){$('mapb').textContent='🗺 '+MAPNAME+' · '+(GMODE==='classic'?'Clássico':GMODE==='pvp'?'PVP':'Confronto 4v4')};
+mapLbl=function(){$('mapb').textContent='🗺 '+MAPNAME+' · '+(GMODE==='classic'?'Clássico':GMODE==='pvp'?'PVP':'Mata-mata 4v4')};
 renderMp=function(){GMAP=MAPNAME;$('mpm').innerHTML=MODES.map(m=>'<button data-m="'+m[0]+'"'+(m[0]===GMODE?' class="sel"':'')+'>'+m[1]+'</button>').join('');$('mpc').innerHTML='<button data-c="'+MAPNAME+'" class="sel">'+MAPNAME+'</button>';mapLbl()};
 renderMp();
 function iceOnLine(x1,z1,x2,z2){for(let i=0;i<=16;i++){const u=i/16,x=x1+(x2-x1)*u,z=z1+(z2-z1)*u;for(const b of near(x,z))if(b.ice&&!b.off&&x>b.x0-.2&&x<b.x1+.2&&z>b.z0-.2&&z<b.z1+.2){const w=ICE.find(q=>q.b===b);if(w)return w}}return null}

@@ -15,7 +15,7 @@
    try{localStorage.setItem('dzMode',selected);localStorage.setItem('dzSelectedMode',selected);localStorage.setItem('deadzone_party_mode',team);localStorage.setItem('dzMatchSize',size);localStorage.setItem('dzTeamSize',({'solo':'1','duo':'2','trio':'3','squad':'4'})[team]||'4');localStorage.setItem('dzRoomType',roomType);localStorage.setItem('dzAutoPair',auto?'1':'0');localStorage.setItem('dzMapChoice',panel.querySelector('#mpc [data-map].sel')?.dataset.map||'Zona Morta');}catch(_){ }
    window.GMODE=selected;
    panel.style.display='none';
-   const label=$('mapb'); if(label){const names={classic:'Clássico',pvp:'Arena',squad:'Confronto',room:'Criar sala'};label.textContent='🗺 '+(names[selected]||'Mapa')+' · '+(localStorage.getItem('dzMapChoice')||'Zona Morta')+' · '+team.toUpperCase();}
+   const label=$('mapb'); if(label){const names={classic:'Clássico',pvp:'Duelo',squad:'Mata-mata em Equipe',room:'Criar sala'};label.textContent='🗺 '+(names[selected]||'Mapa')+' · '+(localStorage.getItem('dzMapChoice')||'Zona Morta')+' · '+team.toUpperCase();}
    const status=$('msg');if(status)status.textContent='Seleção salva. Toque em INICIAR no lobby para começar.';
  },true);
  // Starting from the lobby launches the saved configuration, never from the confirm screen.
@@ -29,7 +29,7 @@
    try{if(typeof CITIES!=='undefined'&&Array.isArray(CITIES)){if(map==='Aleatório')GMAP=CITIES[Math.floor(Math.random()*CITIES.length)].n;else GMAP=CITIES.find(c=>c.n===map)?.n||CITIES[0].n;}}catch(_){ }
    if(m==='room'){
      selCity=GMAP;$('on').style.display='flex';if(typeof onShow==='function')onShow('onCreate');
-     const roomName=(type==='gladiator'?'Arena ':type==='counter'?'Confronto ':'Sala ')+size;
+     const roomName=(type==='gladiator'?'Duelo ':type==='counter'?'Mata-mata ':'Sala ')+size;
      if($('onn'))$('onn').value=roomName;if($('onst'))$('onst').textContent=roomName+' · '+GMAP;
      if($('onct'))$('onct').innerHTML='<button class="sel" disabled>'+GMAP+'</button>';return;
    }
