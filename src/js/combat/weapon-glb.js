@@ -123,7 +123,7 @@
       } else if (lv === 2) {
         add(new T.BoxGeometry(.03, ax - yb - .02, .1), blk, 0, (yb + ax - .02) / 2, zc);
         Z(.022, .022, .16, blk, 0, ax, zc, 16); Z(.03, .024, .04, blk, 0, ax, zc + .1, 16); Z(.028, .022, .035, blk, 0, ax, zc - .095, 16);
-        const tb = new T.Mesh(cyl(.018, .018, .002, 18), vm ? new T.MeshBasicMaterial({ map: rt.texture, fog: false }) : (M.lens || blk)); tb.rotation.x = Math.PI / 2; tb.position.set(0, ax, zc - .114); g.add(tb);
+        const tb = new T.Mesh(new T.CircleGeometry(.019, 24), vm ? new T.MeshBasicMaterial({ map: rt.texture, fog: false }) : (M.lens || blk)); tb.rotation.y = Math.PI; tb.position.set(0, ax, zc - .116); g.add(tb); /* lente plana virada para o olho: a imagem ampliada fica na posição certa */
         ey = [0, ax, zc - .23];
       } else if (lv === 3) {
         for (const dz of [-.08, .08]) add(new T.BoxGeometry(.03, ax - yb, .025), blk, 0, (yb + ax) / 2, zc + dz);

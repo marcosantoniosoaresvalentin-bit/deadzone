@@ -55,16 +55,17 @@ const gp=(m,q)=>{if(N&&mq&&mq.connected){m.f=mpId;mq.publish(TP+'g/'+N.mid,JSON.
 function netOpen(mid,ids,mode){N={mid,ids,mode,host:ids[0]===mpId,G:{}};if(mq){mq.subscribe(TP+'g/'+mid,{qos:1});mq.on('message',(tp,p)=>{if(!N||tp!==TP+'g/'+N.mid)return;let m;try{m=JSON.parse(p.toString())}catch(e){return}if(m.f===mpId)return;N.G[m.f]=Date.now();if(N.mode==='squad')sqRx(m);else clRx(m)})}}
 function mkEnt(team){const g=mkBot();g.cn.visible=false;const mk=new T.Mesh(new T.SphereGeometry(.13,8,6),new T.MeshBasicMaterial({color:team===1?0x3a82ff:team===0?0xff3030:0xffd040}));mk.position.y=2.25;g.add(mk);sc.add(g);return{g,team,x:0,z:0,tx:0,tz:0,y:0,ty:0,py:0,hp:100,dead:0,dt:0,am:0,ph:0,cr:0,dw:0,kk:0,cd:1,sw:1,sd:1,stk:0,wd:0,wdt:0,mv:0,px:0,pz:0,w:null,wg:null,rem:0}}
 function ghArm(e,w){if(e.w===w)return;if(e.wg){e.g.tr.remove(e.wg);e.wg=null}e.w=w;if(w)armBot(e,w,0)}
-function entDraw(e,dt,pd){if(e.dead){e.dt+=dt;deadPose(e,dt);e.g.position.set(e.x,e.py,e.z);return}
+/* altura de desenho: no ar = altura enviada; no chão = chão daquele ponto (antes era 0 e o personagem ficava dentro da terra) */function entY(e){return e.py>.05?e.py:(e.gy?GY(e.x,e.z,e.gy+1.5):TERH(e.x,e.z))}
+function entDraw(e,dt,pd){if(e.dead){e.dt+=dt;deadPose(e,dt);e.dy=entY(e);e.g.position.set(e.x,e.dy,e.z);return}
  if(e.g.rotation.x||e.g.rotation.z)reviveEnt(e);
  if(e.rem){const k=Math.min(1,dt*12);e.x+=(e.tx-e.x)*k;e.z+=(e.tz-e.z)*k;e.y+=(((e.ty-e.y+Math.PI*3)%(Math.PI*2))-Math.PI)*k}
- e.g.position.set(e.x,e.py,e.z);e.g.rotation.y=e.y;animBot(e,dt,e.mv,pd)}
+ e.dy=entY(e);e.g.position.set(e.x,e.dy,e.z);e.g.rotation.y=e.y;animBot(e,dt,e.mv,pd)}
 let lastHit=null;
 function sqDmg(e,d){if(SQ)SQ.my.d+=Math.min(d,e.hp>0?e.hp:d);if(e.id)gp({t:'hit',to:e.id,d,x:P.x,z:P.z},1);else if(e.bi!=null)gp({t:'bh',i:e.bi,d},1);else if(SQ&&SQ.host){e.hp-=d;if(e.hp<=0)sqKill(e,mpId)}else gp({t:'bh',i:SQ.K.indexOf(e),d},1)}
 const enemies=()=>SQ?(SQ.st==='live'?SQ.B.filter(b=>b.team!==SQ.mt&&!b.dead):[]):(N&&N.mode==='classic'?Object.values(CL).concat(Object.values(CB)).filter(e=>!e.dead&&e.vis&&e.py<3&&!e.ally&&!(window.dzAllies&&window.dzAllies.has(e.id))):[]);
 const _fire=fire;fire=function(fx,fz){_fire(fx,fz);if(!wp)return;const L=enemies();if(N)gp({t:'f'});if(!L.length)return;const o=cam.position,dr=new T.Vector3();cam.getWorldDirection(dr);const W=WS[wp];let bt=1e9,hb=null,hbH=0;
  const t0=Math.max(0,(P.x-o.x)*dr.x+(P.y+1.4-o.y)*dr.y+(P.z-o.z)*dr.z);
- for(const b of L){const t=capT(o,dr,b.x,b.py||0,b.z,b.cr,W.rg,wp==='sniper'?300:0);
+ for(const b of L){const t=capT(o,dr,b.x,b.dy!=null?b.dy:(b.py||0),b.z,b.cr,W.rg,wp==='sniper'?300:0);
   if(t<bt&&t>=t0&&!blocked(o.x+dr.x*t0,o.y+dr.y*t0,o.z+dr.z*t0,o.x+dr.x*t,o.y+dr.y*t,o.z+dr.z*t)){bt=t;hb=b;hbH=capHead}}
  if(hb){const dm_=wDmg(W.d,bt,hbH),h0_=hb.hp>0?hb.hp:100;sqDmg(hb,dm_);hitFx(o.x+dr.x*bt,o.y+dr.y*bt,o.z+dr.z*bt,dm_,hbH,h0_<=dm_)}};
 const _ex=expl;expl=function(x,y,z,r,dm,own){_ex(x,y,z,r,dm,own);if(!own||RGX)return;for(const b of enemies()){const d=Math.hypot(b.x-x,b.z-z);if(d<r){const q_=dm*(1-d/r)*1.3,h0_=b.hp>0?b.hp:100;sqDmg(b,q_);hitFx(b.x,(b.py||0)+1.3,b.z,q_,0,h0_<=q_)}}};
@@ -78,7 +79,7 @@ function clStart(ids,mid,seed){if(ids.length>1){netOpen(mid,ids,'classic');for(c
 function clRx(m){if(clRx2(m))return;const e=CL[m.f];if(m.t==='hit'){if(m.to===mpId&&mode!=='plane'&&mode!=='dead'&&mode!=='lobby'){hp-=m.d;lastHit=m.f;pingDir(m.x,m.z,'hit')}return}
  if(m.t==='kl'){feedKill(m.k?nmId(m.k):'',nmHash(m.f),m.k===mpId&&wp&&WS[wp]?WS[wp].n:'');if(m.k===mpId){kills++;say('Abate!',1.5)}return}
  if(!e)return;if(m.t==='f'){e.kk=1;if(!(window.gunSnd&&e.w&&vSnd(e.gy)&&gunSnd(e.v,e.w,Math.hypot(e.x-P.x,e.z-P.z),typeof panOf==='function'?panOf(e.x,e.z):0,0)))sfx(1500,.35*Math.max(0,1-Math.hypot(e.x-P.x,e.z-P.z)/70)*vSnd(e.gy),.15,0);return}
- if(m.t==='s'){if(!e.vis&&m.v){e.x=m.x;e.z=m.z}e.tx=m.x;e.tz=m.z;e.ty=m.r;e.py=m.y;e.md=m.md;e.hp=m.h;e.gy=m.gy||0;e.mv=m.mv;e.vis=m.v&&!m.d;ghArm(e,m.w);if(m.d&&!e.dead){e.dead=1;e.dt=0;alive--;e.vis=m.v}}}
+ if(m.t==='s'){if(!e.vis&&m.v){e.x=m.x;e.z=m.z}e.tx=m.x;e.tz=m.z;e.ty=m.r;e.py=m.y;e.md=m.md;e.hp=m.h;/* paraquedas do outro jogador */e.g.cn.visible=m.md==='c'&&!m.d;e.gy=m.gy||0;e.mv=m.mv;e.vis=m.v&&!m.d;ghArm(e,m.w);if(m.d&&!e.dead){e.dead=1;e.dt=0;alive--;e.vis=m.v}}}
 setInterval(()=>{if(mode==='dead'&&N&&N.mode==='classic'&&!N.sd){N.sd=1;feedKill(lastHit?nmId(lastHit):'','Você','');gp({t:'kl',k:lastHit},1)}},300);
 
 // ---- Confronto 4v4 (host simula bots; todos veem jogadores reais)

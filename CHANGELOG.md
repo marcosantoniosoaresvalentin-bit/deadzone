@@ -1,5 +1,17 @@
 # Histórico de versões
 
+## 3.18.1 — multiplayer corrigido, convites na tela e correções
+- **Multiplayer**: no chão cada jogador (e cada bot) era desenhado na altura 0 no aparelho do outro, ou
+  seja, dentro da terra — por isso um não via o outro e quem foi convidado só ouvia os tiros dos bots.
+  Agora todos aparecem em cima do chão, os tiros acertam onde o personagem está, e o **paraquedas do
+  parceiro aparece** durante a descida (testado com 2 jogadores e 97 bots visíveis para o convidado).
+- **Convites**: chegou convite de equipe ou pedido de amizade, aparece um cartão na tela com
+  **Aceitar** e **Recusar** (continua também na cartinha). Acabou a caixa "A página em ... diz:" —
+  as mensagens agora aparecem no estilo do jogo.
+- **Planador**: ao sair, as armas e os botões voltam certinho (antes os espaços das armas sumiam).
+- **Luneta 2x**: a imagem ampliada ficava de lado; agora fica certa.
+- **Editor de botões**: Granada, Gel e Fumaça saíram (ficam só no menu rápido).
+
 ## 3.18.0 — planador, mochila e menus estilo battle royale, equipe junta
 - **Planador (motoplanador)**: modelo baixado "UNDERPOLY: Free Sailplane Glider" (CC-BY 4.0), diferente do
   planador do PUBG, com motor e hélice nas costas da cabine. 3 no mapa, parados em retas de estrada.

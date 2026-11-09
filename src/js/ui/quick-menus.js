@@ -76,3 +76,5 @@
   }, 150);
   window.DZQICO = ICO;
 })();
+// granada, gelo e fumaça ficam só no menu rápido: saem do editor de posição dos botões
+try { for (let i = BTN.length - 1; i >= 0; i--) if (['bg', 'bgl', 'bgs'].includes(BTN[i][0])) BTN.splice(i, 1); } catch (e) { }

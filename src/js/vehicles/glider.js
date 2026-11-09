@@ -185,7 +185,9 @@
     bIn.style.display = near_ ? 'flex' : 'none';
     const on = mode === 'glide' && !!cur_;
     bAcc.style.display = bBrk.style.display = bOut.style.display = on ? 'flex' : 'none'; hud.style.display = on ? 'flex' : 'none';
-    for (const id of HIDE) { const e = document.getElementById(id); if (e) { if (on) { if (e.dataset.glh == null) { e.dataset.glh = e.style.display || ''; } e.style.display = 'none'; } else if (e.dataset.glh != null) { e.style.display = e.dataset.glh; delete e.dataset.glh; } } }
+    // pilotando: esconde os botões de a pé; ao sair, devolve tudo do jeito do modo atual (antes ficavam escondidos e sumiam as armas)
+    let back = 0; for (const id of HIDE) { const e = document.getElementById(id); if (!e) continue; if (on) { e.dataset.glh = 1; e.style.display = 'none'; } else if (e.dataset.glh) { delete e.dataset.glh; e.style.display = ''; back = 1; } }
+    if (back) { try { setLabel(); drawSlots(); } catch (e) { } }
     if (on) {
       const c = cur_, alt = Math.max(0, c.y - GY(c.x, c.z, c.y + 1)), kmh = Math.round(c.spd * 3.6), stall = c.air && c.spd < 10;
       hud.innerHTML = '<div class="v"><small>VELOCIDADE</small>' + kmh + ' km/h</div><div class="v"><small>ALTURA</small>' + Math.round(alt) + ' m</div><div class="v"><small>MOTOR</small><span class="bar"><u style="width:' + Math.round(c.thr * 100) + '%"></u></span></div><div class="v"><small>COMBUSTÍVEL</small>' + Math.round(c.fuel) + '%</div><div class="v"><small>ESTADO</small>' + Math.max(0, Math.round(c.hp)) + '%</div>' + (stall ? '<div class="v warn"><small>ATENÇÃO</small>ESTOL</div>' : (!c.air && kmh < 50 && c.thr > .3 ? '<div class="v"><small>DECOLAR</small>50 km/h</div>' : ''));

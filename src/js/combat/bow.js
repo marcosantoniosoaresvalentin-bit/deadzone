@@ -29,7 +29,7 @@ function shootArrow(p){const o=cam.position,dr=new T.Vector3();cam.getWorldDirec
  ARW.push({m,ox:o.x,oz:o.z,x:o.x+dr.x*.8,y:o.y+dr.y*.8-.08,z:o.z+dr.z*.8,vx:dr.x*sp,vy:dr.y*sp,vz:dr.z*sp,st:0,t:0});
  }
 function arrowTargets(){const L=[];if(!MP&&!SQ)for(const b of bots)if(!b.dead&&!b.air)L.push({x:b.x,z:b.z,py:0,k:'b',b});
- if(MP&&RB&&RB.state==='live'&&OP&&!OP.dead&&!SQ)L.push({x:OP.x,z:OP.z,py:0,k:'o'});for(const e of enemies())L.push({x:e.x,z:e.z,py:e.py||0,k:'e',e});return L}
+ if(MP&&RB&&RB.state==='live'&&OP&&!OP.dead&&!SQ)L.push({x:OP.x,z:OP.z,py:0,k:'o'});for(const e of enemies())L.push({x:e.x,z:e.z,py:e.dy!=null?e.dy:e.py||0,k:'e',e});return L}
 let _at=performance.now();
 setInterval(()=>{const now=performance.now(),dt=Math.min(.05,(now-_at)/1000);_at=now;
  const q=cur>=0?slots[cur]:null,isB=q&&q.t==='bow'&&mode==='ground',ok=isB&&dw>=1&&mpOk()&&!rlOn&&!cast;BC=Math.max(0,BC-dt);
