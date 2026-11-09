@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 3.32.0 — paraquedas DEADZONE RED
+- **Paraquedas "Deadzone Red"** (skin personalizada): em cima, fundo grafite com o nome **DEADZONE** grande
+  (DEAD branco, ZONE vermelho), bordo de ataque vermelho com friso branco, pontas vermelhas em V e faixa de
+  perigo vermelha e preta no bordo de fuga; embaixo, vermelho com emblema de mira no centro e faixas pretas
+  nas pontas (sem nome). Grátis por enquanto (já disponível no inventário) e é a recompensa do **nível 1** do
+  Passe Deadzone.
+
 ## 3.31.0 — campo de treino
 - **Campo de Treino** (botão TREINO no menu do lobby): mapa separado, numa ilha própria, sem nenhum texto na tela.
   - 4 mesas com todas as armas, lunetas, silenciador, munição de todos os calibres, kits, granadas, escudo,

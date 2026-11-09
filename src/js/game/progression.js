@@ -16,6 +16,7 @@ function updPn(){const l=lvOf(PR.xp);$('pn').textContent='Jogador · Nv. '+l+' �
 updPn();
 const skinKey=(t,it)=>t+':'+it.id,owned=(t,it)=>!it.cost||PR.unl.indexOf(skinKey(t,it))>=0||(it.lg&&PR.unl.indexOf(it.lg)>=0);let armedK=null;
 function skinPrev(t,it){if(t==='o')return['ol','pt','hl'].map(k=>'<b style="background:'+hxc(it[k])+'"></b>').join('');
+ if(t==='p'&&it.custom&&window.DZChute&&DZChute.preview){return'<i style="display:block;width:100%;height:100%;background:url('+DZChute.preview(it.custom)+') center/cover"></i>'}
  if(t==='p'){let h='';for(let q=0;q<8;q++)h+='<b style="background:'+hxc(q%2?it.c2:it.c)+(it.tx?';color:'+it.tx.f+';font:900 11px system-ui;display:flex;align-items:center;justify-content:center':'')+'">'+(it.tx?'DEADZONE'[q]:'')+'</b>';return h}
  if(it.c==null)return'<b style="background:linear-gradient(#9aa0a8,#6a7078);display:flex;align-items:center;justify-content:center;font-size:20px">🚗</b>';
  return'<b style="background:linear-gradient('+hxc(it.c)+' 0 38%,'+hxc(it.c2)+' 38% 48%,'+hxc(it.c)+' 48% 62%,'+hxc(it.c2)+' 62% 68%,'+hxc(it.c)+' 68%);display:flex;align-items:center;justify-content:center;font:900 10px system-ui;color:'+(it.tx?it.tx.f:'transparent')+'">'+(it.tx?'DEADZONE':'')+'</b>'}

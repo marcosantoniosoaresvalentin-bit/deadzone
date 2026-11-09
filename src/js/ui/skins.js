@@ -30,7 +30,9 @@ PAR=[
 {id:'dz_classic',n:'Deadzone Clássico',c:0x1a1a1a,c2:0x2e2e2e,tx:{f:'#e8742d'},cost:250},
 {id:'dz_gold',n:'Deadzone Ouro',c:0xe0b81a,c2:0xc99a10,tx:{f:'#1a1405'},cost:400},
 {id:'dz_neon',n:'Deadzone Neon',c:0x0b1d2e,c2:0x12304a,tx:{f:'#2ad1c8'},cost:300},
-{id:'dz_sangue',n:'Deadzone Sangue',c:0x8a1f1f,c2:0x5e1414,tx:{f:'#ffffff'},cost:300}];
+{id:'dz_sangue',n:'Deadzone Sangue',c:0x8a1f1f,c2:0x5e1414,tx:{f:'#ffffff'},cost:300},
+{id:'dz_red',n:'Deadzone Red',c:0xc62828,c2:0x1a1c1f,custom:'dzred'}
+];
 const CARC=[
 {id:'original',n:'Original',c:null},
 {id:'vermelho',n:'Sport Vermelho',c:0xc02a2a,c2:0xffffff,cost:200},

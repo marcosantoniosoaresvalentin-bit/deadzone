@@ -25,7 +25,7 @@
   const swatch = s => !s.c ? 'linear-gradient(135deg,#3a3f45,#23272b)' : s.m === 1 ? 'repeating-linear-gradient(60deg,' + hx(s.c[0]) + ' 0 9px,' + hx(s.c[1]) + ' 9px 15px)' : s.m === 2 ? 'linear-gradient(135deg,' + hx(s.c[2]) + ',' + hx(s.c[0]) + ' 45%,' + hx(s.c[1]) + ')' : 'radial-gradient(circle at 30% 35%,' + hx(s.c[1]) + ' 0 22%,transparent 23%),radial-gradient(circle at 70% 65%,' + hx(s.c[2]) + ' 0 20%,transparent 21%),radial-gradient(circle at 75% 20%,' + hx(s.c[1]) + ' 0 12%,transparent 13%),' + hx(s.c[0]);
 
   // ---------- recompensas por nível ----------
-  const R = { 1: ['c', 50], 2: ['c', 100], 3: ['w', 'floresta'], 4: ['p', 'ceu'], 5: ['o', 'urbano'], 6: ['c', 150], 7: ['w', 'deserto'], 8: ['p', 'selva'], 9: ['o', 'deserto'], 10: ['w', 'urbano'],
+  const R = { 1: ['p', 'dz_red'], 2: ['c', 100], 3: ['w', 'floresta'], 4: ['p', 'ceu'], 5: ['o', 'urbano'], 6: ['c', 150], 7: ['w', 'deserto'], 8: ['p', 'selva'], 9: ['o', 'deserto'], 10: ['w', 'urbano'],
     11: ['c', 200], 12: ['o', 'digital'], 13: ['p', 'noite'], 14: ['w', 'artico'], 15: ['o', 'artico'], 16: ['c', 250], 17: ['w', 'tigre'], 18: ['o', 'selva'], 19: ['p', 'gelo'], 20: ['w', 'carbono'],
     21: ['o', 'tigre'], 22: ['w', 'neon'], 23: ['p', 'mistico'], 24: ['o', 'flecktarn'], 25: ['w', 'noturno'], 26: ['o', 'noturno'], 27: ['p', 'dourado'], 28: ['w', 'ouro'], 29: ['c', 500], 30: ['o', 'ouro'] };
   const MAXL = 30;
