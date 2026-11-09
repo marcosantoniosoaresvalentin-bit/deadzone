@@ -1,5 +1,10 @@
 # Histórico de versões
 
+## 3.19.1 — armas diferentes entre si
+- Cada arma tem dano, cadência, alcance e tempo de recarga próprios (ex.: Micro UZI atira muito rápido e
+  fraco; SCAR-H forte e mais lenta; AA-12 escopeta automática; M82 derruba com um tiro).
+- Recarga: a mão esquerda vai até a boca do carregador de cada modelo, com o carregador novo na mão.
+
 ## 3.19.0 — tela do jogo, vegetação, mapas novos dos modos e asfalto
 - **Tela do jogo** no estilo battle royale: bússola com graus, Vivos/Abates em quadrinhos, relógio da zona
   (fora da zona mostra a distância em vermelho), armas com foto 3D nos espaços, ícones de capacete e colete,
