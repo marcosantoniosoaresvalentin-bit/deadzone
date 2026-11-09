@@ -73,12 +73,12 @@ const _ex=expl;expl=function(x,y,z,r,dm,own){_ex(x,y,z,r,dm,own);if(!own||RGX)re
 function clStart(ids,mid,seed){if(ids.length>1){netOpen(mid,ids,'classic');for(const id of ids)if(id!==mpId){const e=mkEnt(-1);e.id=id;e.rem=1;e.vis=0;e.g.visible=false;CL[id]=e}}
  const _r=Math.random;let s=seed;Math.random=()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296};try{startGame();if(ids.length>1)regenLoot()}finally{Math.random=_r}alive+=ids.length-1;
  sched.length=N&&!N.host?0:Math.min(sched.length,Math.max(0,100-ids.length));if(N&&N.host)setInterval(clBots,125);
- if(N)setInterval(()=>{const ok=mode==='ground'||mode==='sky'||mode==='chute';gp({t:'s',x:+P.x.toFixed(2),y:+(ok&&mode!=='ground'?P.y:0).toFixed(1),z:+P.z.toFixed(2),r:+pl.rotation.y.toFixed(2),mv:amt>.15?1:0,h:hp,w:wp,v:ok?1:0,d:mode==='dead'?1:0,gy:+(mode==='ground'?P.y:0).toFixed(0)})},100);
+ if(N)setInterval(()=>{const ok=mode==='ground'||mode==='sky'||mode==='chute';gp({t:'s',md:mode==='chute'?'c':mode==='sky'?'s':mode==='plane'?'p':'g',x:+P.x.toFixed(2),y:+(ok&&mode!=='ground'?P.y:0).toFixed(1),z:+P.z.toFixed(2),r:+pl.rotation.y.toFixed(2),mv:amt>.15?1:0,h:hp,w:wp,v:ok?1:0,d:mode==='dead'?1:0,gy:+(mode==='ground'?P.y:0).toFixed(0)})},100);
  if(N)setInterval(()=>{for(const id in CL){const e=CL[id];e.g.visible=!!e.vis;entDraw(e,.033,Math.hypot(e.x-P.x,e.z-P.z))}for(const id in CB){const e=CB[id];if(!e.dead&&e.vx!=null&&Date.now()-e.lt<260){e.tx+=e.vx*.033;e.tz+=e.vz*.033}e.vis=Date.now()-e.lt<1500;e.g.visible=e.dead?e.dt<5:e.vis;entDraw(e,.033,Math.hypot(e.x-P.x,e.z-P.z))}},33)}
 function clRx(m){if(clRx2(m))return;const e=CL[m.f];if(m.t==='hit'){if(m.to===mpId&&mode!=='plane'&&mode!=='dead'&&mode!=='lobby'){hp-=m.d;lastHit=m.f;pingDir(m.x,m.z,'hit')}return}
  if(m.t==='kl'){feedKill(m.k?nmId(m.k):'',nmHash(m.f),m.k===mpId&&wp&&WS[wp]?WS[wp].n:'');if(m.k===mpId){kills++;say('Abate!',1.5)}return}
  if(!e)return;if(m.t==='f'){e.kk=1;if(!(window.gunSnd&&e.w&&vSnd(e.gy)&&gunSnd(e.v,e.w,Math.hypot(e.x-P.x,e.z-P.z),typeof panOf==='function'?panOf(e.x,e.z):0,0)))sfx(1500,.35*Math.max(0,1-Math.hypot(e.x-P.x,e.z-P.z)/70)*vSnd(e.gy),.15,0);return}
- if(m.t==='s'){if(!e.vis&&m.v){e.x=m.x;e.z=m.z}e.tx=m.x;e.tz=m.z;e.ty=m.r;e.py=m.y;e.gy=m.gy||0;e.mv=m.mv;e.vis=m.v&&!m.d;ghArm(e,m.w);if(m.d&&!e.dead){e.dead=1;e.dt=0;alive--;e.vis=m.v}}}
+ if(m.t==='s'){if(!e.vis&&m.v){e.x=m.x;e.z=m.z}e.tx=m.x;e.tz=m.z;e.ty=m.r;e.py=m.y;e.md=m.md;e.hp=m.h;e.gy=m.gy||0;e.mv=m.mv;e.vis=m.v&&!m.d;ghArm(e,m.w);if(m.d&&!e.dead){e.dead=1;e.dt=0;alive--;e.vis=m.v}}}
 setInterval(()=>{if(mode==='dead'&&N&&N.mode==='classic'&&!N.sd){N.sd=1;feedKill(lastHit?nmId(lastHit):'','Você','');gp({t:'kl',k:lastHit},1)}},300);
 
 // ---- Confronto 4v4 (host simula bots; todos veem jogadores reais)
