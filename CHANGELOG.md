@@ -1,5 +1,16 @@
 # Histórico de versões
 
+## 3.24.0 — marcação para o time e comunicação rápida
+- **Botão de marcar** (pino, ao lado da mochila): marca o ponto para onde a mira aponta.
+  Se a mira estiver em cima de um inimigo, vira marcação vermelha de inimigo.
+  - A marcação aparece no mundo (ícone + distância em metros + nome de quem marcou), no minimapa e no mapa grande.
+  - Some sozinha (inimigo 10 s, as outras 25 s, ou quando você chega no ponto).
+- **Botão de rádio** (balão): menu com Inimigo, Ir para cá, Item aqui e falas rápidas
+  (Preciso de munição, Preciso de kit, Me ajuda!, Vamos!, Cuidado!).
+  As falas aparecem só como um balãozinho ao lado do nome na lista da equipe, nada no meio da tela.
+- **Bots companheiros** vão até a sua marcação "Ir para cá".
+- **Online**: os parceiros da equipe veem as marcações e as falas (partida clássica e Mata-mata em Equipe).
+
 ## 3.23.0 — caixa de suprimentos e tela sem mensagens
 - **Caixa de suprimentos** (partida clássica): um avião de carga cruza o céu e solta uma caixa de
   paraquedas listrado dentro da zona segura (a primeira 2 min após o salto, depois a cada 2 min e meio, até 4).
