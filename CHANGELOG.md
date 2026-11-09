@@ -1,5 +1,17 @@
 # Histórico de versões
 
+## 3.20.1 — acessórios e itens realistas, mais calibres, sem gel
+- **Lunetas 2x e 8x e silenciador**: modelos 3D baixados (Quaternius, CC0), encaixados certinho em cada
+  arma (anéis no trilho, ocular virada para o olho; rosca do silenciador na ponta do cano). Os mesmos
+  modelos aparecem no chão, na mochila e na loja.
+- **Mira holográfica** nova (corpo com vidro, ponto vermelho, regulagem e trava de trilho).
+- **Munição**: caixa aberta com os cartuchos em pé, um tipo e tamanho para cada calibre. Calibres:
+  5.56 (M4A1, Galil ACE), **5.45** (AK-12), 7.62 (SCAR-H, M110, SVD), 9 mm (pistolas e submetralhadoras),
+  **.45 ACP** (Micro UZI e P320), **calibre 12** só para as escopetas (cartuchos vermelhos) e .50 (M82, KSVK).
+- **Granadas** de fragmentação e de fumaça com modelos novos (Kenney, CC0) e cores militares.
+- **Kit médico** (bolsa vermelha com cruz, zíper e alça) e **bandagem** (rolo de gaze) novos.
+- **Gel** removido do jogo.
+
 ## 3.20.0 — Loja de Suprimentos
 - **Loja de Suprimentos** no estilo battle royale: categorias Armas, Equipamento, Acessórios e Consumíveis,
   cada item com a foto 3D do modelo e o preço, detalhe do item, carrinho e botão Comprar.

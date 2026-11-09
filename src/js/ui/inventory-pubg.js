@@ -7,9 +7,9 @@
  */
 (function () {
   // ===================== calibres =====================
-  const CAL = { a556: '5.56 mm', a762: '7.62 mm', a9: '9 mm', a12: 'Calibre 12', a50: '.50 BMG' };
-  const CALW = { rifle_assault_west: 'a556', rifle_assault_east: 'a762', rifle_battle_west: 'a762', rifle_battle_east: 'a556', smg_full_west: 'a9', smg_full_east: 'a9', smg_compact_east: 'a9', smg_compact_west: 'a9',
-    shotgun_pump_east: 'a12', shotgun_pump_west: 'a12', shotgun_auto_east: 'a12', shotgun_auto_west: 'a12', pistol_compact_east: 'a9', pistol_compact_west: 'a9', pistol_full_east: 'a9', pistol_full_west: 'a9',
+  const CAL = { a556: '5.56 mm', a545: '5.45 mm', a762: '7.62 mm', a9: '9 mm', a45: '.45 ACP', a12: 'Calibre 12', a50: '.50 BMG' };
+  const CALW = { rifle_assault_west: 'a556', rifle_assault_east: 'a545', rifle_battle_west: 'a762', rifle_battle_east: 'a556', smg_full_west: 'a9', smg_full_east: 'a9', smg_compact_east: 'a45', smg_compact_west: 'a9',
+    shotgun_pump_east: 'a12', shotgun_pump_west: 'a12', shotgun_auto_east: 'a12', shotgun_auto_west: 'a12', pistol_compact_east: 'a9', pistol_compact_west: 'a45', pistol_full_east: 'a9', pistol_full_west: 'a9',
     sniper_rifle_west: 'a762', sniper_rifle_east: 'a762', sniper_material_west: 'a50', sniper_material_east: 'a50' };
   const CDEF = { rifle: 'a556', shotgun: 'a12', pistol: 'a9', sniper: 'a762' };
   const calOf = q => q ? (CALW[q.v] || CDEF[q.t] || null) : null;
@@ -32,12 +32,12 @@
     if (o.t === 'ammo') {
       if (am && am.cal && CAL[am.cal]) o.cal = am.cal;
       else if (lastW && performance.now() - lastW.t < 50 && Math.hypot(lastW.x - x, lastW.z - z) < 3) o.cal = calOf(lastW.o) || 'a556';
-      else { const L = ['a556', 'a556', 'a762', 'a762', 'a9', 'a9', 'a12', 'a50']; o.cal = L[Math.floor(Math.random() * L.length)]; }
+      else { const L = ['a556', 'a556', 'a545', 'a762', 'a762', 'a9', 'a9', 'a45', 'a12', 'a12', 'a50']; o.cal = L[Math.floor(Math.random() * L.length)]; }
       o.n = (am && am.n) || 1;
     } else if (am && am.n > 1) o.n = am.n;
   };
   // itens que já estavam no chão quando este arquivo carregou
-  try { let pw = null; for (const o of loot) { if (WS[o.t]) pw = o; else if (o.t === 'ammo' && !o.cal) o.cal = (pw && Math.hypot(pw.x - o.x, pw.z - o.z) < 3 ? calOf(pw) : null) || ['a556', 'a762', 'a9', 'a12'][Math.floor(Math.random() * 4)]; } } catch (e) { }
+  try { let pw = null; for (const o of loot) { if (WS[o.t]) pw = o; else if (o.t === 'ammo' && !o.cal) o.cal = (pw && Math.hypot(pw.x - o.x, pw.z - o.z) < 3 ? calOf(pw) : null) || ['a556', 'a545', 'a762', 'a9', 'a45', 'a12'][Math.floor(Math.random() * 6)]; } } catch (e) { }
   // pegar: munição vai para o calibre certo; itens com quantidade entram todos
   const _tk = take_;
   take_ = function (o) {
@@ -57,7 +57,7 @@
   window.dropN = dropN;
 
   // ===================== fotos 3D dos itens =====================
-  let R3 = null; const PIC = {};
+  let R3 = null; const PIC = {}; window.DZPICCLR = () => { for (const k in PIC) delete PIC[k]; };
   function r3() {
     if (R3) return R3;
     const cv = document.createElement('canvas'); cv.width = 192; cv.height = 120;
@@ -82,7 +82,7 @@
   const CALC = { a556: 0x4f6b3a, a762: 0x6b4a2a, a9: 0x2f4f6f, a12: 0x8a2a20, a50: 0x3a3a3a };
   function itemPic(t, extra) {
     if (WS[t] && t !== 'bow') return pic('w:' + t + ':' + (extra || ''), () => mkW(t, 0, 0, 0, extra));
-    if (t === 'ammo' && extra) return pic('a:' + extra, () => { const m = DZItem('ammo'); if (m) m.traverse(q => { if (q.isMesh && q.material && q.material.color && q.material.color.getHex && !q.material.metalness) { q.material = q.material.clone(); q.material.color.setHex(CALC[extra]); } }); return m; });
+    if (t === 'ammo' && extra) return pic('a:' + extra, () => DZItem('ammo:' + extra));
     if (window.DZItem && DZItem.has(t)) return pic('i:' + t, () => DZItem(t));
     return '';
   }

@@ -102,7 +102,7 @@
     { cat: 'co', name: 'Bandagem x3', price: 3, desc: 'Três bandagens.', pic: P_('bandage'), give: () => give('bandage', { n: 3 }) },
     { cat: 'co', name: 'Granada', price: 6, desc: 'Granada de fragmentação.', pic: P_('gren'), give: () => give('gren') },
     { cat: 'co', name: 'Fumaça', price: 4, desc: 'Granada de fumaça.', pic: P_('smoke'), give: () => give('smoke') },
-    ...[['a556', '5.56'], ['a762', '7.62'], ['a9', '9 mm'], ['a12', 'Cal. 12'], ['a50', '.50']].map(([c, n]) => ({ cat: 'co', name: 'Munição ' + n, price: c === 'a50' ? 5 : c === 'a9' || c === 'a12' ? 2 : 3, desc: 'Caixa de munição ' + n + '.', pic: P_('ammo', c), give: () => give('ammo', { cal: c }) }))
+    ...[['a556', '5.56'], ['a545', '5.45'], ['a762', '7.62'], ['a9', '9 mm'], ['a45', '.45 ACP'], ['a12', 'Cal. 12'], ['a50', '.50']].map(([c, n]) => ({ cat: 'co', name: 'Munição ' + n, price: c === 'a50' ? 5 : c === 'a9' || c === 'a12' || c === 'a45' ? 2 : 3, desc: 'Caixa de munição ' + n + '.', pic: P_('ammo', c), give: () => give('ammo', { cal: c }) }))
   ];
   // entrega: o item aparece no chão aos pés e já é pego (se couber)
   function give(t, am, lv, sil) {

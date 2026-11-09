@@ -123,6 +123,9 @@ Detalhes técnicos em [docs/ARQUITETURA.md](docs/ARQUITETURA.md).
 - Armas: "Flat Guns West" e "Flat Guns East" ([OpenGameArt](https://opengameart.org/content/cc0-flat-guns-west), CC0),
   via [fps-asset-kit](https://github.com/petroulacl/fps-asset-kit) (materiais trocados por código).
 - Sons de tiro: Free Firearm Sound Library (CC0), via fps-asset-kit.
+- Lunetas e silenciadores: "Ultimate Gun Pack" da [Quaternius](https://quaternius.com/packs/ultimategun.html) (CC0),
+  via [jam-ready-assets](https://github.com/series-ai/jam-ready-assets).
+- Cartuchos e granadas: "Weapon Pack" da [Kenney](https://kenney.nl) (CC0), cores trocadas por código.
 - Texturas de grama, tijolo e ondas da água: exemplos do three.js.
 - Folhas, agulhas, casca, pedra, telhas e reboco: geradas por código.
 

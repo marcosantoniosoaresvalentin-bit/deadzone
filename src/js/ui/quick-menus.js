@@ -48,7 +48,7 @@
   tap(H.querySelector('.lst'), e => { const d = e.target.closest('[data-k]'); if (!d) return; hSel = d.dataset.k; H.classList.remove('open'); healUse(hSel); });
 
   // ---------- arremessáveis ----------
-  const TK = ['gren', 'smoke', 'gel', 'knife'];
+  const TK = ['gren', 'smoke', 'knife'];
   function tSelect(k) {
     if (mode !== 'ground' || !(bag[k] > 0)) return;
     try { if (THR === k) { THR = null; TS = 0; } else { THR = k; TS = k === 'knife' ? 0 : k; cur = -1; rlOn = 0; rl = 0; ads = 0; GA = null; } drawSlots(); } catch (e) { }

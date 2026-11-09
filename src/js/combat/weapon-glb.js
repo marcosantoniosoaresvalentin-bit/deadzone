@@ -61,11 +61,38 @@
   };
   const matOf = m => { const k = (m && m.name || '').replace(/^M_PCL_Flat_/, ''); return MAT[k] || MAT.Black; };
 
+  // ---------- ACESSÓRIOS baixados (Quaternius, CC0): lunetas e silenciadores ----------
+  // cada um é medido sozinho: eixo do tubo, ponta da ocular / rosca, e vira peça pronta para encaixar
+  const ATT = {}; window.DZATT = ATT;
+  const MATT = new T.MeshStandardMaterial({ color: lin(0x202326), metalness: .55, roughness: .42 });
+  function prepAtt(key, scn, len, kind) {
+    scn.updateMatrixWorld(true); const L = [];
+    scn.traverse(o => { if (!o.isMesh) return; const g = (o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone()); g.applyMatrix4(o.matrixWorld); for (const k of Object.keys(g.attributes)) if (k !== 'position' && k !== 'normal') g.deleteAttribute(k); L.push(g); });
+    let n = 0; for (const g of L) n += g.attributes.position.count; const P = new Float32Array(n * 3), N = new Float32Array(n * 3); let o = 0; for (const g of L) { P.set(g.attributes.position.array, o * 3); N.set(g.attributes.normal.array, o * 3); o += g.attributes.position.count; }
+    const ge = new T.BufferGeometry(); ge.setAttribute('position', new T.BufferAttribute(P, 3)); ge.setAttribute('normal', new T.BufferAttribute(N, 3)); ge.computeBoundingBox();
+    const bb = ge.boundingBox, X0 = bb.min.x, X1 = bb.max.x, Lx = X1 - X0;
+    // fatias das pontas: raio e centro
+    const sl = (a, b) => { let y0 = 1e9, y1 = -1e9, z0 = 1e9, z1 = -1e9; for (let i = 0; i < n; i++) { const x = P[i * 3]; if (x >= a && x <= b) { y0 = Math.min(y0, P[i * 3 + 1]); y1 = Math.max(y1, P[i * 3 + 1]); z0 = Math.min(z0, P[i * 3 + 2]); z1 = Math.max(z1, P[i * 3 + 2]); } } return { cy: (y0 + y1) / 2, cz: (z0 + z1) / 2, r: Math.max(y1 - y0, z1 - z0) / 2 }; };
+    const A = sl(X0, X0 + Lx * .06), B = sl(X1 - Lx * .06, X1);
+    // luneta: ocular (ponta menor) vai para trás (−z); silenciador: rosca (ponta menor) encosta no cano
+    const smallAtMin = A.r < B.r, end = smallAtMin ? A : B, k = len / Lx;
+    const m = new T.Matrix4();
+    // centra no eixo da ponta menor e alinha o comprimento com +z a partir da ponta menor
+    m.makeTranslation(-(smallAtMin ? X0 : X1), -end.cy, -end.cz); ge.applyMatrix4(m);
+    m.makeRotationY(smallAtMin ? -Math.PI / 2 : Math.PI / 2); ge.applyMatrix4(m);
+    m.makeScale(k, k, k); ge.applyMatrix4(m); ge.computeBoundingBox(); ge.computeVertexNormals(); ge.computeBoundingSphere();
+    ATT[key] = { geo: ge, mat: MATT, len, rad: end.r * k, bottom: ge.boundingBox.min.y };
+  }
+  function loadAtt(done_) {
+    const L = [['s2', 'att_scope_3', .2, 'scope'], ['s8', 'att_scope_2', .36, 'scope'], ['sil', 'att_silencer_1', .19, 'sil'], ['silS', 'att_silencer_short', .1, 'sil']]; let left = L.length;
+    for (const [k, f, len, kind] of L) new T.GLTFLoader().load('assets/models/weapons/' + f + '.glb', g => { try { prepAtt(k, g.scene, len, kind); } catch (e) { console.warn('acessório', f, e); } if (--left === 0) done_(); }, undefined, () => { if (--left === 0) done_(); });
+  }
+
   // ---------- carregamento ----------
   const SRC = {}; let ready = 0;
   function load() {
     if (!T.GLTFLoader) return;
-    let left = RAW.length;
+    let left = RAW.length + 1; loadAtt(() => { if (--left === 0) done(); });
     for (const r of RAW) {
       const url = 'assets/models/weapons/fg_' + r[0] + '.glb';
       new T.GLTFLoader().load(url, g => { prep(r[0], g.scene); if (--left === 0) done(); }, undefined, e => { console.warn('arma', r[0], e); if (--left === 0) done(); });
@@ -83,7 +110,7 @@
     SRC[id] = out;
   }
   function done() {
-    ready = 1;
+    ready = 1; try { window.DZPICCLR && DZPICCLR(); } catch (e) { }
     // troca o que já foi montado com a arma antiga
     try { for (const k in WC) delete WC[k]; for (const k in LMC) delete LMC[k]; } catch (e) { }
     try { rfk = ''; slk = ''; vmk = ''; } catch (e) { }
@@ -127,7 +154,12 @@
     const it = [], add = (geo, m, x, y, z, rx, ry, rz) => it.push([geo, m, x || 0, y || 0, z || 0, rx || 0, ry || 0, rz || 0]);
     const Z = (r1, r2, l, m, x, y, z, n) => add(cyl(r1, r2, l, n), m, x, y, z, Math.PI / 2);
     // silenciador na ponta do cano
-    if (sil && t !== 'shotgun') { const L = t === 'pistol' ? .13 : .19; Z(.02, .02, L, blk, 0, Mm[1], Mm[0] + L / 2 - .005, 16); u.fl = null; }
+    if (sil && t !== 'shotgun') {
+      const A = ATT[t === 'pistol' ? 'silS' : 'sil'];
+      if (A) { const me = new T.Mesh(A.geo, A.mat); me.position.set(0, Mm[1], Mm[0] - .012); me.castShadow = !vm; g.add(me); } // rosca encaixada na ponta do cano
+      else { const L = t === 'pistol' ? .13 : .19; Z(.02, .02, L, blk, 0, Mm[1], Mm[0] + L / 2 - .005, 16); }
+      u.fl = null;
+    }
     // miras (mesmas peças das armas antigas, apoiadas no trilho deste modelo)
     let ey = [0, Sm[1] - .006, Sm[0] - (t === 'pistol' ? .3 : .16)];
     if ((t === 'rifle' || t === 'sniper') && lv > 0) {
@@ -141,6 +173,14 @@
         const dm = new T.MeshBasicMaterial({ color: 0xff2a2a, depthTest: false, transparent: true }), d = new T.Mesh(new T.CircleGeometry(.0014, 12), dm); d.rotation.y = Math.PI; d.position.set(0, yb + .035, zc + .011); d.renderOrder = 9; g.add(d);
         const rg = new T.Mesh(new T.RingGeometry(.0065, .0075, 24), dm); rg.rotation.y = Math.PI; rg.position.copy(d.position); rg.renderOrder = 9; g.add(rg);
         ey = [0, yb + .035, zc - .3];
+      } else if ((lv === 2 || lv === 3) && ATT[lv === 2 ? 's2' : 's8']) {
+        // luneta (modelo baixado): anéis apoiados no trilho, ocular virada para o olho, centralizada no receptor
+        const A = ATT[lv === 2 ? 's2' : 's8'], ay = yb - A.bottom, z0 = zc - A.len * .45;
+        const me = new T.Mesh(A.geo, A.mat); me.position.set(0, ay, z0); me.castShadow = !vm; g.add(me);
+        const lz = z0 - .002, lr = A.rad * .82;
+        const tb = new T.Mesh(new T.CircleGeometry(lr, 28), vm && lv === 2 ? new T.MeshBasicMaterial({ map: rt.texture, fog: false }) : (M.lens || blk)); tb.rotation.y = Math.PI; tb.position.set(0, ay, lz); g.add(tb);
+        if (vm && lv === 2) { const rr = new T.Mesh(new T.CircleGeometry(lr, 28), new T.MeshBasicMaterial({ map: RETX(), transparent: true, depthWrite: false, fog: false })); rr.rotation.y = Math.PI; rr.position.set(0, ay, lz - .0005); rr.renderOrder = 10; g.add(rr); }
+        ey = [0, ay, z0 - (lv === 2 ? .11 : .13)];
       } else if (lv === 2) {
         add(new T.BoxGeometry(.03, ax - yb - .02, .1), blk, 0, (yb + ax - .02) / 2, zc);
         Z(.022, .022, .16, blk, 0, ax, zc, 16); Z(.03, .024, .04, blk, 0, ax, zc + .1, 16); Z(.028, .022, .035, blk, 0, ax, zc - .095, 16);
