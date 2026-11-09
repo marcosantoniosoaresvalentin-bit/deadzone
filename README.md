@@ -106,7 +106,8 @@ Detalhes técnicos em [docs/ARQUITETURA.md](docs/ARQUITETURA.md).
 
 - Motor 3D: [three.js](https://threejs.org) r128 (licença MIT).
 - Online: [MQTT.js](https://github.com/mqttjs/MQTT.js) (licença MIT) com broker público EMQX.
-- Personagem: avatar `readyplayer.me.glb` dos exemplos do three.js (Ready Player Me).
+- Personagem: "Sports_Male_01" do [Microsoft Rocketbox](https://github.com/microsoft/Microsoft-Rocketbox)
+  (Copyright (c) 2020 Microsoft, licença MIT), convertido para GLB com ossos renomeados e texturas ajustadas.
 - Animações de captura de movimento: `Soldier.glb` dos exemplos do three.js (Mixamo).
 - Avião C-130: "YC-130 (Prototype of C-130)" por [KOG_THORNS](https://sketchfab.com/ioai25312),
   [Sketchfab](https://sketchfab.com/3d-models/yc-130prototype-of-c-130-11d237757851434ab5cb853db80376bb),

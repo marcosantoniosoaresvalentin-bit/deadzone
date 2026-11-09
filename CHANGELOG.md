@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 3.33.0 — personagem novo realista
+- **Personagem novo** no lugar do antigo (que era um avatar de desenho): homem realista do pacote Microsoft
+  Rocketbox (licença MIT) — rosto, pele, olhos, barba e cabelo de foto, 1,80 m, corpo atlético — começando
+  **só de cueca** (as roupas virão como skins). Texturas em alta (2048 px) com mapas de relevo, contraste e nitidez
+  ajustados. Funciona em todas as animações: parado, andar, correr, agachar, deitar/rastejar, mirar, paraquedas,
+  derrubado e no lobby; bots também usam o modelo novo.
+
 ## 3.32.1 — paraquedas DEADZONE RED novo
 - **Paraquedas "Deadzone Red" refeito**: em cima, vermelho escuro com brilho no centro, fibra de carbono e colmeia,
   lâminas vermelhas com filetes dourados, pontas pretas com divisas e o nome DEADZONE (DEAD cromado, ZONE vermelho
