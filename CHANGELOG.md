@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 3.32.1 — paraquedas DEADZONE RED novo
+- **Paraquedas "Deadzone Red" refeito**: em cima, vermelho escuro com brilho no centro, fibra de carbono e colmeia,
+  lâminas vermelhas com filetes dourados, pontas pretas com divisas e o nome DEADZONE (DEAD cromado, ZONE vermelho
+  incandescente) numa placa angular preta com bordas vermelha e dourada. Embaixo, só cores (sem nome): faixas
+  diagonais e um losango central preto, vermelho e dourado.
+- O desenho agora acompanha a curva do velame e fica centralizado (antes ficava deslocado).
+
 ## 3.32.0 — paraquedas DEADZONE RED
 - **Paraquedas "Deadzone Red"** (skin personalizada): em cima, fundo grafite com o nome **DEADZONE** grande
   (DEAD branco, ZONE vermelho), bordo de ataque vermelho com friso branco, pontas vermelhas em V e faixa de
