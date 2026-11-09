@@ -91,7 +91,7 @@ const TER=(()=>{
    for(let it=0;it<3;it++){for(let k=1;k<hs.length;k++)if(pin[k]==null)hs[k]=Math.max(hs[k-1]-G_*ds,Math.min(hs[k-1]+G_*ds,hs[k]));for(let k=hs.length-2;k>=0;k--)if(pin[k]==null)hs[k]=Math.max(hs[k+1]-G_*ds,Math.min(hs[k+1]+G_*ds,hs[k]))}
    // suaviza as quebras (mantém os fixos)
    for(let it=0;it<3;it++){const o=hs.slice();for(let k=1;k<hs.length-1;k++)if(pin[k]==null)hs[k]=(o[k-1]+o[k]*2+o[k+1])/4}
-   const R={pts:pts.map((p,k)=>[p.x,p.z,hs[k],inF[k]?1:0])};ROADS.push(R);for(const q of R.pts)ALL.push(q);
+   const R={pts:pts.map((p,k)=>[p.x,p.z,hs[k],inF[k]&&!/^pont/.test(inF[k].id||'')?1:0])};ROADS.push(R);for(const q of R.pts)ALL.push(q);
    pts.forEach((p,k)=>{const i0=Math.floor((p.x-22-OX)/S),i1=Math.ceil((p.x+22-OX)/S),j0=Math.floor((p.z-22-OZ)/S),j1=Math.ceil((p.z+22-OZ)/S);
     for(let j=Math.max(0,j0);j<=Math.min(NZ-1,j1);j++)for(let i=Math.max(0,i0);i<=Math.min(NX-1,i1);i++){const d=Math.hypot(OX+i*S-p.x,OZ+j*S-p.z),q=idx(i,j);if(d<bD[q]){bD[q]=d;bH[q]=hs[k]}}})}
   for(let q=0;q<NX*NZ;q++){const d=bD[q];if(d>22)continue;if(inFlat(OX+(q%NX)*S,OZ+Math.floor(q/NX)*S))continue;/* não mexe no chão plano de cidade/local */const k=d<=10?1:1-ss(10,22,d);H[q]=H[q]*(1-k)+(bH[q]-.02)*k}
