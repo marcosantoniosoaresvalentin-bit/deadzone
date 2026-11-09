@@ -1,5 +1,14 @@
 # Histórico de versões
 
+## 3.29.0 — espectador melhor, clima e horário
+- **Espectador** (botão ASSISTIR na tela de fim de partida): segue primeiro quem te eliminou, depois os
+  aliados e depois os mais próximos. Câmera atrás do jogador assistido, acompanhando para onde ele olha
+  (chega mais perto quando tem parede no caminho). Painel com etiqueta (SEU ASSASSINO / ALIADO), nome,
+  vida e arma; botões ◀ ▶ para trocar e Resumo para voltar. Os botões de jogo somem enquanto assiste.
+- **Clima e horário** sorteados a cada partida clássica: Dia, Entardecer (céu laranja, sol baixo), Noite
+  (céu escuro com estrelas, lua, lanterna fraca em volta do jogador), Chuva (céu fechado, gotas e som de chuva)
+  e Neblina (visão curta). No online todos da partida têm o mesmo clima. Duelo e Mata-mata ficam de dia.
+
 ## 3.28.0 — missões diárias e patente
 - **Patente** (botão Ranking do lobby): Bronze, Prata, Ouro, Platina, Diamante e Mestre (a cada 1.200 pontos).
   Cada partida clássica dá pontos pela colocação e pelos abates, mas cobra mais pontos nas patentes altas —
