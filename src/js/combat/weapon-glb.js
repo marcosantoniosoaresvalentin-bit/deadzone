@@ -39,6 +39,18 @@
   // nome da arma na mão (killfeed, HUD) = nome do modelo que o jogador está segurando
   for (const t in BYT) if (WS[t]) { const base = WS[t].n; WS[t]._n = base; Object.defineProperty(WS[t], 'n', { configurable: true, get() { try { const q = cur >= 0 ? slots[cur] : null; if (q && q.t === t && q.v && WV[q.v]) return WV[q.v].n; } catch (e) { } return base; } }); }
 
+  // ---------- atributos próprios de cada arma (dano, cadência, alcance, tempo de recarga) ----------
+  // vale para a arma que o jogador está segurando; o carregador continua o mesmo do tipo da arma
+  const ST = {
+    rifle_assault_west: { d: 22, r: .11 }, rifle_assault_east: { d: 26, r: .125 }, rifle_battle_west: { d: 30, r: .15, rg: 170, rt: 2.5 }, rifle_battle_east: { d: 24, r: .115 },
+    smg_full_west: { d: 18, r: .085, rg: 100, rt: 1.9 }, smg_full_east: { d: 17, r: .08, rg: 90, rt: 1.9 }, smg_compact_east: { d: 14, r: .06, rg: 70, rt: 1.7 }, smg_compact_west: { d: 15, r: .07, rg: 80, rt: 1.8 },
+    shotgun_pump_east: { d: 75, r: .95 }, shotgun_pump_west: { d: 85, r: 1.1, rg: 14 }, shotgun_auto_east: { d: 55, r: .45, rt: 2.8 }, shotgun_auto_west: { d: 45, r: .3, rg: 16, rt: 3 },
+    pistol_compact_east: { d: 16, r: .28 }, pistol_compact_west: { d: 19, r: .3 }, pistol_full_east: { d: 20, r: .28 }, pistol_full_west: { d: 18, r: .27 },
+    sniper_rifle_west: { d: 70, r: .45, rg: 350 }, sniper_rifle_east: { d: 75, r: .5, rg: 360 }, sniper_material_west: { d: 120, r: 1.25, rg: 450, rt: 3.6 }, sniper_material_east: { d: 110, r: 1.3, rg: 430, rt: 3.5 }
+  };
+  window.WSTAT = ST;
+  for (const t in BYT) if (WS[t]) for (const k of ['d', 'r', 'rg', 'rt']) { const base = WS[t][k]; WS[t]['_' + k] = base; Object.defineProperty(WS[t], k, { configurable: true, get() { try { const q = cur >= 0 ? slots[cur] : null; if (q && q.t === t && q.v && ST[q.v] && ST[q.v][k] != null) return ST[q.v][k]; } catch (e) { } return base; } }); }
+
   // ---------- materiais (os do modelo vêm quase pretos e foscos: troca por metal / polímero / madeira) ----------
   const Mt = (c, me, ro) => new T.MeshStandardMaterial({ color: lin(c), metalness: me, roughness: ro });
   const MAT = {
@@ -104,6 +116,8 @@
     const rh = [0, Gm[1] + .01, Gm[0] + .03];
     u.hg = [rh, D.F ? (() => { const Fm = mp(D.F); return [0, Fm[1] - .045, Fm[0]]; })() : [-.03, rh[1] - .005, rh[2] + .03]];
     u.mz = Mm;
+    // onde a mão esquerda vai na recarga (boca do carregador de cada modelo)
+    u.mg = t === 'pistol' ? [0, Gm[1] - .07, Gm[0] - .01] : t === 'shotgun' ? [0, Gm[1] + .02, Gm[0] + .12] : [0, Gm[1] + .01, Gm[0] + .13];
     // peças animadas (vazias: o modelo é inteiro) para recarregar/atirar continuarem funcionando
     const dmy = () => { const q = new T.Group(); g.add(q); return q; };
     u.bolt = dmy(); u.bz = 0; u.slide = dmy(); u.sz = 0; u.pump = dmy(); u.pz = 0; u.shell = dmy(); u.mag = null;
@@ -215,5 +229,15 @@
   };
   addEventListener('pointerdown', () => setTimeout(loadSnd, 0)); addEventListener('keydown', () => setTimeout(loadSnd, 0));
 
+  // carregador novo na mão esquerda enquanto recarrega (o modelo da arma é uma peça só)
+  try {
+    const MM = new T.MeshStandardMaterial({ color: lin(0x1d1f22), metalness: .5, roughness: .45 }), MB = new T.MeshStandardMaterial({ color: lin(0xb08a3a), metalness: .8, roughness: .3 });
+    const HM = new T.Group(); HM.position.set(0, -.36, .06); aL.el.add(HM);
+    const box_ = new T.Mesh(new T.BoxGeometry(.03, .16, .05), MM); box_.rotation.x = .25; HM.add(box_);
+    const tip = new T.Mesh(new T.BoxGeometry(.02, .015, .035), MB); tip.position.set(0, .085, .02); HM.add(tip);
+    const shell = new T.Mesh(new T.CylinderGeometry(.011, .011, .07, 8), new T.MeshStandardMaterial({ color: lin(0xa32020), roughness: .5 })); shell.rotation.x = Math.PI / 2; HM.add(shell);
+    HM.visible = false;
+    setInterval(() => { let on = false, sg = false; try { on = !!rlOn && mode === 'ground' && cur >= 0 && slots[cur] && slots[cur].t !== 'bow' && rl > .06 && rl < .5; sg = on && slots[cur].t === 'shotgun'; const sz = slots[cur] && slots[cur].t === 'pistol' ? .65 : 1; HM.scale.setScalar(sz); } catch (e) { } HM.visible = on; box_.visible = tip.visible = on && !sg; shell.visible = sg; }, 40);
+  } catch (e) { console.warn('carregador', e); }
   load();
 })();
