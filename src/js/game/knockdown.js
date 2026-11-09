@@ -195,7 +195,7 @@
       else {
         RV.t += dt; try { st = 1; firing = 0; } catch (e) { }
         RP.style.display = 'block'; RP.firstChild.textContent = nmT(RV.T); RP.querySelector('u').style.width = Math.min(100, RV.t / RV_TIME * 100) + '%';
-        if (RV.t >= RV_TIME) { const T = RV.T; RV = null; reviveT(T, myName()); try { st = 0; } catch (e) { } }
+        if (RV.t >= RV_TIME) { const T = RV.T; RV = null; try { DZSTAT.rev++; } catch (e) { } reviveT(T, myName()); try { st = 0; } catch (e) { } }
       }
     }
     if (!RV && RP.style.display !== 'none') RP.style.display = 'none';

@@ -1,5 +1,15 @@
 # Histórico de versões
 
+## 3.26.0 — tela de fim de partida nova
+- **Tela de fim de partida** refeita (sem a imagem pronta antiga):
+  - colocação grande (#12/100, dourada na vitória), ELIMINADO ou VITÓRIA!;
+  - quem te eliminou e com qual arma (ou "Morreu na zona");
+  - 6 cartões: abates, dano causado, tempo vivo, distância percorrida, reanimações e precisão dos tiros;
+  - situação da equipe (vivo / derrubado / eliminado);
+  - barra de nível que enche com o XP ganho (mostra quando sobe de nível) e as moedas ganhas;
+  - botões ASSISTIR (segue quem ainda está vivo; "Resumo" volta para a tela) e VOLTAR AO LOBBY.
+- Durante a partida o jogo passa a contar distância, tiros, acertos e reanimações.
+
 ## 3.25.0 — mapas separados para Duelo e Mata-mata, planador novo
 - **Mapas separados**: o Duelo (Pátio de Containers) e o Mata-mata em Equipe (Armazéns do Porto) saíram da ilha
   principal. Cada um agora é um mapa próprio, numa ilha sozinha, muito longe (não aparece no mapa principal,
