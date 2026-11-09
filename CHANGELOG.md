@@ -1,5 +1,13 @@
 # Histórico de versões
 
+## 3.18.2 — luneta 2x e amigos
+- **Luneta 2x**: a cruz da mira era desenhada na tela inteira e as pontinhas passavam da lente. Agora a
+  retícula fica desenhada dentro da própria lente.
+- **Amigos** (estilo battle royale): abas **Amigos** (lista com 🟢 Online / ⚪ Offline e convite para a
+  equipe), **Adicionar** (busca por ID ou nome) e **Pedidos** (com contador). Depois de aceitar, o amigo
+  aparece na lista na hora (antes continuava "Você ainda não adicionou amigos"). Na busca, quem já é amigo
+  aparece como "✓ Amigo" e pedido já enviado como "Enviado". O cartão de convite fica 20 s na tela.
+
 ## 3.18.1 — multiplayer corrigido, convites na tela e correções
 - **Multiplayer**: no chão cada jogador (e cada bot) era desenhado na altura 0 no aparelho do outro, ou
   seja, dentro da terra — por isso um não via o outro e quem foi convidado só ouvia os tiros dos bots.

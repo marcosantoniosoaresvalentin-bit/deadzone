@@ -83,6 +83,13 @@
   const S_ = 1.0, GT = [-.05, -.1];   // escala (tamanho real) e onde fica o centro da empunhadura (igual às armas antigas)
   const cyl = (r1, r2, l, n) => new T.CylinderGeometry(r1, r2, l, n || 14);
   const WMb = () => (window.WMODEL || {});
+  // retícula da luneta 2x desenhada DENTRO da lente (não passa da borda)
+  let _ret = null; function RETX() { if (_ret) return _ret; const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d');
+    x.strokeStyle = '#000'; x.lineWidth = 3; x.beginPath(); x.moveTo(128, 6); x.lineTo(128, 112); x.moveTo(128, 144); x.lineTo(128, 250); x.moveTo(6, 128); x.lineTo(112, 128); x.moveTo(144, 128); x.lineTo(250, 128); x.stroke();
+    x.lineWidth = 1.5; x.beginPath(); x.moveTo(128, 112); x.lineTo(128, 144); x.moveTo(112, 128); x.lineTo(144, 128); x.stroke();
+    x.fillStyle = '#e22'; x.beginPath(); x.arc(128, 128, 3.5, 0, 7); x.fill();
+    const gr = x.createRadialGradient(128, 128, 104, 128, 128, 128); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,.85)'); x.fillStyle = gr; x.fillRect(0, 0, 256, 256);
+    _ret = new T.CanvasTexture(c); return _ret; }
   const EYZ = { pistol: -.15, rifle: -.12, shotgun: -.13, sniper: -.12 };
   function build(t, lv, sil, vm, v) {
     if (!v || !WV[v] || WV[v].t !== t) v = BYT[t][0];
@@ -123,7 +130,7 @@
       } else if (lv === 2) {
         add(new T.BoxGeometry(.03, ax - yb - .02, .1), blk, 0, (yb + ax - .02) / 2, zc);
         Z(.022, .022, .16, blk, 0, ax, zc, 16); Z(.03, .024, .04, blk, 0, ax, zc + .1, 16); Z(.028, .022, .035, blk, 0, ax, zc - .095, 16);
-        const tb = new T.Mesh(new T.CircleGeometry(.019, 24), vm ? new T.MeshBasicMaterial({ map: rt.texture, fog: false }) : (M.lens || blk)); tb.rotation.y = Math.PI; tb.position.set(0, ax, zc - .116); g.add(tb); /* lente plana virada para o olho: a imagem ampliada fica na posição certa */
+        const tb = new T.Mesh(new T.CircleGeometry(.019, 24), vm ? new T.MeshBasicMaterial({ map: rt.texture, fog: false }) : (M.lens || blk)); tb.rotation.y = Math.PI; tb.position.set(0, ax, zc - .116); g.add(tb); if (vm) { const rt_ = new T.Mesh(new T.CircleGeometry(.019, 24), new T.MeshBasicMaterial({ map: RETX(), transparent: true, depthWrite: false, fog: false })); rt_.rotation.y = Math.PI; rt_.position.set(0, ax, zc - .1165); rt_.renderOrder = 10; g.add(rt_); } /* lente plana virada para o olho: a imagem ampliada fica na posição certa */
         ey = [0, ax, zc - .23];
       } else if (lv === 3) {
         for (const dz of [-.08, .08]) add(new T.BoxGeometry(.03, ax - yb, .025), blk, 0, (yb + ax) / 2, zc + dz);

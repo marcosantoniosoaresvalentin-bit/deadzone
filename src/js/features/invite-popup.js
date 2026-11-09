@@ -32,13 +32,15 @@
     if (!pop) {
       pop = document.createElement('div'); pop.id = 'dzInvPop'; document.body.appendChild(pop);
       pop.addEventListener('pointerdown', e => { const b = e.target.closest('button'); if (!b || !curN) return; e.preventDefault(); e.stopPropagation();
-        try { if (b.classList.contains('ok')) window.dzInv.acceptN(curN.nid); else window.dzInv.rejectN(curN.nid); } catch (_) { } hide(); });
+        /* acha o pedido pelo remetente (a lista pode ter sido regravada com outro código) */
+        let nid = curN.nid; try { const L = JSON.parse(localStorage.getItem('deadzone_notifications') || '[]'), k = String(curN.id || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); const f = L.find(x => x.nid === nid && x.state === 'pending') || L.find(x => x.state === 'pending' && x.type === curN.type && String(x.id || '').toUpperCase().replace(/[^A-Z0-9]/g, '') === k); if (f) nid = f.nid; } catch (_) { }
+        try { if (b.classList.contains('ok')) window.dzInv.acceptN(nid); else window.dzInv.rejectN(nid); } catch (err) { console.warn('convite', err); } hide(); });
     }
     curN = n; const team = n.type === 'team', nm = String(n.name || 'Jogador').replace(/[<>&]/g, '');
     pop.innerHTML = '<div class="av">' + nm.charAt(0).toUpperCase() + '</div><div class="tx"><small>' + (team ? 'Convite de equipe' : 'Pedido de amizade') + '</small><b>' + nm + '</b><span>' + (team ? 'convidou você para jogar na equipe' : 'quer adicionar você como amigo') + '</span></div><div class="ipb"><button class="ok">Aceitar</button><button class="no">Recusar</button></div><i style="width:100%"></i>';
     pop.classList.add('on'); try { if (typeof sfx === 'function') sfx(1200, .25, .15, 0); } catch (_) { }
-    const bar = pop.querySelector('i'); requestAnimationFrame(() => { bar.style.transitionDuration = '15s'; bar.style.width = '0%'; });
-    clearTimeout(pT); pT = setTimeout(hide, 15000);
+    const bar = pop.querySelector('i'); requestAnimationFrame(() => { bar.style.transitionDuration = '20s'; bar.style.width = '0%'; });
+    clearTimeout(pT); pT = setTimeout(hide, 20000);
   };
   function hide() { if (pop) pop.classList.remove('on'); curN = null; }
 })();
