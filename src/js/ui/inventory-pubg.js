@@ -86,6 +86,7 @@
     if (window.DZItem && DZItem.has(t)) return pic('i:' + t, () => DZItem(t));
     return '';
   }
+  window.DZPIC = itemPic;
   const img = (src, cls) => src ? '<img class="' + (cls || 'ph') + '" src="' + src + '" alt="">' : '<span class="ph"></span>';
 
   // ===================== tela =====================

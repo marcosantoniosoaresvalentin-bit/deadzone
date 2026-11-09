@@ -62,23 +62,23 @@ function genTown(cfg){
   }}
  C.rnd=rnd;return C}
 // cidades (bem longe uma da outra): a grande no norte e duas vilas no sul
-const CITY=genTown({n:'Zonária',tag:'pv',seed:7331,x0:-36,x1:176,z0:-196,z1:-8,XL:[-28,22,72,122,168],ZL:[-188,-128,-72,-16],stadium:1});
+const CITY=genTown({n:'Nova Esperança',tag:'pv',seed:7331,x0:-36,x1:176,z0:-196,z1:-8,XL:[-28,22,72,122,168],ZL:[-188,-128,-72,-16],stadium:1});
 const TOWNS=[CITY,
  genTown({n:'Vila Rubra',tag:'vs',seed:4242,x0:-218,x1:-102,z0:112,z1:188,XL:[-210,-160,-110],ZL:[120,180],bl:20}),
- genTown({n:'Cerraluz',tag:'mv',seed:9119,x0:133,x1:207,z0:143,z1:217,XL:[145,195],ZL:[155,205],bl:20}),
+ genTown({n:'Cerro Azul',tag:'mv',seed:9119,x0:133,x1:207,z0:143,z1:217,XL:[145,195],ZL:[155,205],bl:20}),
  genTown({n:'Zênite',tag:'zn',seed:2468,x0:-571,x1:-409,z0:-141,z1:21,XL:[-565,-515,-465,-415],ZL:[-135,-85,-35,15],bl:20,hFix:6,tower:1}),
- genTown({n:'Altamorra',tag:'as',seed:5150,x0:52,x1:114,z0:58,z1:120,XL:[58,108],ZL:[64,114],bl:26,hFix:8.5})];
+ genTown({n:'Monte Alto',tag:'as',seed:5150,x0:52,x1:114,z0:58,z1:120,XL:[58,108],ZL:[64,114],bl:26,hFix:8.5})];
 // LOCAIS ESPECIAIS (world/city.js monta): base militar, escola, porto e galpões
 const SITES=[
- {id:'base',t:'military',n:'Forte Cinzento',x0:-148,x1:-22,z0:15,z1:108,bl:22},
- {id:'escola',t:'school',n:'Colégio Nébula',x0:-18,x1:48,z0:100,z1:150,bl:18},
- {id:'cais',t:'port',n:'Cais Névoa',x0:20,x1:110,z0:192,z1:222,bl:10},
- {id:'galpoes',t:'depot',n:'Galpões Vértice',x0:-215,x1:-150,z0:-15,z1:30,bl:18},
- {id:'posto',t:'gas',n:'Posto Z-1',x0:27,x1:47,z0:36,z1:58,bl:10},
- {id:'fazenda',t:'farm',n:'Fazenda Corvina',x0:55,x1:108,z0:8,z1:50,bl:18},
- {id:'pedreira',t:'quarry',n:'Pedreira Cinza',x0:-212,x1:-165,z0:-100,z1:-55,bl:30,hFix:8.5},
- {id:'praia',t:'beach',n:'Praia Ermo',x0:-95,x1:10,z0:200,z1:222,bl:8},
- {id:'usina',t:'power',n:'Usina Volta',x0:180,x1:222,z0:-40,z1:10,bl:16}];
+ {id:'base',t:'military',n:'Base Militar',x0:-148,x1:-22,z0:15,z1:108,bl:22},
+ {id:'escola',t:'school',n:'Escola',x0:-18,x1:48,z0:100,z1:150,bl:18},
+ {id:'cais',t:'port',n:'Porto',x0:20,x1:110,z0:192,z1:222,bl:10},
+ {id:'galpoes',t:'depot',n:'Galpões',x0:-215,x1:-150,z0:-15,z1:30,bl:18},
+ {id:'posto',t:'gas',n:'Posto de Gasolina',x0:27,x1:47,z0:36,z1:58,bl:10},
+ {id:'fazenda',t:'farm',n:'Fazenda',x0:55,x1:108,z0:8,z1:50,bl:18},
+ {id:'pedreira',t:'quarry',n:'Pedreira',x0:-212,x1:-165,z0:-100,z1:-55,bl:30,hFix:8.5},
+ {id:'praia',t:'beach',n:'Praia',x0:-95,x1:10,z0:200,z1:222,bl:8},
+ {id:'usina',t:'power',n:'Usina',x0:180,x1:222,z0:-40,z1:10,bl:16}];
 for(const S_ of SITES){S_.x=(S_.x0+S_.x1)/2;S_.z=(S_.z0+S_.z1)/2}
 // prédios com interior dos locais (entram na lista STRS: dá para entrar, subir, pular janela...)
 const SITE_STRS=[
