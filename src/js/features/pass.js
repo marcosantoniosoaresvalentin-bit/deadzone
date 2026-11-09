@@ -114,7 +114,7 @@
   window.dzOpenPass = open;
   // painel e banner do passe no lobby abrem esta tela; pontinho vermelho quando há recompensa
   const hook = () => {
-    const b = document.getElementById('d43b'); if (b && !b.dataset.pass) { b.dataset.pass = 1; b.onclick = e => { e && e.stopPropagation && e.stopPropagation(); open(); }; b.style.position = b.style.position || 'relative'; const d = document.createElement('i'); d.className = 'dzpd'; b.appendChild(d); }
+    const b = document.getElementById('d43b'); if (b && !b.dataset.pass) { b.dataset.pass = 1; b.onclick = e => { e && e.stopPropagation && e.stopPropagation(); open(); }; const d = document.createElement('i'); d.className = 'dzpd'; b.appendChild(d); }
     if (b) { const d = b.querySelector('.dzpd'); if (d) d.style.display = pending() ? 'block' : 'none'; }
     const ban = document.getElementById('d43pt'); const bc = ban && ban.closest('[id^="d43"]:not(#d43pt)') || (ban && ban.parentElement);
     if (bc && !bc.dataset.pass) { bc.dataset.pass = 1; bc.style.cursor = 'pointer'; bc.addEventListener('click', () => { if (/PASSE/.test(ban.textContent)) open(); }); }

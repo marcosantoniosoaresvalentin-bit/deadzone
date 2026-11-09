@@ -79,7 +79,7 @@
   const curA = () => { try { const c = mode === 'plane' ? plane.position : P; for (const A of Object.values(ARENAS)) if (inA(A, c.x, c.z)) return A; } catch (e) { } return null; };
   window.dzArenaAt = curA;
   // as peças do mapa entram na imagem da arena
-  island(ARENAS.duel); island(ARENAS.tdm);
+  island(ARENAS.duel); island(ARENAS.tdm); if (ARENAS.train) island(ARENAS.train);
 
   // ======================= DUELO: PÁTIO DE CONTAINERS =======================
   { const A = ARENAS.duel, H0 = TERH(A.x, A.z); pad(A, H0);

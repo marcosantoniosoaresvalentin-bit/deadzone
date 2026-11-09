@@ -112,7 +112,7 @@
 
   // anfitrião / offline: agenda as quedas
   setInterval(() => {
-    if (mode === 'lobby' || teamMode()) { if (mode === 'lobby' && DROPS.length) removeAll(); if (mode === 'lobby') { T0 = null; count = 0; nextAt = FIRST; } return; }
+    if (mode === 'lobby' || teamMode() || window.DZTRAIN) { if (mode === 'lobby' && DROPS.length) removeAll(); if (mode === 'lobby') { T0 = null; count = 0; nextAt = FIRST; } return; }
     if (T0 == null) { if (mode === 'ground' || mode === 'chute' || mode === 'sky' || mode === 'drive' || mode === 'dead') T0 = performance.now() / 1000; return; }
     if (!isHost() || count >= MAXN) return;
     try { if (alive <= 3) return; } catch (e) { }

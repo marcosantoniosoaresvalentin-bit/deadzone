@@ -1,5 +1,16 @@
 # Histórico de versões
 
+## 3.31.0 — campo de treino
+- **Campo de Treino** (botão TREINO no menu do lobby): mapa separado, numa ilha própria, sem nenhum texto na tela.
+  - 4 mesas com todas as armas, lunetas, silenciador, munição de todos os calibres, kits, granadas, escudo,
+    capacete, colete e mochila — o que você pega volta para a mesa depois de alguns segundos.
+  - Estande de tiro com bancada e baias: alvos-silhueta a 10, 25, 50, 100, 150 e 200 m (distância pintada no chão),
+    mais um alvo que anda de um lado para o outro a 40 m. O alvo cai quando é atingido (som de metal, mais agudo
+    na cabeça; granada também derruba) e levanta sozinho.
+  - Muretas e containers no meio do campo para treinar cobertura.
+  - Sem zona, sem bots, sem morrer, sem contar para patente/missões. Botão Sair volta ao lobby.
+- Corrigido: o painel do Passe de Batalha no lobby tinha saído do lugar.
+
 ## 3.30.0 — passos por tipo de chão, portas arrombadas e planador no online
 - **Sons de passos** seus e dos inimigos, diferentes para grama/terra, areia, asfalto, concreto, madeira (dentro
   das casas), metal (containers, torres, escadas) e água rasa. Os dos inimigos vêm com direção (esquerda/direita)

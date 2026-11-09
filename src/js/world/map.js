@@ -115,7 +115,7 @@ const BRIDGE_FLATS=[{id:'pontA',x0:-250,x1:-226,z0:-90,z1:-66,bl:16,hFix:6},{id:
 // tudo que precisa de chão plano (o terreno lê esta lista)
 // ARENAS = MAPAS SEPARADOS (cada um numa ilha própria, a 5 km da ilha principal, fora do alcance da vista e do mapa)
 // Duelo = Pátio de Containers · Mata-mata em Equipe = Armazéns do Porto
-const ARENAS={duel:{id:'arDuel',n:'Pátio de Containers',x:5000,z:0,hw:14,hd:34,RX:40,RZ:62,h:3},tdm:{id:'arTdm',n:'Armazéns do Porto',x:5000,z:3000,hw:62,hd:62,RX:86,RZ:86,h:3}};
+const ARENAS={duel:{id:'arDuel',n:'Pátio de Containers',x:5000,z:0,hw:14,hd:34,RX:40,RZ:62,h:3},tdm:{id:'arTdm',n:'Armazéns do Porto',x:5000,z:3000,hw:62,hd:62,RX:86,RZ:86,h:3},train:{id:'arTrain',n:'Campo de Treino',x:5000,z:-3000,hw:40,hd:122,RX:66,RZ:150,h:3}};
 const ARENA_FLATS=Object.values(ARENAS).map(a=>({id:a.id,x0:a.x-a.hw-4,x1:a.x+a.hw+4,z0:a.z-a.hd-4,z1:a.z+a.hd+4,bl:14,hFix:a.h,arena:1}));
 const FLATS=TOWNS.concat(SITES,BRIDGE_FLATS);
 // nomes no mapa grande (como no mapa antigo)
