@@ -1,5 +1,15 @@
 # Histórico de versões
 
+## 3.20.0 — Loja de Suprimentos
+- **Loja de Suprimentos** no estilo battle royale: categorias Armas, Equipamento, Acessórios e Consumíveis,
+  cada item com a foto 3D do modelo e o preço, detalhe do item, carrinho e botão Comprar.
+- **Clássico**: 7 lojinhas (quiosque com toldo listrado, balcão, prateleiras e placa LOJA) perto das
+  entradas das cidades e locais, marcadas com um **carrinho** no minimapa e no mapa grande. Chegue perto e
+  toque em **Loja**. Paga com **moedas** da partida: começa com 25, +10 por abate, +2 por minuto vivo.
+- **Mata-mata em Equipe**: a fase de compras usa a mesma loja (com o dinheiro da rodada).
+- **Duelo**: a escolha da arma da rodada usa a mesma tela (grátis).
+- **Mapa**: veículos e o helicóptero não aparecem mais no minimapa nem no mapa grande.
+
 ## 3.19.1 — armas diferentes entre si
 - Cada arma tem dano, cadência, alcance e tempo de recarga próprios (ex.: Micro UZI atira muito rápido e
   fraco; SCAR-H forte e mais lenta; AA-12 escopeta automática; M82 derruba com um tiro).
