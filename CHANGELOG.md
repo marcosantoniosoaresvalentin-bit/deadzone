@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 3.21.1 — escudo no online
+- **Escudo de campo no online**: quando alguém monta um escudo, todos os jogadores da partida veem
+  ele abrindo (com som, mais baixo de longe) e ele bloqueia passagem e tiros para todos.
+  Qualquer jogador pode recolher um escudo: ele fecha para todo mundo e vai para a mochila de quem recolheu.
+  Funciona na partida clássica, no Mata-mata em Equipe e no Duelo.
+- Colisão do escudo mais grossa: os tiros não "atravessam" mais a placa em alguns ângulos.
+
 ## 3.21.0 — escudo de campo
 - **Escudo de campo** (novo item da mochila, 5 de peso): não é usado na mão; é montado no chão.
   - Toque em **Montar** na mochila ou no botão redondo **Escudo** (aparece quando há um na mochila).
@@ -9,7 +16,6 @@
   - Perto dele aparece o botão **Recolher**: as escamas fecham e o escudo volta para a mochila,
     pronto para montar de novo.
 - Escudos espalhados pelo mapa (mais nos locais de loot bom) e à venda na loja (Equipamento, 14 moedas).
-- Observação: no modo online, o escudo aparece só para quem montou.
 
 ## 3.20.1 — acessórios e itens realistas, mais calibres, sem gel
 - **Lunetas 2x e 8x e silenciador**: modelos 3D baixados (Quaternius, CC0), encaixados certinho em cada

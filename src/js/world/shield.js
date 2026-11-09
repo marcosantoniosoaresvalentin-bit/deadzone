@@ -92,9 +92,17 @@
     S.root.updateMatrixWorld(true); const v = new T.Vector3();
     // cada placa vira 3 caixinhas ao longo da largura (segue a curva)
     const add = (obj, x0, x1) => { for (let i = 0; i < 3; i++) { const xa = x0 + (x1 - x0) * (i / 3), xb = x0 + (x1 - x0) * ((i + 1) / 3); const p1 = v.set(xa, 0, 0).applyMatrix4(obj.matrixWorld).clone(), p2 = v.set(xb, 0, 0).applyMatrix4(obj.matrixWorld).clone();
-      S.boxes.push(addBox({ x0: Math.min(p1.x, p2.x) - .08, x1: Math.max(p1.x, p2.x) + .08, z0: Math.min(p1.z, p2.z) - .08, z1: Math.max(p1.z, p2.z) + .08, yb: S.y - 1, yt: S.y + PH, w: 1 })); } };
+      S.boxes.push(addBox({ x0: Math.min(p1.x, p2.x) - .13, x1: Math.max(p1.x, p2.x) + .13, z0: Math.min(p1.z, p2.z) - .13, z1: Math.max(p1.z, p2.z) + .13, yb: S.y - 1, yt: S.y + PH, w: 1 })); } };
     add(S.body, -PW / 2, PW / 2);
     for (const side of ['L', 'R']) for (const h of S.W[side]) add(h, 0, side === 'R' ? PW : -PW);
+  }
+  // ---------- rede: todo mundo da partida vê o escudo ----------
+  let seq = 0;
+  function net(m) { try { if (typeof N !== 'undefined' && N) gp(m, 1); else if (typeof MP !== 'undefined' && MP && opId && opId !== 'BOT') snd(m, 1); } catch (e) { } }
+  const ANIM = [];
+  function spawnAt(x, y, z, r, id) {
+    const S = build(); S.root.position.set(x, y, z); S.root.rotation.y = r; sc.add(S.root); pose(S, 0);
+    Object.assign(S, { x, z, y, r, id, u: 0, boxes: [] }); LIVE.push(S); return S;
   }
   function deploy() {
     if (busy || mode !== 'ground' || !(bag.shield > 0)) return;
@@ -103,34 +111,54 @@
     if (Math.abs(y - P.y) > .8) { say('Lugar ruim para montar o escudo', 1.5); return; }
     for (const s of LIVE) if (Math.hypot(s.x - x, s.z - z) < 2) { say('Já tem um escudo aqui', 1.5); return; }
     bag.shield--; try { drawBag(); } catch (e) { }
-    const S = build(); S.root.position.set(x, y, z); S.root.rotation.y = yaw + Math.PI; sc.add(S.root); pose(S, 0);
-    Object.assign(S, { x, z, y, u: 0, boxes: [], st: 'open' }); LIVE.push(S);
-    busy = { S, t: 0, dir: 1, dur: 1.8 }; try { st = 1; ui(); cur = -1; ads = 0; firing = 0; drawSlots(); } catch (e) { }
+    let me = 'L'; try { me = mpId || 'L'; } catch (e) { }
+    const S = spawnAt(x, y, z, yaw + Math.PI, me + '_' + (++seq) + '_' + (Date.now() % 1e5));
+    busy = { S, t: 0, dir: 1, dur: 1.8, mine: 1 }; ANIM.push(busy); try { st = 1; ui(); cur = -1; ads = 0; firing = 0; drawSlots(); } catch (e) { }
     say('Montando o escudo...', 1.6); try { sfx(260, .25, .2, 0); } catch (e) { }
+    net({ t: 'shd', a: 'o', id: S.id, x: +x.toFixed(2), y: +y.toFixed(2), z: +z.toFixed(2), r: +S.r.toFixed(3) });
   }
   function pack(S) {
-    if (busy || mode !== 'ground') return; if (bagUsed() + W.shield > CAPS[bagLv]) { say('Mochila cheia', 1.5); return; }
-    colliders(S, false); busy = { S, t: 0, dir: -1, dur: 1.2 }; try { st = 1; ui(); } catch (e) { } say('Recolhendo o escudo...', 1.2);
+    if (busy || mode !== 'ground' || S.closing) return; if (bagUsed() + W.shield > CAPS[bagLv]) { say('Mochila cheia', 1.5); return; }
+    for (let i = ANIM.length - 1; i >= 0; i--) if (ANIM[i].S === S) ANIM.splice(i, 1);
+    S.closing = 1; colliders(S, false); busy = { S, t: (1 - S.u) * 1.2, dir: -1, dur: 1.2, mine: 1 }; ANIM.push(busy); try { st = 1; ui(); } catch (e) { } say('Recolhendo o escudo...', 1.2);
+    net({ t: 'shd', a: 'c', id: S.id });
   }
-  window.dzShield = { deploy, pack };
+  // mensagem de outro jogador
+  function rx(m) {
+    if (!m || m.t !== 'shd' || mode === 'lobby') return;
+    let S = LIVE.find(s => s.id === m.id);
+    if (m.a === 'o') { if (S) return; S = spawnAt(m.x, m.y, m.z, m.r, m.id); ANIM.push({ S, t: 0, dir: 1, dur: 1.8 }); }
+    else if (m.a === 'c' && S && !S.closing) {
+      for (let i = ANIM.length - 1; i >= 0; i--) if (ANIM[i].S === S) { if (ANIM[i] === busy) busy = null; ANIM.splice(i, 1); }
+      S.closing = 1; colliders(S, false); ANIM.push({ S, t: (1 - S.u) * 1.2, dir: -1, dur: 1.2 });
+    }
+  }
+  window.addEventListener('load', () => {
+    try { const _r = sqRx; sqRx = function (m) { if (m && m.t === 'shd') { rx(m); return; } return _r.apply(this, arguments); }; } catch (e) { }
+    try { const _r = clRx; clRx = function (m) { if (m && m.t === 'shd') { rx(m); return; } return _r.apply(this, arguments); }; } catch (e) { }
+    try { const _r = mpMsg; mpMsg = function (m) { if (m && m.t === 'shd') { if (m.from === opId) rx(m); return; } return _r.apply(this, arguments); }; } catch (e) { }
+  });
+  window.dzShield = { deploy, pack, rx };
   // animação por etapas (com som de metal a cada placa)
   let lastT = 0;
   const _lb = window.loopBody;
   window.loopBody = function (t) {
     const dt = Math.min(.05, (t - lastT) / 1000 || 0); lastT = t; _lb(t);
-    if (!busy) return;
-    const B = busy, S = B.S, u0 = S.u; B.t += dt; S.u = B.dir > 0 ? Math.min(1, B.t / B.dur) : Math.max(0, 1 - B.t / B.dur); pose(S, S.u);
-    for (const k of [.35, .65, .95]) if ((u0 - k) * (S.u - k) < 0) try { sfx(180 + k * 200, .3, .15, 0); } catch (e) { }
-    try { if (mode === 'ground') { firing = 0; } } catch (e) { }
-    if (B.dir > 0 && S.u >= 1) { busy = null; colliders(S, true); S.root.updateMatrixWorld(true); say('Escudo montado', 1.2); try { st = 0; ui(); } catch (e) { } }
-    if (B.dir < 0 && S.u <= 0) { busy = null; sc.remove(S.root); LIVE.splice(LIVE.indexOf(S), 1); bag.shield = (bag.shield || 0) + 1; try { drawBag(); st = 0; ui(); } catch (e) { } say('Escudo guardado na mochila', 1.4); }
+    if (busy) try { if (mode === 'ground') firing = 0; } catch (e) { }
+    for (let i = ANIM.length - 1; i >= 0; i--) {
+      const B = ANIM[i], S = B.S, u0 = S.u; B.t += dt; S.u = B.dir > 0 ? Math.min(1, B.t / B.dur) : Math.max(0, 1 - B.t / B.dur); pose(S, S.u);
+      const vol = B.mine ? .3 : .3 * Math.max(0, 1 - Math.hypot(S.x - P.x, S.z - P.z) / 40);
+      if (vol > .01) for (const k of [.35, .65, .95]) if ((u0 - k) * (S.u - k) < 0) try { sfx(180 + k * 200, vol, .15, 0); } catch (e) { }
+      if (B.dir > 0 && S.u >= 1) { ANIM.splice(i, 1); colliders(S, true); S.root.updateMatrixWorld(true); if (B === busy) { busy = null; say('Escudo montado', 1.2); try { st = 0; ui(); } catch (e) { } } }
+      else if (B.dir < 0 && S.u <= 0) { ANIM.splice(i, 1); sc.remove(S.root); const j = LIVE.indexOf(S); if (j >= 0) LIVE.splice(j, 1); if (B === busy) { busy = null; bag.shield = (bag.shield || 0) + 1; try { drawBag(); st = 0; ui(); } catch (e) { } say('Escudo guardado na mochila', 1.4); } }
+    }
   };
   // botão "Recolher" perto do escudo
   const bR = document.createElement('div'); bR.id = 'dzShRec'; bR.style.cssText = 'position:fixed;right:200px;bottom:290px;z-index:6;display:none;width:70px;height:70px;border-radius:50%;border:2px solid rgba(255,255,255,.6);background:rgba(60,70,80,.8);color:#fff;font:800 11px system-ui;align-items:center;justify-content:center;flex-direction:column;user-select:none;-webkit-user-select:none;touch-action:none';
   bR.innerHTML = '<svg viewBox="0 0 32 24" width="28" height="20"><rect x="10" y="3" width="12" height="16" rx="1" fill="#fff"/><rect x="2" y="5" width="7" height="12" fill="#fff" opacity=".7"/><rect x="23" y="5" width="7" height="12" fill="#fff" opacity=".7"/></svg><span>Recolher</span>'; document.body.appendChild(bR);
   let nearS = null;
   bR.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (nearS) pack(nearS); else deploy(); });
-  setInterval(() => { nearS = null; if (!busy && mode === 'ground') { let bd = 3; for (const s of LIVE) { const d = Math.hypot(s.x - P.x, s.z - P.z); if (d < bd && Math.abs(s.y - P.y) < 2) { bd = d; nearS = s; } } } const can = nearS || (!busy && mode === 'ground' && bag.shield > 0); const lb = nearS ? 'Recolher' : 'Escudo'; if (bR.dataset.l !== lb) { bR.dataset.l = lb; bR.lastChild.textContent = lb; } bR.style.display = can ? 'flex' : 'none'; }, 200);
+  setInterval(() => { nearS = null; if (!busy && mode === 'ground') { let bd = 3; for (const s of LIVE) { if (s.closing) continue; const d = Math.hypot(s.x - P.x, s.z - P.z); if (d < bd && Math.abs(s.y - P.y) < 2) { bd = d; nearS = s; } } } const can = nearS || (!busy && mode === 'ground' && bag.shield > 0); const lb = nearS ? 'Recolher' : 'Escudo'; if (bR.dataset.l !== lb) { bR.dataset.l = lb; bR.lastChild.textContent = lb; } bR.style.display = can ? 'flex' : 'none'; }, 200);
   // sai da partida: some tudo
-  setInterval(() => { if ((mode === 'lobby') && LIVE.length) { for (const s of LIVE) { colliders(s, false); sc.remove(s.root); } LIVE.length = 0; busy = null; } }, 1000);
+  setInterval(() => { if ((mode === 'lobby') && LIVE.length) { for (const s of LIVE) { colliders(s, false); sc.remove(s.root); } LIVE.length = 0; ANIM.length = 0; busy = null; } }, 1000);
 })();
