@@ -16,7 +16,7 @@ const bn=b=>b;
 function botLoot(b,dt){b.lt-=dt;b.sd+=dt;
  if(b.tgt&&loot.indexOf(b.tgt)<0)b.tgt=null;
  if(b.tgt&&b.sd>12){b.skip=b.tgt;b.tgt=null;b.lt=2}
- if(!b.tgt&&b.lt<=0){b.lt=1.1;let bd=190;for(const o of loot){if(!WS[o.t]||o===b.skip)continue;const d=Math.hypot(o.x-b.x,o.z-b.z);if(d<bd){bd=d;b.tgt=o;b.sd=0}}}
+ if(!b.tgt&&b.lt<=0){b.lt=1.1;let bd=190;for(const o of loot){if(!WS[o.t]||o===b.skip||o.box)continue;const d=Math.hypot(o.x-b.x,o.z-b.z);if(d<bd){bd=d;b.tgt=o;b.sd=0}}}
  if(b.tgt){const o=b.tgt,d=Math.hypot(o.x-b.x,o.z-b.z),q=FP.find(v=>botInside(v,o.x,o.z));
   const same=q&&botInside(q,b.x,b.z);
   if(d<1.45&&(!q||same)){sc.remove(o.top);loot.splice(loot.indexOf(o),1);lkey='';armBot(b,o.t,o.sil);b.tgt=null;return 0}

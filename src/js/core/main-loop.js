@@ -83,7 +83,7 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;try{d
  knf.visible=ml>0&&!!mlK&&mode==='ground';
  animExtra(dt);try{const g_=mode==='ground'&&ml<=0;CH.loco={w:mode==='lobby'?1:g_?(1-cr)*(1-Math.min(1,pr*3))*(1-air):0,sp:g_?amt*(6-cr*3)*(1-.4*adk)*(cast?.5:1):0,arm:!!(rf.visible||cast||GA||TH||ml>0),fw:l>.05?(dx*Math.sin(pl.rotation.y)+dz*Math.cos(pl.rotation.y))/l:1}}catch(e){}pl.position.set(P.x,P.y,P.z);if(mode==='drive'&&drv)seatPose(dt,typeof ix!=='undefined'?ix:0);else if(RIDE&&mode==='ground')ropePose();else if(VLT&&mode==='ground')vaultPose();else if(pl.rotation.x||pl.rotation.z){pl.rotation.x=0;pl.rotation.z=0}shd.visible=mode==='ground'||mode==='lobby';shd.position.x=P.x;shd.position.z=P.z;{const g_=GY(P.x,P.z,P.y);shd.position.y=g_+.03;shd.scale.setScalar(Math.max(.4,1-(P.y-g_)*.2))};
  if(window.DZChute&&DZChute.ready)DZChute.update(dt,fw,bk,sd);else{canopy.position.set(P.x,P.y+1.6,P.z);canopy.rotation.set(.55*fw-.3*bk,yaw,sd*.3,'YXZ')}
- {const LD_=[34,44,60,80][Math.max(0,Math.min(3,CFG.q|0))];for(const o of loot){const vv=Math.abs(o.x-P.x)+Math.abs(o.z-P.z)<LD_&&!MP;if(o.top.visible!==vv)o.top.visible=vv}}/* loot só de perto */
+ {const LD_=[34,44,60,80][Math.max(0,Math.min(3,CFG.q|0))];for(const o of loot){const vv=!o.box&&Math.abs(o.x-P.x)+Math.abs(o.z-P.z)<LD_&&!MP;if(o.top.visible!==vv)o.top.visible=vv}}/* loot só de perto */
  for(const b of bots){try{
   if(b.air){
    if(b.waitForPlayer){
