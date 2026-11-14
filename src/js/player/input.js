@@ -10,7 +10,7 @@ function mvp(dx,dz){for(const ax of[0,1]){if(ax)P.z+=dz;else P.x+=dx;
  P.x=MCLX(P.x,5);P.z=MCLZ(P.z,5)}
 let yaw=0,pit=.25,ph=0,amt=0,jx=0,jy=0,keys={},tm=null,tl=null,jo={x:0,y:0},lx=0,ly=0,drag=0;
 const jb=document.getElementById('jb'),jk=document.getElementById('jk');
-function look(dx,dy){if(mode==='plane'){oy-=dx*.008;op=Math.max(-1.3,Math.min(1.4,op+dy*.006));return}const s=(1-(scp===3?.88:.4)*adk)*CFG.sens;yaw-=dx*.006*s;pit=Math.max(-.25,Math.min(.85,pit+dy*.004*s))}
+function look(dx,dy){if(mode==='plane'){oy-=dx*.008;op=Math.max(-1.3,Math.min(1.4,op+dy*.006));return}const s=(1-(scp===3?.62:.4)*adk)*CFG.sens;yaw-=dx*.006*s;pit=Math.max(-.25,Math.min(.85,pit+dy*.004*s))}
 cv.addEventListener('touchstart',e=>{e.preventDefault();for(const t of e.changedTouches){
  if(mode!=='plane'&&t.clientX<innerWidth/2&&tm===null){tm=t.identifier;jo={x:t.clientX,y:t.clientY};for(const el of[jb,jk]){el.style.display='block';el.style.left=jo.x+'px';el.style.top=jo.y+'px'}}
  else if(tl===null){tl=t.identifier;lx=t.clientX;ly=t.clientY}}},{passive:false});

@@ -9,7 +9,8 @@
  *  - Perto dele aparece "Recolher": fecha em etapas e volta para a mochila (pode montar de novo depois).
  */
 (function () {
-  const PW = 1.0, PH = 1.25, TH = .05;                      // largura e altura de cada placa
+  const PW = .9, PH = 1.55, TH = .05;                       // largura e altura de cada placa (alto o bastante para se agachar atrás)
+  const WC = 1.04, WH = .34, WW = PW * .62, WB = WC - WH / 2, WT = WC + WH / 2; // janela de tiro na altura do olho agachado
   const Mt = (o) => new T.MeshStandardMaterial(o);
   // textura de aço gasto com rebites, emendas e faixa de aviso embaixo
   const cvT = (f) => { const c = document.createElement('canvas'); c.width = 256; c.height = 320; f(c.getContext('2d'), 256, 320); const t = new T.CanvasTexture(c); t.encoding = T.sRGBEncoding; t.anisotropy = 4; return t; };
@@ -29,10 +30,11 @@
   // placa do meio: chapa com visor, alças e pés de apoio atrás
   function center() {
     const g = new T.Group();
-    box(PW, PH * .42, TH, STEEL, 0, PH * .21, 0, g); box(PW, PH * .36, TH, STEEL, 0, PH * .82, 0, g);
-    box(PW * .3, PH * .2, TH, STEEL, -PW * .35, PH * .52, 0, g); box(PW * .3, PH * .2, TH, STEEL, PW * .35, PH * .52, 0, g);
-    box(PW * .4, PH * .2, .01, GLASS, 0, PH * .52, 0, g);                                          // visor
-    box(PW * .44, .03, .07, DARK, 0, PH * .64, .03, g); box(PW * .44, .03, .07, DARK, 0, PH * .4, .03, g);
+    box(PW, WB, TH, STEEL, 0, WB / 2, 0, g); box(PW, PH - WT, TH, STEEL, 0, (WT + PH) / 2, 0, g);
+    const sw = (PW - WW) / 2; for (const s of [-1, 1]) box(sw, WH, TH, STEEL, s * (WW / 2 + sw / 2), WC, 0, g);
+    // janela de tiro aberta (sem vidro) com moldura escura
+    box(WW + .04, .025, .08, DARK, 0, WB - .005, .01, g); box(WW + .04, .025, .08, DARK, 0, WT + .005, .01, g);
+    for (const s of [-1, 1]) box(.025, WH + .04, .08, DARK, s * (WW / 2 + .005), WC, .01, g);
     for (const s of [-1, 1]) { const leg = box(.05, PH * .8, .05, DARK, s * PW * .3, PH * .38, -.32, g); leg.rotation.x = -.45; box(.12, .03, .25, DARK, s * PW * .3, .015, -.5, g); }
     box(PW * .1, .1, .06, DARK, 0, PH - .04, -.03, g);                                            // alça
     return g;
@@ -91,9 +93,11 @@
     for (const b of S.boxes) { b.off = 1; try { const i = box.indexOf(b); if (i >= 0) box.splice(i, 1); for (const a of GRD.values()) { const j = a.indexOf(b); if (j >= 0) a.splice(j, 1); } } catch (e) { } } S.boxes.length = 0; if (!on) return;
     S.root.updateMatrixWorld(true); const v = new T.Vector3();
     // cada placa vira 3 caixinhas ao longo da largura (segue a curva)
-    const add = (obj, x0, x1) => { for (let i = 0; i < 3; i++) { const xa = x0 + (x1 - x0) * (i / 3), xb = x0 + (x1 - x0) * ((i + 1) / 3); const p1 = v.set(xa, 0, 0).applyMatrix4(obj.matrixWorld).clone(), p2 = v.set(xb, 0, 0).applyMatrix4(obj.matrixWorld).clone();
-      S.boxes.push(addBox({ x0: Math.min(p1.x, p2.x) - .13, x1: Math.max(p1.x, p2.x) + .13, z0: Math.min(p1.z, p2.z) - .13, z1: Math.max(p1.z, p2.z) + .13, yb: S.y - 1, yt: S.y + PH, w: 1 })); } };
-    add(S.body, -PW / 2, PW / 2);
+    const add = (obj, x0, x1, yb0, yt0, pd) => { const PD = pd != null ? pd : .13; for (let i = 0; i < 3; i++) { const xa = x0 + (x1 - x0) * (i / 3), xb = x0 + (x1 - x0) * ((i + 1) / 3); const p1 = v.set(xa, 0, 0).applyMatrix4(obj.matrixWorld).clone(), p2 = v.set(xb, 0, 0).applyMatrix4(obj.matrixWorld).clone();
+      S.boxes.push(addBox({ x0: Math.min(p1.x, p2.x) - PD, x1: Math.max(p1.x, p2.x) + PD, z0: Math.min(p1.z, p2.z) - .13, z1: Math.max(p1.z, p2.z) + .13, yb: S.y + (yb0 != null ? yb0 : -1), yt: S.y + (yt0 != null ? yt0 : PH), w: 1 })); } };
+    // placa do meio: o vão da janela fica livre para atirar (só a parte de baixo e a de cima seguram bala)
+    add(S.body, -PW / 2, PW / 2, -1, WB); add(S.body, -PW / 2, PW / 2, WT, PH);
+    for (const sx of [-1, 1]) add(S.body, sx * WW / 2, sx * PW / 2, WB, WT, .02);
     for (const side of ['L', 'R']) for (const h of S.W[side]) add(h, 0, side === 'R' ? PW : -PW);
   }
   // ---------- rede: todo mundo da partida vê o escudo ----------

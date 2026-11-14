@@ -136,15 +136,15 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;try{d
   // no ar a neblina fica sempre longe (sair do lobby voltava a neblina do chão e escondia a ilha)
   if(air&&(sc.fog.near!==500||sc.fog.far!==2200)){sc.fog.near=500;sc.fog.far=2200}}
  if(mode==='ground')pl.visible=adk<.85;{const sv=mode==='ground'&&adk>.85&&scp>0;sce.style.display=sv?'block':'none';if(sv)sce.className='s'+scp}
- {const fv=lp(lp(65,58,insK),scp===3?9:wp==='pistol'?44:52,adk);if(Math.abs(cam.fov-fv)>.05){cam.fov=fv;cam.updateProjectionMatrix()}}
+ {const fv=lp(lp(65,58,insK),scp===3?46:wp==='pistol'?44:52,adk);if(Math.abs(cam.fov-fv)>.05){cam.fov=fv;cam.updateProjectionMatrix()}}
  {let nd=null,bd=2.6;if(mode==='ground')for(const d of doors){if(d.y!=null&&Math.abs(d.y-P.y)>1.6)continue;/* só portas do andar do personagem */const q=Math.hypot(d.x-P.x,d.z-P.z);if(q<bd){bd=q;nd=d}}bf2.style.display=mode==='ground'?'flex':'none';{const cn_=mode==='drive'||(mode==='ground'&&nearCar);$('bv').style.display=cn_?'flex':'none';$('bv').textContent=mode==='drive'?'Sair':'Entrar';{const hv=(mode==='drive'&&drv&&drv.heli)?'flex':'none';if(hv==='none')HK.u=HK.d=0;$('bhu').style.display=$('bhd').style.display=hv}$('bu').style.display=(cn_&&bag.fuel>0)?'flex':'none';$('bg').style.display=(mode==='ground'&&bag.gren>0)?'flex':'none';$('bg').textContent='💣x'+bag.gren;$('bgl').style.display=(mode==='ground'&&bag.gel>0)?'flex':'none';$('bgl').textContent='🧊x'+bag.gel;bf.textContent=TS?'Lançar':wp?'Atirar':'Atacar'}nearDoor=nd;if(CFG.autoDoor&&nd&&!nd.open&&bd<1.9&&performance.now()-(nd.mc||0)>4000){nd.open=1;sfx(220,.3,.18,0)}bo.style.display=nd?'flex':'none';if(nd)bo.textContent=nd.open?'Fechar':'Abrir';
   for(const d of doors){const tg=d.open?1.7:0;if(Math.abs(d.a-tg)>.003){d.a+=(tg-d.a)*Math.min(1,dt*6);d.piv.rotation.y=d.a;d.bx.off=d.a>.5?1:0}}
   updLights(dt);if(mode==='ground'){const cc=nearestCity(P.x,P.z),cn=cc&&cc.t==='city'?cc.n:null;if(cn!==curCity){curCity=cn;if(cn)say('📍 '+cn,3)}}}
  sky.position.copy(cam.position);sky.scale.setScalar(cam.far*.92/540);sky.material.uniforms.uT.value+=dt;{const sy_=(mode==='ground'||mode==='chute'||mode==='sky')?GY(P.x,P.z,P.y):0;sun.position.set(P.x+55,90+sy_,P.z+30);sun.target.position.set(P.x,sy_,P.z)};
  mm.style.display=(mode==='lobby'||mode==='dead')?'none':'block';if(mm.style.display==='block')drawMM(dt);if(bmap.style.display==='flex'&&(bmT-=dt)<=0){bmT=.2;drawBig()}
  {const mk=$('mkd');if(MK.length&&mode!=='lobby'&&mode!=='dead'){const c=mode==='plane'?plane.position:P;mk.textContent='📍 '+Math.round(Math.min(...MK.map(m=>Math.hypot(m.x-c.x,m.z-c.z))))+' m'}else mk.textContent=''}
- {const vmOn=mode==='ground'&&adk>.85&&!!wp&&scp!==3;vmH.visible=vmOn;
-  if(vmOn&&scp===2){vmH.visible=false;cam2.position.copy(cam.position);cam2.quaternion.copy(cam.quaternion);ren.setRenderTarget(rt);ren.render(sc,cam2);ren.setRenderTarget(null);vmH.visible=true}}
+ {const vmOn=mode==='ground'&&adk>.85&&!!wp;vmH.visible=vmOn;
+  if(vmOn&&(scp===2||scp===3)){const f2=scp===3?6.2:16;if(cam2.fov!==f2){cam2.fov=f2;cam2.updateProjectionMatrix()}vmH.visible=false;cam2.position.copy(cam.position);cam2.quaternion.copy(cam.quaternion);ren.setRenderTarget(rt);ren.render(sc,cam2);ren.setRenderTarget(null);vmH.visible=true}}
  ren.render(sc,cam)}
 setLabel();
 // o laço só começa depois que todos os arquivos do jogo foram carregados

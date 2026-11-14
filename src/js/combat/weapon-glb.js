@@ -197,8 +197,8 @@
         const A = ATT[lv === 2 ? 's2' : 's8'], ay = yb - A.bottom, z0 = zc - A.len * .45;
         const me = new T.Mesh(A.geo, A.mat); me.position.set(0, ay, z0); me.castShadow = !vm; g.add(me);
         const lz = z0 - .002, lr = A.rad * .82;
-        const tb = new T.Mesh(new T.CircleGeometry(lr, 28), vm && lv === 2 ? new T.MeshBasicMaterial({ map: rt.texture, fog: false }) : (M.lens || blk)); tb.rotation.y = Math.PI; tb.position.set(0, ay, lz); g.add(tb);
-        if (vm && lv === 2) { const rr = new T.Mesh(new T.CircleGeometry(lr, 28), new T.MeshBasicMaterial({ map: RETX(), transparent: true, depthWrite: false, fog: false })); rr.rotation.y = Math.PI; rr.position.set(0, ay, lz - .0005); rr.renderOrder = 10; g.add(rr); }
+        const tb = new T.Mesh(new T.CircleGeometry(lr, 28), vm && lv >= 2 ? new T.MeshBasicMaterial({ map: rt.texture, fog: false }) : (M.lens || blk)); tb.rotation.y = Math.PI; tb.position.set(0, ay, lz); g.add(tb);
+        if (vm && lv >= 2) { const rr = new T.Mesh(new T.CircleGeometry(lr, 28), new T.MeshBasicMaterial({ map: RETX(), transparent: true, depthWrite: false, fog: false })); rr.rotation.y = Math.PI; rr.position.set(0, ay, lz - .0005); rr.renderOrder = 10; g.add(rr); }
         ey = [0, ay, z0 - (lv === 2 ? .11 : .13)];
       } else if (lv === 2) {
         add(new T.BoxGeometry(.03, ax - yb - .02, .1), blk, 0, (yb + ax - .02) / 2, zc);
@@ -220,15 +220,20 @@
       if (!SG) { g.updateMatrixWorld(true); const zM = Mm[0], zG = Gm[0], L = zM - zG, z0 = zM - L * (t === 'pistol' ? .45 : .32), lo = Math.min(z0, zM), hi = Math.max(z0, zM); let my = -1e9, ma = -1e9, mz = 0; const vv = new T.Vector3();
         inner.traverse(o => { if (!o.isMesh) return; const P = o.geometry.attributes.position; for (let i = 0; i < P.count; i++) { vv.fromBufferAttribute(P, i).applyMatrix4(o.matrixWorld); if (vv.y > ma) ma = vv.y; if (vv.z >= lo && vv.z <= hi && vv.y > my) { my = vv.y; mz = vv.z; } } });
         let over = false, fy = my; if ((t === 'sniper' && ma - my > .03) || (t === 'shotgun' && ma - my > .008)) { my = ma + .004; over = true; } // sniper pesada sem luneta: mira por cima da arma
-        SG = SIGHT[k] = { y: my > -1e8 ? my : null, z: mz, r: (over || my < -1e8) ? null : rearSight(inner, Sm[0], my), post: over && t === 'shotgun' ? [fy, mz] : null }; }
+        SG = SIGHT[k] = { rt: (() => { let r = -1e9; const v2 = new T.Vector3(); inner.traverse(o => { if (!o.isMesh) return; const P = o.geometry.attributes.position; for (let i = 0; i < P.count; i++) { v2.fromBufferAttribute(P, i).applyMatrix4(o.matrixWorld); if (Math.abs(v2.z - Sm[0] - .02) < .03 && Math.abs(v2.x) < .02 && v2.y > r && v2.y < fy - .004) r = v2.y; } }); return r > -1e8 ? r : null; })(), y: my > -1e8 ? my : null, z: mz, r: (over || my < -1e8) ? null : rearSight(inner, Sm[0], my), post: over && t === 'shotgun' ? [fy, mz] : null }; }
       if (SG.post) { const [fy0, pz] = SG.post, h = SG.y - fy0; add(new T.BoxGeometry(.005, h, .008), blk, 0, fy0 + h / 2, pz); add(new T.SphereGeometry(.0045, 10, 8), M.metal || blk, 0, SG.y - .002, pz); } // escopeta sem mira de trás: alça com bolinha na ponta do cano
       if (SG.y != null) {
         ey = [0, SG.y + .0015, ey[2]];
-        if (vm && SG.r != null) { const dy = SG.y - SG.r, dz = SG.z - Sm[0]; if (Math.abs(dy) < .015 && dz > .05) { tilt = Math.atan2(dy, dz); ey[1] = SG.y * Math.cos(tilt) - SG.z * Math.sin(tilt) + .0015; } }
+        let okR = false;
+        if (vm && SG.r != null) { const dy = SG.y - SG.r, dz = SG.z - Sm[0]; if (Math.abs(dy) < .015 && dz > .05) { okR = true; tilt = Math.atan2(dy, dz); ey[1] = SG.y * Math.cos(tilt) - SG.z * Math.sin(tilt) + .0015; } }
+        // sem mira de trás no modelo (ou não encontrada): aro de trás na linha exata da mira da frente
+        if (vm && !okR && !SG.post && t !== 'pistol' && SG.z - Sm[0] > .08) { const yR = SG.y + .0015, zR = Sm[0] + .02, base = Math.min(yR - .012, SG.rt != null ? SG.rt : yR - .03);
+          add(new T.TorusGeometry(.0085, .0022, 6, 20), blk, 0, yR, zR); add(new T.BoxGeometry(.006, Math.max(.004, yR - .0085 - base), .006), blk, 0, (yR - .0085 + base) / 2, zR);
+          for (const sx of [-1, 1]) add(new T.BoxGeometry(.004, .02, .006), blk, sx * .014, yR - .002, zR); }
       } } catch (e) { } }
     u.ey = ey;
     if (vm) { // luvas e mangas na tela de mira
-      for (let k = 0; k < 2; k++) { const p = u.hg[k]; add(new T.BoxGeometry(.07, .08, .1), MAT.Black_Lighter, p[0], p[1], p[2]); add(new T.BoxGeometry(.075, .075, .5), Mt(0x55663f, 0, .9), p[0] + (k ? -.02 : .02), p[1] - .06, p[2] - .3, -.25); }
+      for (let k = 0; k < 2; k++) { const p0 = u.hg[k], lim = (ey ? ey[1] : 1) - .05, p = [p0[0], Math.min(p0[1], lim - .04), p0[2]]; add(new T.BoxGeometry(.07, .08, .1), MAT.Black_Lighter, p[0], p[1], p[2]); add(new T.BoxGeometry(.075, .075, .5), Mt(0x55663f, 0, .9), p[0] + (k ? -.02 : .02), p[1] - .06, p[2] - .3, -.25); }
     }
     if (it.length) { const q = new T.Group(); bake(q, it); q.traverse(o => { if (o.isMesh) o.castShadow = !vm; }); g.add(q); }
     if (tilt) { const pv = new T.Group(); while (g.children.length) pv.add(g.children[0]); pv.rotation.x = tilt; g.add(pv); }
