@@ -238,7 +238,7 @@
     if (it.length) { const q = new T.Group(); bake(q, it); q.traverse(o => { if (o.isMesh) o.castShadow = !vm; }); g.add(q); }
     // tela de mira: some a parte da arma colada no olho (coronha/caixa a menos de 12 cm), que aparecia cortada por dentro
     if (vm && ey) { try { g.updateMatrixWorld(true); const zc = ey[2] + (noGl && t === 'shotgun' ? .1 : .14), v3 = new T.Vector3();
-      g.traverse(o => { if (!o.isMesh) return; const G0 = o.geometry, P = G0.attributes.position, ix = G0.index, n = ix ? ix.count : P.count, keep = [];
+      g.traverse(o => { if (!o.isMesh) return; if (o.material && o.material.map && (o.material.map === rt.texture || o.material.map === RETX())) return; /* lente e retículo da luneta ficam a ~12 cm do olho: não podem ser cortados (ficava só o tubo preto) */ const G0 = o.geometry, P = G0.attributes.position, ix = G0.index, n = ix ? ix.count : P.count, keep = [];
         for (let i = 0; i < n; i += 3) { let mn = 1e9; for (let k = 0; k < 3; k++) { v3.fromBufferAttribute(P, ix ? ix.getX(i + k) : i + k).applyMatrix4(o.matrixWorld); if (v3.z < mn) mn = v3.z; } if (mn < zc) continue; for (let k = 0; k < 3; k++) keep.push(ix ? ix.getX(i + k) : i + k); }
         if (keep.length < n) { const G1 = G0.clone(); G1.setIndex(keep); o.geometry = G1; } }); } catch (e) { } }
     if (tilt) { const pv = new T.Group(); while (g.children.length) pv.add(g.children[0]); pv.rotation.x = tilt; g.add(pv); }

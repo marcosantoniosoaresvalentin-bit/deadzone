@@ -73,6 +73,9 @@ function bowElev(sp,phi,ZR){const c=Math.cos(phi),s_=Math.sin(phi),k=Math.exp(-.
  const gs=[];let mat=null;g.scene.updateMatrixWorld(true);
  g.scene.traverse(o=>{if(!o.isMesh||/string/i.test(o.material&&o.material.name||''))return;gs.push(o.geometry.clone().applyMatrix4(o.matrixWorld));mat=o.material});
  if(!gs.length)return;let geo=gs[0];if(gs.length>1&&T.BufferGeometryUtils)geo=T.BufferGeometryUtils.mergeBufferGeometries(gs);
+ /* o GLB vem com atributos intercalados (interleaved): toNonIndexed()/cópias do loot liam o buffer inteiro e viravam estilhaços marrons -> converte para atributos normais */
+ {const pg=new T.BufferGeometry();for(const k of ['position','normal','uv']){const a=geo.attributes[k];if(!a)continue;const n=a.count,sz=a.itemSize,arr=new Float32Array(n*sz),gt=['getX','getY','getZ','getW'];for(let i=0;i<n;i++)for(let c=0;c<sz;c++)arr[i*sz+c]=a[gt[c]](i);pg.setAttribute(k,new T.BufferAttribute(arr,sz))}
+  if(geo.index)pg.setIndex(new T.BufferAttribute(new Uint32Array(geo.index.array),1));geo=pg}
  geo.computeBoundingBox();const bb=geo.boundingBox,S=.8;
  // corda em +x, empunhadura em -x -> no jogo: corda em z=0, empunhadura em z=+.32 (para onde a flecha vai)
  geo.translate(-bb.max.x,-(bb.min.y+bb.max.y)/2,-(bb.min.z+bb.max.z)/2);geo.rotateY(Math.PI/2);geo.scale(S,S,S);

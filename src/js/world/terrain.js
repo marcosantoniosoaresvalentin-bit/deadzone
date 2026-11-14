@@ -140,7 +140,7 @@ const PLC=(typeof FLATS!=='undefined'?FLATS:[]).map(A=>[(A.x0+A.x1)/2,(A.z0+A.z1
  for(let j=0;j<NZ;j++)for(let i=0;i<NX;i++){const k=idx(i,j),dx=(hg(i+1,j)-hg(i-1,j))/(2*S),dz=(hg(i,j+1)-hg(i,j-1))/(2*S),l=Math.hypot(dx,1,dz),ny=1/l;
   NRM[k*3]=Math.round(-dx/l*127);NRM[k*3+1]=Math.round(ny*127);NRM[k*3+2]=Math.round(-dz/l*127);
   const x=OX+i*S,z=OZ+j*S,y=H[k],sl=1-ny;
-  let rock=ss(.07,.17,sl)+ss(70,95,y)*.6;
+  let rock=ss(.16,.34,sl)+ss(110,170,y)*.5;
   const mt=gau(x,z,MTX,MTZ,MTR);rock+=mt*ss(.55,.75,ridge(x/420+4,z/420+2))*.8;
   let sand=1-ss(1.1,2.1,y);
   { const ct=coastDist(x,z),ck=coastKind(x,z);if(ct>0&&ct<60){if(ck>0)rock+=ss(60,6,ct)*.9;if(ck<0)sand=Math.max(sand,ss(150,60,ct))} }
@@ -200,7 +200,7 @@ window.TERH=TER.terh;window.TERG=TER.terg;
    vec3 dirt=mix(texture2D(tDirt,wp*.11).rgb,texture2D(tDirt,wp*.037+.3).rgb,.4);
    vec3 sand=mix(texture2D(tSand,wp*.09).rgb,texture2D(tSand,wp*.029+.6).rgb,.35)*.86;
    vec3 an=abs(vWN);an/=(an.x+an.y+an.z);
-   vec3 rock=texture2D(tRock,vWP.zy*.06).rgb*an.x+texture2D(tRock,vWP.xy*.06).rgb*an.z+texture2D(tRock,wp*.06).rgb*an.y;
+   vec3 rock=(texture2D(tRock,vWP.zy*.06).rgb*an.x+texture2D(tRock,vWP.xy*.06).rgb*an.z+texture2D(tRock,wp*.06).rgb*an.y)*.78;
    // bordas irregulares entre solos (a textura da terra serve de ruído)
    float nz=texture2D(tDirt,wp*.017).r-.4;
    vec4 w=vSpl;w.y=clamp(w.y+nz*.6*w.y*(1.-w.y)*4.,0.,1.);w.z=clamp(w.z+nz*.5*w.z*(1.-w.z)*4.,0.,1.);w/=max(.001,w.x+w.y+w.z+w.w);
@@ -213,7 +213,7 @@ window.TERH=TER.terh;window.TERG=TER.terg;
  };
  // blocos do terreno: o nível de detalhe de cada um muda com a distância da câmera (some a malha velha)
  const STEPS=[1,2,4,8],TGRP=new T.Group();TGRP.name='terreno';sc.add(TGRP);
- function upd(){const c=cam.position,hi=c.y>150;for(const C of TER.CHUNKS){const d=Math.hypot(C.cx-c.x,C.cz-c.z);let l=d<900?0:d<1500?1:d<2700?2:3;
+ function upd(){const c=cam.position,hi=c.y>150;for(const C of TER.CHUNKS){const d=Math.hypot(C.cx-c.x,C.cz-c.z);let l=d<700?0:d<1300?1:d<2100?2:3;
    if(l===C.lod)continue;if(!C.g[l])C.g[l]=TER.chunkGeo(C.ci,C.cj,STEPS[l]);if(!C.mesh){C.mesh=new T.Mesh(C.g[l],m);C.mesh.receiveShadow=true;C.mesh.renderOrder=-2;C.mesh.matrixAutoUpdate=false;C.mesh.updateMatrix();TGRP.add(C.mesh)}else C.mesh.geometry=C.g[l];
    // libera a malha detalhada de blocos que ficaram longe
    if(l>=2&&C.g[0]){C.g[0].dispose();C.g[0]=null}C.lod=l}}

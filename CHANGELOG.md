@@ -1,5 +1,14 @@
 # Histórico de versões
 
+## 3.42.0 — cidades maiores, bugs do arco e da luneta
+- **Arco**: corrigido o estilhaço marrom na tela ao trocar de arma (o arco largado no chão era montado errado).
+- **Luneta 2x e 8x**: voltou a mostrar a imagem na lente (o corte de peças coladas no olho cortava a própria lente, ficava só o tubo preto).
+- **Cidades**: muito mais quarteirões nas maiores cidades, alguns quarteirões vazios nas bordas (praças/terrenos), e vielas de casas saindo
+  das cidades para fora, então a cidade não termina mais em um quadrado de asfalto.
+- **Fazenda grande**, porto, base, usina, galpões, escola, praia, posto e pedreira com vários prédios em volta (celeiros, casas, galpões, escritórios).
+- **Menos distância desenhada** no avião e paraquedas (antes enxergava ~6 km, agora ~3 km) e nos objetos vistos de cima.
+- Encostas com menos rocha branca e mais grama.
+
 ## 3.41.0 — relevo e estradas
 - **Estradas não flutuam mais**: o terreno embaixo da pista agora segue exatamente a altura do asfalto (antes ficava até 1,6 m abaixo em ladeiras). Medido nas 39 estradas: de 6.777 pontos flutuando para 16.
 - **Mais relevo**: cadeias de montanhas em cristas, morros ondulados e vales; planícies continuam planas e as cidades ficam em terreno nivelado.

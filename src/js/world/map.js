@@ -61,6 +61,7 @@ function genTown(cfg){
  for(let i=0;i<C.XL.length-1;i++)for(let j=0;j<C.ZL.length-1;j++){
   if(cfg.stadium&&j===0&&(i===2||i===3))continue;  // estádio
   if(cfg.tower&&i===1&&j===1){C.tower={x0:C.XL[1]+e,x1:C.XL[2]-e,z0:C.ZL[1]+e,z1:C.ZL[2]-e};C.blocks.push(Object.assign({id:T_+'torre',tower:1},C.tower));continue}
+  if(cfg.holes&&(i===0||j===0||i===C.XL.length-2||j===C.ZL.length-2)&&!(cfg.stadium||cfg.tower)&&rnd()<.22)continue; // quarteirão vazio (praça/terreno baldio) quebra o desenho quadrado
   const b={x0:C.XL[i]+e,x1:C.XL[i+1]-e,z0:C.ZL[j]+e,z1:C.ZL[j+1]-e,id:T_+'q'+i+j};C.blocks.push(b);
   const mz=(b.z0+b.z1)/2,W=b.x1-b.x0,u=W/3;
   for(const [lz0,lz1,rt] of [[b.z0,mz,Math.PI],[mz,b.z1,0]]){
@@ -83,7 +84,7 @@ const onLand=(x,z,m)=>{let k=0;while(coastMain(x,z)<m&&k++<80){x*=.97;z*=.97}ret
 const mvT=(c,dx,dz)=>Object.assign({},c,{x0:c.x0+dx,x1:c.x1+dx,z0:c.z0+dz,z1:c.z1+dz,XL:c.XL.map(v=>v+dx),ZL:c.ZL.map(v=>v+dz)});
 const atT=(c,X,Z)=>{[X,Z]=onLand(X,Z,330);return mvT(c,X-(c.x0+c.x1)/2,Z-(c.z0+c.z1)/2)};
 // cidade nova em grade: nx x nz quarteirões de 'b' metros, centrada em (X,Z)
-const gridT=(n,tag,seed,X,Z,nx,nz,b,o)=>{[X,Z]=onLand(X,Z,330+Math.max(nx,nz)*b/2);const XL=[],ZL=[];for(let i=0;i<=nx;i++)XL.push(Math.round(X-nx*b/2+i*b));for(let j=0;j<=nz;j++)ZL.push(Math.round(Z-nz*b/2+j*b));return Object.assign({n,tag,seed,x0:XL[0]-8,x1:XL[nx]+8,z0:ZL[0]-8,z1:ZL[nz]+8,XL,ZL,bl:30},o||{})};
+const gridT=(n,tag,seed,X,Z,nx,nz,b,o)=>{[X,Z]=onLand(X,Z,330+Math.max(nx,nz)*b/2);const XL=[],ZL=[];for(let i=0;i<=nx;i++)XL.push(Math.round(X-nx*b/2+i*b));for(let j=0;j<=nz;j++)ZL.push(Math.round(Z-nz*b/2+j*b));return Object.assign({n,tag,seed,x0:XL[0]-8,x1:XL[nx]+8,z0:ZL[0]-8,z1:ZL[nz]+8,XL,ZL,bl:30,holes:1},o||{})};
 // cidades (bem longe uma da outra, como num mapa grande de battle royale)
 const CITY=genTown(atT({n:'Nova Esperança',tag:'pv',seed:7331,x0:-36,x1:176,z0:-196,z1:-8,XL:[-28,22,72,122,168],ZL:[-188,-128,-72,-16],stadium:1},400,-1100));
 const TOWNS=[CITY,
@@ -91,22 +92,22 @@ const TOWNS=[CITY,
  genTown(atT({n:'Cerro Azul',tag:'mv',seed:9119,x0:133,x1:207,z0:143,z1:217,XL:[145,195],ZL:[155,205],bl:20},2350,2050)),
  genTown(mvT({n:'Zênite',tag:'zn',seed:2468,x0:-571,x1:-409,z0:-141,z1:21,XL:[-565,-515,-465,-415],ZL:[-135,-85,-35,15],bl:20,hFix:6,tower:1},ZEN_DX,ZEN_DZ)),
  genTown(atT({n:'Monte Alto',tag:'as',seed:5150,x0:52,x1:114,z0:58,z1:120,XL:[58,108],ZL:[64,114],bl:26},1650,350)),
- genTown(gridT('São Jorge','sj',3301,-1700,-1950,4,3,52)),
- genTown(gridT('Lagoa Seca','ls',3302,2850,-2250,3,3,50)),
- genTown(gridT('Vila Nova','vn',3303,-250,2750,4,2,50)),
- genTown(gridT('Campo Belo','cb',3304,-2900,-450,3,2,50)),
- genTown(gridT('Pinheiral','ph',3305,3050,-150,2,2,50)),
- genTown(gridT('Rio Claro','rc',3306,-550,550,4,3,52)),
- genTown(gridT('Santa Luz','sl',3307,1100,-2900,3,2,50)),
- genTown(gridT('Bela Vista','bv',3308,-1100,-1000,3,2,50)),
- genTown(gridT('Água Branca','ab',3309,2200,-900,3,2,50)),
+ genTown(gridT('São Jorge','sj',3301,-1700,-1950,6,4,52)),
+ genTown(gridT('Lagoa Seca','ls',3302,2850,-2250,4,4,50)),
+ genTown(gridT('Vila Nova','vn',3303,-250,2750,5,3,50)),
+ genTown(gridT('Campo Belo','cb',3304,-2900,-450,4,3,50)),
+ genTown(gridT('Pinheiral','ph',3305,3050,-150,3,3,50)),
+ genTown(gridT('Rio Claro','rc',3306,-550,550,5,4,52)),
+ genTown(gridT('Santa Luz','sl',3307,1100,-2900,4,3,50)),
+ genTown(gridT('Bela Vista','bv',3308,-1100,-1000,4,3,50)),
+ genTown(gridT('Água Branca','ab',3309,2200,-900,4,3,50)),
  genTown(gridT('Terra Alta','ta',3310,-1300,3000,2,2,50)),
  genTown(gridT('Ponta Norte','pn',3311,500,-3300,2,2,50)),
  genTown(gridT('Alto Verde','av',3312,-3300,-1900,2,2,50)),
- genTown(gridT('Boa Vista','bo',3313,1450,-1450,3,2,50)),
+ genTown(gridT('Boa Vista','bo',3313,1450,-1450,4,3,50)),
  genTown(gridT('Santa Rita','sr',3314,-3050,1100,2,2,50)),
  genTown(gridT('Esperança','es',3315,3300,1900,2,2,50)),
- genTown(gridT('Nova Aurora','na',3316,-2200,2800,3,2,50))];
+ genTown(gridT('Nova Aurora','na',3316,-2200,2800,4,3,50))];
 // LOCAIS ESPECIAIS (world/city.js monta): base militar, escola, porto e galpões
 const SITES=[
  {id:'base',t:'military',n:'Base Militar',x0:-148,x1:-22,z0:15,z1:108,bl:22},
@@ -195,6 +196,39 @@ const RURAL=(()=>{let sd=5522;const r=()=>{sd=(sd*16807)%2147483647;return (sd-1
    if(r()<.7)S.roof='gable';if(fl>=2&&r()<.5)S.balcony=1;out.push(S)}}
  return out})();
 for(const S of RURAL)STRS.push(S);
+
+// ---- BAIRROS e ENTORNOS: casas fora da malha das cidades (ruas de terra/gramado, 'puxadinhos'), e vários prédios em volta dos locais especiais ----
+const SUBURB=(()=>{let sd=8801;const r=()=>{sd=(sd*16807)%2147483647;return (sd-1)/2147483646},R_=(a,b)=>a+r()*(b-a);
+ const pal=[0xe9e0c6,0xd8cfc0,0xc9b79c,0xb7c0b8,0xe2d6b8,0xcdb99a,0xd9c7a8,0xa9b4b8,0xc4a88a,0xe0d0c0,0xd8b8a0,0xb8c8b0];
+ const segD=(x,z)=>{let best=1e9;for(const L of ROADLINES)for(let i=0;i<L.length-1;i++){const a=L[i],b=L[i+1],dx=b[0]-a[0],dz=b[1]-a[1],l2=dx*dx+dz*dz||1;let t=((x-a[0])*dx+(z-a[1])*dz)/l2;t=Math.max(0,Math.min(1,t));const d=Math.hypot(x-(a[0]+dx*t),z-(a[1]+dz*t));if(d<best)best=d}return best};
+ let CM=300;const out=[],rects=FLATS.slice();
+ const free=(x,z,hw,hd,sp)=>{if(coastMain(x,z)<CM)return false;for(const A of rects)if(x>A.x0-hw-10&&x<A.x1+hw+10&&z>A.z0-hd-10&&z<A.z1+hd+10)return false;for(const h of out)if(Math.abs(h.x-x)<(h.w+hw*2)/2+sp&&Math.abs(h.z-z)<(h.d+hd*2)/2+sp)return false;if(segD(x,z)<Math.max(hw,hd)+12)return false;return true};
+ const put=(x,z,w,d,fl,st,rot,color,mg,extra)=>{const S=Object.assign({id:'sub'+out.length,x:+x.toFixed(1),z:+z.toFixed(1),w:+w.toFixed(1),d:+d.toFixed(1),floors:fl,rot,style:st,color,band:r()<.5?1:0,mg,rural:1},extra||{});if(fl<=2&&st!=='panel'&&r()<.6)S.roof='gable';if(fl>=2&&st==='plaster'&&r()<.4)S.balcony=1;out.push(S);return S};
+ // 1) vielas de casas saindo de cada cidade para fora (dos 4 lados)
+ let lane=0;for(const C of TOWNS){if(C.n==='Zênite')continue;const sides=[[0,-1],[0,1],[-1,0],[1,0]];
+  for(const [sx,sz] of sides){const nl=r()<.55?1:0;for(let li=0;li<nl;li++){const hor=sx!==0;const along=hor?R_(C.z0+10,C.z1-10):R_(C.x0+10,C.x1-10);
+    let px=hor?(sx>0?C.x1+22:C.x0-22):along,pz=hor?along:(sz>0?C.z1+22:C.z0-22);const nh=2+Math.floor(r()*3),mg='sub'+(lane++);
+    for(let k=0;k<nh;k++){const stp=22+r()*10;for(const side of [-1,1]){if(r()<.2)continue;const off=side*(12+r()*5),x=hor?px:px+off,z=hor?pz+off:pz,w=R_(9,13),d=R_(8,10.5),fl=r()<.55?1:2,st=r()<.6?'plaster':r()<.55?'brick':'panel';
+      if(!free(x,z,w/2,d/2,9))continue;
+      // frente voltada para a viela
+      const rot=hor?(side>0?Math.PI:0):(side>0?-Math.PI/2:Math.PI/2);put(x,z,w,d,fl,st,rot,pal[Math.floor(r()*pal.length)],mg)}
+      if(hor)px+=sx*stp;else pz+=sz*stp}}}}
+ // 2) vários prédios em volta dos locais especiais (fazenda grande, porto, base, usina, galpões, escola...)
+ const ring=(S,n,kinds,rmin,rmax)=>{if(!S)return;CM=(S.id==='cais'||S.id==='praia')?40:300;let k=0,tries=0;const mg='comp'+S.id;while(k<n&&tries++<n*60){const kd=kinds[Math.floor(r()*kinds.length)],a=r()*6.283,rr=R_(rmin,rmax),x=(S.x0+S.x1)/2+Math.cos(a)*((S.x1-S.x0)/2+rr),z=(S.z0+S.z1)/2+Math.sin(a)*((S.z1-S.z0)/2+rr);
+   const w=R_(kd.w[0],kd.w[1]),d=R_(kd.d[0],kd.d[1]);if(!free(x,z,w/2,d/2,10))continue;
+   put(x,z,w,d,kd.f,kd.st,[0,Math.PI/2,Math.PI,-Math.PI/2][Math.floor(r()*4)],kd.c?kd.c[Math.floor(r()*kd.c.length)]:pal[Math.floor(r()*pal.length)],mg,kd.x);k++}CM=300};
+ const house={w:[9,12],d:[8,10],f:1,st:'plaster'},house2={w:[10,13],d:[8,10],f:2,st:'plaster'},barn={w:[18,26],d:[10,14],f:1,st:'plaster',c:[0xa33a2a,0x8a3a2e,0x9a4a30]},shed={w:[8,11],d:[6,8],f:1,st:'plaster',c:[0xb9a98c,0x9aa39a]},depot={w:[22,32],d:[12,16],f:1,st:'plaster',c:[0xb8c3c9,0xa9b4b8,0x9fa8a3]},office={w:[11,14],d:[8,10],f:2,st:'brick'};
+ ring(SITEBY.fazenda,18,[house,house2,barn,barn,shed,shed,house],8,130);
+ ring(SITEBY.cais,14,[depot,depot,office,shed,house],10,90);
+ ring(SITEBY.base,10,[depot,shed,office],10,70);
+ ring(SITEBY.usina,8,[depot,shed,office],10,60);
+ ring(SITEBY.galpoes,10,[depot,depot,shed,office],8,70);
+ ring(SITEBY.escola,6,[house,house2,house],8,60);
+ ring(SITEBY.praia,8,[house,house2],8,70);
+ ring(SITEBY.posto,4,[house,shed],8,50);
+ ring(SITEBY.pedreira,5,[shed,shed,office],8,50);
+ return out})();
+for(const S of SUBURB)STRS.push(S);
 
 // ---- dados do mapa (vazios) que outros sistemas consultam ----
 const CX=[],CZ=[],BP=42,LK=[];

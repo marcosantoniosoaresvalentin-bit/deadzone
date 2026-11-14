@@ -85,7 +85,7 @@
   }
   function cullNow() {
     if (!frozen || mode === 'lobby') return; /* no lobby o mapa fica escondido */ const px = cam.position.x, pz = cam.position.z, high = mode === 'plane' || mode === 'sky' || mode === 'chute' || cam.position.y > 120;
-    const RD = high ? 900 : DZRD(), GD = Math.min(RD, [90, 130, 180, 240][q()]), ID = high ? 0 : Math.min(RD, [45, 65, 90, 130][q()]);
+    const RD = high ? 650 : DZRD(), GD = Math.min(RD, [90, 130, 180, 240][q()]), ID = high ? 0 : Math.min(RD, [45, 65, 90, 130][q()]);
     for (const e of CULL) { const d = Math.hypot(e.x - px, e.z - pz) - e.r, v = d < (e.int ? ID : e.glass ? GD : RD); if (e.o.visible !== v) e.o.visible = v; }
   }
   setInterval(cullNow, 300);
