@@ -20,7 +20,7 @@ const _mkW=mkW;mkW=function(t,lv,sil,vm){if(t!=='bow')return _mkW(t,lv,sil,vm);
  g.position.z=-.2;const o=new T.Group();o.add(g);o.ud={t:'bow',ar,s1,s2,hand};return o};
 const _animW=animW;animW=function(w,kv,rv,fc){const u=w&&w.ud;if(u&&u.t==='bow')return;_animW(w,kv,rv,fc)};
 // disparo normal do jogo vira "nada" para o arco (o tiro real é ao soltar a corda)
-let BD=0,BC=0,BM=0,SPH=0,SNC=0,BDs=0;const _fire2=fire;fire=function(fx,fz){if(wp==='bow'||wp==='sniper'){const q=slots[cur];if(q)q.mag++;BM=1;kk=0;return}_fire2(fx,fz)};
+let BD=0,BC=0,BM=0,SPH=0,SNC=0,BDs=0;const _fire2=fire;fire=function(fx,fz){if(wp==='bow'){const q=slots[cur];if(q)q.mag++;BM=1;kk=0;return}_fire2(fx,fz)};
 const _sfx=sfx;sfx=function(f,v,d,p){if(BM){BM=0;return}_sfx(f,v,d,p)};
 {const d=document.createElement('div');d.id='bdw';d.style.cssText='position:fixed;left:50%;top:58%;transform:translateX(-50%);width:90px;height:7px;background:rgba(0,0,0,.55);border-radius:4px;z-index:4;display:none';d.innerHTML='<i style="display:block;height:100%;width:0;background:#f0a830;border-radius:4px"></i>';document.body.appendChild(d)}
 const ARW=[],arM=new T.MeshStandardMaterial({color:0x8a6a3a}),arT=new T.MeshStandardMaterial({color:0x999999}),arG=new T.CylinderGeometry(.012,.012,.9,5),arH=new T.ConeGeometry(.03,.1,5);
@@ -34,7 +34,7 @@ let _at=performance.now();
 setInterval(()=>{const now=performance.now(),dt=Math.min(.05,(now-_at)/1000);_at=now;
  const q=cur>=0?slots[cur]:null,isB=q&&q.t==='bow'&&mode==='ground',ok=isB&&dw>=1&&mpOk()&&!rlOn&&!cast;BC=Math.max(0,BC-dt);
  if(ok){if((firing||keys.f)&&q.mag>0&&BC<=0)BD=Math.min(1,BD+dt/.9);else{if(BD>.2&&q.mag>0){shootArrow(BD);q.mag--;BC=.45;drawSlots()}BD=0}}else BD=0;
- {const isS=q&&q.t==='sniper'&&mode==='ground',hd=!!(firing||keys.f);if(isS&&dw>=1&&mpOk()&&!rlOn&&!cast){if(SPH&&!hd&&q.mag>0&&SNC<=0){q.mag--;SNC=WS.sniper.r;fcd=WS.sniper.r;kk=1;_fire2(Math.sin(pl.rotation.y),Math.cos(pl.rotation.y));if(!(window.gunSnd&&gunSnd(q.v,'sniper',0,0,q.sil)))_sfx(q.sil?700:1800,q.sil?.12:.5,q.sil?.1:.18,0);drawSlots()}SPH=hd?1:0}else SPH=0;SNC=Math.max(0,SNC-dt)}
+ {const isS=false&&q&&q.t==='sniper'&&mode==='ground',hd=!!(firing||keys.f);if(isS&&dw>=1&&mpOk()&&!rlOn&&!cast){if(SPH&&!hd&&q.mag>0&&SNC<=0){q.mag--;SNC=WS.sniper.r;fcd=WS.sniper.r;kk=1;_fire2(Math.sin(pl.rotation.y),Math.cos(pl.rotation.y));if(!(window.gunSnd&&gunSnd(q.v,'sniper',0,0,q.sil)))_sfx(q.sil?700:1800,q.sil?.12:.5,q.sil?.1:.18,0);drawSlots()}SPH=hd?1:0}else SPH=0;SNC=Math.max(0,SNC-dt)}
  HG.bow[0][2]=-.2-.32*BD-(BC>0?.12*BC/.45:0);if(BD>0&&!BDs){BDs=1;bowSnd(1)}if(BD===0)BDs=0;{const bc=$('bdc');bc.style.display=(q&&q.t==='bow'&&ads&&!q.sc&&adk>.85&&mode==='ground')?'block':'none'}
  for(const w of[rf.children[0],vmH.children[0]]){const u=w&&w.ud;if(u&&u.t==='bow'){bowPose(u)}}
  const bw=$('bdw');bw.style.display=BD>0?'block':'none';bw.firstChild.style.width=(BD*100)+'%';

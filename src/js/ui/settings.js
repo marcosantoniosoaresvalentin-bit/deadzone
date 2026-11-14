@@ -24,8 +24,10 @@ $('cAuto').onclick=()=>{CFG.auto^=1;$('cAuto').textContent=CFG.auto?'Ligado':'De
 $('cDoor').onclick=()=>{CFG.autoDoor^=1;$('cDoor').textContent=CFG.autoDoor?'Ligado':'Desligado';saveCfg()};
 $('cSens').oninput=e=>{CFG.sens=e.target.value/100;saveCfg()};
 setTimeout(applyLay,0);
-let adsPrev=0,autoed=0;
+let adsPrev=0,autoed=0,relP=null;
+// dispara UM tiro ao soltar (usa o laço normal do jogo por 2 quadros) e depois volta a mira como estava
+function relShot(){if(mode!=='ground'||!wp){firing=0;if(autoed){ads=adsPrev;autoed=0}return}const s0=cur>=0?slots[cur]:null,m0=s0?s0.mag:0,t0=performance.now();firing=1;const f=()=>{if(s0&&slots[cur]===s0&&s0.mag===m0&&m0>0&&!rlOn&&mode==='ground'&&performance.now()-t0<1600){requestAnimationFrame(f);return}firing=0;if(autoed){ads=adsPrev;autoed=0}};requestAnimationFrame(f)}
 function holdFire(el,auto){let lx=0,ly=0,pid=null;
- el.addEventListener('pointerdown',e=>{e.preventDefault();pid=e.pointerId;try{el.setPointerCapture(pid)}catch(_){}lx=e.clientX;ly=e.clientY;if(TS&&mode==='ground'&&mpOk()&&(TS==='gren'?bag.gren>0:bag.gel>0)){GA={k:TS,t:0,sy:e.clientY,rng:.5,pid};return}firing=1;if(auto&&CFG.auto&&mode==='ground'&&wp){adsPrev=ads;ads=1;autoed=1}});
+ el.addEventListener('pointerdown',e=>{e.preventDefault();pid=e.pointerId;try{el.setPointerCapture(pid)}catch(_){}lx=e.clientX;ly=e.clientY;if(TS&&mode==='ground'&&mpOk()&&(TS==='gren'?bag.gren>0:bag.gel>0)){GA={k:TS,t:0,sy:e.clientY,rng:.5,pid};return}/* sniper e 12 no botão com "mirar enquanto atira": segura = mira, solta = dispara */if(auto&&CFG.auto&&mode==='ground'&&(wp==='sniper'||wp==='shotgun')){relP=pid;adsPrev=ads;ads=1;autoed=1;const p0=pid,keep=()=>{if(relP===p0&&relP!=null){if(dw>=1&&!ads)ads=1;requestAnimationFrame(keep)}};requestAnimationFrame(keep);return}firing=1;if(auto&&CFG.auto&&mode==='ground'&&wp){adsPrev=ads;ads=1;autoed=1}});
  el.addEventListener('pointermove',e=>{if(e.pointerId!==pid)return;if(GA&&GA.pid===pid){GA.rng=Math.max(0,Math.min(1,.5+(GA.sy-e.clientY)/160));look(e.clientX-lx,0)}else look(e.clientX-lx,e.clientY-ly);lx=e.clientX;ly=e.clientY});
- const up=e=>{if(e.pointerId!==pid)return;if(GA&&GA.pid===pid)releaseAim();pid=null;firing=0;if(autoed){ads=adsPrev;autoed=0}};el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up)}
+ const up=e=>{if(e.pointerId!==pid)return;if(GA&&GA.pid===pid)releaseAim();if(relP===pid&&relP!=null){relP=null;pid=null;relShot();return}pid=null;firing=0;if(autoed){ads=adsPrev;autoed=0}};el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up)}
