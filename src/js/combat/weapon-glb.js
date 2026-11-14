@@ -223,7 +223,7 @@
         SG = SIGHT[k] = { rt: (() => { let r = -1e9; const v2 = new T.Vector3(); inner.traverse(o => { if (!o.isMesh) return; const P = o.geometry.attributes.position; for (let i = 0; i < P.count; i++) { v2.fromBufferAttribute(P, i).applyMatrix4(o.matrixWorld); if (Math.abs(v2.z - Sm[0] - .02) < .03 && Math.abs(v2.x) < .02 && v2.y > r && v2.y < fy - .004) r = v2.y; } }); return r > -1e8 ? r : null; })(), y: my > -1e8 ? my : null, z: mz, r: (over || my < -1e8) ? null : rearSight(inner, Sm[0], my), post: over && t === 'shotgun' ? [fy, mz] : null }; }
       if (SG.post) { const [fy0, pz] = SG.post, h = SG.y - fy0; add(new T.BoxGeometry(.005, h, .008), blk, 0, fy0 + h / 2, pz); add(new T.SphereGeometry(.0045, 10, 8), M.metal || blk, 0, SG.y - .002, pz); } // escopeta sem mira de trás: alça com bolinha na ponta do cano
       if (SG.y != null) {
-        ey = [0, SG.y + .0015, SG.post ? Math.min(ey[2], -.2) : ey[2]]; noGl = !!SG.post || t === 'shotgun';
+        ey = [0, SG.y + .0015, SG.post ? Math.min(ey[2], -.34) : ey[2]]; noGl = !!SG.post || t === 'shotgun';
         let okR = false;
         if (vm && SG.r != null) { const dy = SG.y - SG.r, dz = SG.z - Sm[0]; if (Math.abs(dy) < .015 && dz > .05) { okR = true; tilt = Math.atan2(dy, dz); ey[1] = SG.y * Math.cos(tilt) - SG.z * Math.sin(tilt) + .0015; } }
         // sem mira de trás no modelo (ou não encontrada): aro de trás na linha exata da mira da frente
@@ -237,7 +237,7 @@
     }
     if (it.length) { const q = new T.Group(); bake(q, it); q.traverse(o => { if (o.isMesh) o.castShadow = !vm; }); g.add(q); }
     // tela de mira: some a parte da arma colada no olho (coronha/caixa a menos de 12 cm), que aparecia cortada por dentro
-    if (vm && ey) { try { g.updateMatrixWorld(true); const zc = ey[2] + .14, v3 = new T.Vector3();
+    if (vm && ey) { try { g.updateMatrixWorld(true); const zc = ey[2] + (noGl && t === 'shotgun' ? .1 : .14), v3 = new T.Vector3();
       g.traverse(o => { if (!o.isMesh) return; const G0 = o.geometry, P = G0.attributes.position, ix = G0.index, n = ix ? ix.count : P.count, keep = [];
         for (let i = 0; i < n; i += 3) { let mn = 1e9; for (let k = 0; k < 3; k++) { v3.fromBufferAttribute(P, ix ? ix.getX(i + k) : i + k).applyMatrix4(o.matrixWorld); if (v3.z < mn) mn = v3.z; } if (mn < zc) continue; for (let k = 0; k < 3; k++) keep.push(ix ? ix.getX(i + k) : i + k); }
         if (keep.length < n) { const G1 = G0.clone(); G1.setIndex(keep); o.geometry = G1; } }); } catch (e) { } }
