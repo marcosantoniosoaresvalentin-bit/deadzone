@@ -1,5 +1,10 @@
 # Histórico de versões
 
+## 3.37.2 — arco ajustado
+- Ao mirar/puxar, o braço do arco fica **esticado para a frente** e a mão da corda para no rosto (antes atravessava as costas).
+- O anel de mira voltou a ficar **preso na lateral do arco**, com o ponto de mira no centro dele.
+- A flecha fica **apoiada ao lado** da madeira (não atravessa mais o arco).
+
 ## 3.37.1 — sem travamentos, miras de ferro certas e arco novo
 - **Travamentos corrigidos**: o visual novo brigava com o sol que segue o jogador (sombras tremendo e cena sendo refeita a
   cada 2 s) e a vinheta pesava no celular; agora fica só a correção de cor, que não custa nada.
