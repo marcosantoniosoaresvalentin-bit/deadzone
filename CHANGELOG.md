@@ -1,5 +1,10 @@
 # Histórico de versões
 
+## 3.35.1 — alças da mochila
+- **Alças novas** feitas sob medida no corpo do personagem: saem do topo da mochila, passam por cima dos ombros, descem
+  pela frente do peito (com fivela de ajuste) e voltam por baixo dos braços. As alças antigas do modelo, que ficavam
+  por dentro do corpo, foram removidas.
+
 ## 3.35.0 — HUD novo, mapa novo, caixa de morte e mochila nível 1
 - **Personagem**: sem a "touca" antiga por cima da cabeça.
 - **Mapa grande** (no chão, avião e paraquedas): missões diárias ao vivo à esquerda (recolhíveis), zoom com + / − / barra /

@@ -651,10 +651,59 @@
     return G;
   }
   let GEAR = null, BAGM = null, BAGDET = null;
+  /* ALÇAS DA MOCHILA medidas no corpo do personagem (pose de referência): saem do topo da mochila, passam por cima
+     do ombro, descem pela frente do peito e voltam por baixo do braço até a mochila. Presas ao Spine2. */
+  function strapDefs(scene, D) {
+    const B = D.B; let sk = null; scene.traverse(o => { if (o.isSkinnedMesh && !sk && o.geometry.attributes.position.count > 3000) sk = o; }); if (!sk || !B.Spine2) return null;
+    const TOR = new Set(['Spine', 'Spine1', 'Spine2', 'Neck', 'LeftShoulder', 'RightShoulder'].map(n => sk.skeleton.bones.indexOf(B[n])).filter(i => i >= 0));
+    const G = sk.geometry, P = G.attributes.position, SI = G.attributes.skinIndex, SW = G.attributes.skinWeight, V_ = [], v = new T.Vector3();
+    sk.updateMatrixWorld(true); sk.skeleton.update();
+    for (let i = 0; i < P.count; i++) { let w = 0; for (const k of ['getX', 'getY', 'getZ', 'getW']) if (TOR.has(SI[k](i))) w += SW[k](i); if (w < .55) continue; v.fromBufferAttribute(P, i); sk.boneTransform(i, v); v.applyMatrix4(sk.matrixWorld); V_.push(v.clone()); }
+    if (V_.length < 200) return null;
+    const near = (x, y, r) => V_.filter(q => Math.abs(q.x - x) < r && Math.abs(q.y - y) < r);
+    const zF = (x, y) => { const L = near(x, y, .022); return L.length ? Math.max(...L.map(q => q.z)) : null; }, zB = (x, y) => { const L = near(x, y, .022); return L.length ? Math.min(...L.map(q => q.z)) : null; };
+    const yTop = x => { const L = V_.filter(q => Math.abs(q.x - x) < .015); return L.length ? Math.max(...L.map(q => q.y)) : null; };
+    const xSide = (y, s) => { const L = V_.filter(q => Math.abs(q.y - y) < .02 && q.x * s > 0); return L.length ? s * Math.max(...L.map(q => q.x * s)) : null; };
+    const geos = [], sp = wp(B.Spine2), O = .012;
+    for (const s of [-1, 1]) {
+      const x0 = s * .085, ySh = yTop(x0); if (ySh == null) continue;
+      const pts = [];
+      const add = (x, y, z) => { if (z != null) pts.push(new T.Vector3(x, y, z)); };
+      add(s * .08, ySh - .07, (zB(s * .08, ySh - .07) || sp.z - .1) - O - .01);   // costas, perto do topo da mochila
+      add(s * .088, ySh + O, ((zB(s * .088, ySh - .02) || 0) + (zF(s * .088, ySh - .02) || 0)) / 2); // por cima do ombro
+      add(s * .098, ySh - .06, (zF(s * .098, ySh - .06) || sp.z + .1) + O);       // frente, alto
+      add(s * .108, ySh - .17, (zF(s * .108, ySh - .17) || sp.z + .1) + O);       // peito
+      add(s * .125, ySh - .27, (zF(s * .125, ySh - .27) || sp.z + .1) + O * .8);  // embaixo do peito
+      { const y = ySh - .31, xs = xSide(y, s); if (xs != null) add(xs + s * O, y, ((zB(xs - s * .03, y) || 0) + (zF(xs - s * .03, y) || 0)) / 2); } // lateral, embaixo do braço
+      add(s * .12, ySh - .33, (zB(s * .12, ySh - .33) || sp.z - .1) - O - .02);   // volta para a mochila
+      if (pts.length < 5) continue;
+      const cv = new T.CatmullRomCurve3(pts, false, 'centripetal'), N = 48, W = .044, TH = .009, pos = [], idx = [];
+      const ax = new T.Vector3(); let lastN = null;
+      for (let i = 0; i <= N; i++) {
+        const u = i / N, p = cv.getPoint(u), t = cv.getTangent(u);
+        ax.set(0, p.y, sp.z); const n = p.clone().sub(ax); n.addScaledVector(t, -n.dot(t)); if (n.lengthSq() < 1e-6) n.copy(lastN || new T.Vector3(0, 1, 0)); n.normalize(); if (lastN) { if (n.dot(lastN) < 0) n.negate(); n.lerp(lastN, .5).normalize(); } lastN = n.clone();
+        const b = new T.Vector3().crossVectors(t, n).normalize();
+        for (const [bb, nn] of [[-1, 1], [1, 1], [1, -1], [-1, -1]]) pos.push(p.x + b.x * bb * W / 2 + n.x * nn * TH / 2, p.y + b.y * bb * W / 2 + n.y * nn * TH / 2, p.z + b.z * bb * W / 2 + n.z * nn * TH / 2);
+        if (i) { const a = (i - 1) * 4, c = i * 4; for (let k = 0; k < 4; k++) { const k2 = (k + 1) % 4; idx.push(a + k, c + k, c + k2, a + k, c + k2, a + k2); } }
+      }
+      const g = new T.BufferGeometry(); g.setAttribute('position', new T.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals(); geos.push(g);
+      // regulador (fivela) no peito
+      const q = cv.getPoint(.52), bk = new T.BoxGeometry(.05, .03, .014); bk.translate(q.x, q.y, q.z + .006); geos.push(bk.toNonIndexed());
+    }
+    if (!geos.length) return null;
+    const merged = geos.map(g => { const n = g.index ? g.toNonIndexed() : g; for (const k of Object.keys(n.attributes)) if (k !== 'position' && k !== 'normal') n.deleteAttribute(k); if (!n.attributes.normal) n.computeVertexNormals(); return n; });
+    let out = merged[0]; try { if (T.BufferGeometryUtils) out = T.BufferGeometryUtils.mergeBufferGeometries(merged); else { const pp = [], nn = []; for (const m of merged) { pp.push(...m.attributes.position.array); nn.push(...m.attributes.normal.array); } out = new T.BufferGeometry(); out.setAttribute('position', new T.Float32BufferAttribute(pp, 3)); out.setAttribute('normal', new T.Float32BufferAttribute(nn, 3)); } } catch (e) { }
+    return { geo: out, m: new T.Matrix4().copy(B.Spine2.matrixWorld).invert() };
+  }
+  // tira as alças originais do modelo (lado das costas, z > .14): elas ficavam dentro do corpo
+  function noStraps(g) {
+    const P = g.attributes.position, ix = g.index ? g.index.array : null, n = ix ? ix.length : P.count, keep = [];
+    for (let t = 0; t < n; t += 3) { const a = ix ? ix[t] : t, b = ix ? ix[t + 1] : t + 1, c = ix ? ix[t + 2] : t + 2; if (P.getZ(a) > .14 && P.getZ(b) > .14 && P.getZ(c) > .14) continue; keep.push(a, b, c); }
+    g.setIndex(keep); return g; }
   function setBag(scene) {
     const g = new T.Group(); BAGDET = new T.MeshStandardMaterial({ vertexColors: true, roughness: .72, metalness: .05 });
     scene.updateMatrixWorld(true);
-    scene.traverse(o => { if (!o.isMesh) return; const m = new T.Mesh(o.geometry.clone().applyMatrix4(o.matrixWorld), null); m.name = /detail/.test(o.name) ? 'detail' : 'fabric'; m.geometry.computeBoundingSphere(); g.add(m); });
+    scene.traverse(o => { if (!o.isMesh) return; let gg = o.geometry.clone().applyMatrix4(o.matrixWorld); if (/detail/.test(o.name)) gg = noStraps(gg); const m = new T.Mesh(gg, null); m.name = /detail/.test(o.name) ? 'detail' : 'fabric'; m.geometry.computeBoundingSphere(); g.add(m); });
     BAGM = g;
     // item no chão / foto da mochila
     window.DZBAGMESH = () => { const c = BAGM.clone(true); c.traverse(o => { if (o.isMesh) { o.material = o.name === 'detail' ? BAGDET : (window.__dzBagFab || (window.__dzBagFab = new T.MeshStandardMaterial({ color: lin(0x4d5a3a), vertexColors: true, roughness: .9 }))); o.castShadow = true; } }); return c; };
@@ -687,6 +736,7 @@
     }
     return GEAR;
   }
+  let STRAPM = null;
   const FAB = (c, r) => new T.MeshStandardMaterial({ color: lin(c), roughness: r || .85, metalness: 0 });
   function addGear(av) {
     const G = TPL.gear, M = gearMeshes(G), B = av.B;
@@ -698,7 +748,7 @@
       B[def.bone].add(holder); holder.visible = false; return holder;
     };
     av.gearMat = { helm: FAB(0x3b4430, .55), vest: FAB(0x2f3828), bag: (() => { const m = FAB(0x4d5a3a, .9); m.vertexColors = true; return m; })(), hair: FAB(0x2a1d14, .95) };
-    av.gear = { hair: mk('helm', G.helm ? G.helm.r * .8 : .1, av.gearMat.hair, 'hair'), helm: mk('helm', G.helm ? G.helm.r : .13, av.gearMat.helm), vest: mk('vest', G.vest ? G.vest.w : .36, av.gearMat.vest), bag: mk('bag', G.bag ? G.bag.w * .9 : .3, av.gearMat.bag) };
+    av.gear = { straps: (() => { const S = TPL.straps; if (!S || !B.Spine2) return null; const h = new T.Group(); h.matrixAutoUpdate = false; h.matrix.copy(S.m); const me = new T.Mesh(S.geo, STRAPM || (STRAPM = new T.MeshStandardMaterial({ color: lin(0x1b1d1a), roughness: .8, metalness: .05 }))); me.castShadow = true; h.add(me); B.Spine2.add(h); h.visible = false; return h; })(), hair: mk('helm', G.helm ? G.helm.r * .8 : .1, av.gearMat.hair, 'hair'), helm: mk('helm', G.helm ? G.helm.r : .13, av.gearMat.helm), vest: mk('vest', G.vest ? G.vest.w : .36, av.gearMat.vest), bag: mk('bag', G.bag ? G.bag.w * .9 : .3, av.gearMat.bag) };
   }
 
   /* ---------- skins: estampas de tecido geradas por código ---------- */
@@ -779,7 +829,7 @@
     let h, v, b;
     if (typeof pl !== 'undefined' && rig.pl === pl) { try { h = ARM.helm > 0; v = ARM.vest > 0; b = bagLv > 0; } catch (e) { h = v = b = false; } }
     else { h = rig.seed % 2 === 0; v = rig.seed % 3 !== 1; b = rig.seed % 4 !== 0; }
-    if (av.gear.helm) av.gear.helm.visible = !!h; if (av.gear.hair) av.gear.hair.visible = false; /* o personagem novo já tem cabelo próprio */ if (av.gear.vest) av.gear.vest.visible = !!v; if (av.gear.bag) av.gear.bag.visible = !!b;
+    if (av.gear.helm) av.gear.helm.visible = !!h; if (av.gear.hair) av.gear.hair.visible = false; /* o personagem novo já tem cabelo próprio */ if (av.gear.vest) av.gear.vest.visible = !!v; if (av.gear.bag) av.gear.bag.visible = !!b; if (av.gear.straps) av.gear.straps.visible = !!b && !!av.gear.bag;
   }
 
   function load() {
@@ -795,7 +845,7 @@
       const scene = human.scene;
       scene.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false; if (o.material) o.material.envMapIntensity = .7; } });
       const D = calibrate(scene, true);
-      TPL = { scene, D, gear: gearDefs(D) }; D.wrap.remove(scene); DZR.ready = true;
+      TPL = { scene, D, gear: gearDefs(D) }; try { TPL.straps = strapDefs(scene, D); } catch (e) { } D.wrap.remove(scene); DZR.ready = true;
       for (const r of DZR.rigs) attach(r);
     };
     try {
