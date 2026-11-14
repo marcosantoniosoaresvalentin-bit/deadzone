@@ -1,5 +1,9 @@
 # Histórico de versões
 
+## 3.37.4 — escopetas sem mira de trás
+- M870 e Serrada (sem mira de trás no modelo): a mira passa por cima da arma e ganhou uma alça com bolinha na ponta do
+  cano, exatamente no centro da tela (antes a tela de mira mostrava só um bloco preto).
+
 ## 3.37.3 — miras de ferro alinhadas
 - O jogo mede, em cada arma, o centro do aro (ou entalhe) da mira de trás e inclina levemente a arma na tela de mira
   para que ele fique na mesma linha da ponta da mira da frente. Resultado: a ponta da frente aparece no meio do aro de

@@ -219,8 +219,9 @@
     if (!((t === 'rifle' || t === 'sniper') && lv > 0)) { try { const k = t + ':' + v; let SG = SIGHT[k];
       if (!SG) { g.updateMatrixWorld(true); const zM = Mm[0], zG = Gm[0], L = zM - zG, z0 = zM - L * (t === 'pistol' ? .45 : .32), lo = Math.min(z0, zM), hi = Math.max(z0, zM); let my = -1e9, ma = -1e9, mz = 0; const vv = new T.Vector3();
         inner.traverse(o => { if (!o.isMesh) return; const P = o.geometry.attributes.position; for (let i = 0; i < P.count; i++) { vv.fromBufferAttribute(P, i).applyMatrix4(o.matrixWorld); if (vv.y > ma) ma = vv.y; if (vv.z >= lo && vv.z <= hi && vv.y > my) { my = vv.y; mz = vv.z; } } });
-        let over = false; if (t === 'sniper' && ma - my > .03) { my = ma + .004; over = true; } // sniper pesada sem luneta: mira por cima da arma
-        SG = SIGHT[k] = { y: my > -1e8 ? my : null, z: mz, r: (over || my < -1e8) ? null : rearSight(inner, Sm[0], my) }; }
+        let over = false, fy = my; if ((t === 'sniper' && ma - my > .03) || (t === 'shotgun' && ma - my > .008)) { my = ma + .004; over = true; } // sniper pesada sem luneta: mira por cima da arma
+        SG = SIGHT[k] = { y: my > -1e8 ? my : null, z: mz, r: (over || my < -1e8) ? null : rearSight(inner, Sm[0], my), post: over && t === 'shotgun' ? [fy, mz] : null }; }
+      if (SG.post) { const [fy0, pz] = SG.post, h = SG.y - fy0; add(new T.BoxGeometry(.005, h, .008), blk, 0, fy0 + h / 2, pz); add(new T.SphereGeometry(.0045, 10, 8), M.metal || blk, 0, SG.y - .002, pz); } // escopeta sem mira de trás: alça com bolinha na ponta do cano
       if (SG.y != null) {
         ey = [0, SG.y + .0015, ey[2]];
         if (vm && SG.r != null) { const dy = SG.y - SG.r, dz = SG.z - Sm[0]; if (Math.abs(dy) < .015 && dz > .05) { tilt = Math.atan2(dy, dz); ey[1] = SG.y * Math.cos(tilt) - SG.z * Math.sin(tilt) + .0015; } }
