@@ -142,7 +142,7 @@
 })();
 
 /* =====================================================================
-   MODELOS 3D REALISTAS (Microsoft Remix 3D, CC0)
+   MODELOS 3D REALISTAS
    Carregados depois que o mapa existe; cada veículo troca o visual quando
    está perto da câmera (longe, fica o modelo leve para não pesar no celular).
    ===================================================================== */

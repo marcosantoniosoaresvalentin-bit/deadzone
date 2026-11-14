@@ -9,8 +9,7 @@
   salto e no ar, e o personagem pisca os olhos.
 
 ## 3.33.0 — personagem novo realista
-- **Personagem novo** no lugar do antigo (que era um avatar de desenho): homem realista do pacote Microsoft
-  Rocketbox (licença MIT) — rosto, pele, olhos, barba e cabelo de foto, 1,80 m, corpo atlético — começando
+- **Personagem novo** no lugar do antigo (que era um avatar de desenho): homem realista — rosto, pele, olhos, barba e cabelo de foto, 1,80 m, corpo atlético — começando
   **só de cueca** (as roupas virão como skins). Texturas em alta (2048 px) com mapas de relevo, contraste e nitidez
   ajustados. Funciona em todas as animações: parado, andar, correr, agachar, deitar/rastejar, mirar, paraquedas,
   derrubado e no lobby; bots também usam o modelo novo.

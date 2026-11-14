@@ -4,7 +4,7 @@
  *  - muretas em volta dos lotes (dá para pular por cima) e praças com muretas/blocos de concreto (cobertura);
  *  - postes de luz;
  *  - móveis dentro dos prédios com interior (cama, sofá, mesa, escrivaninha, cadeira) — aparecem só de perto.
- * Modelos prontos (CC0, Microsoft Remix 3D via Ethereal Engine Open Asset Kit): móveis.
+ * Modelos prontos móveis.
  */
 (function () {
   if (typeof TOWNS === 'undefined') return;

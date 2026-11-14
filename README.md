@@ -102,32 +102,4 @@ Detalhes técnicos em [docs/ARQUITETURA.md](docs/ARQUITETURA.md).
 - **Lançamento com APK**: crie uma tag (`git tag v1.0.0 && git push --tags`) e o workflow
   *Lançamento* publica o APK e o arquivo único na página **Releases**.
 
-## Créditos
-
-- Motor 3D: [three.js](https://threejs.org) r128 (licença MIT).
-- Online: [MQTT.js](https://github.com/mqttjs/MQTT.js) (licença MIT) com broker público EMQX.
-- Personagem: "Sports_Male_01" do [Microsoft Rocketbox](https://github.com/microsoft/Microsoft-Rocketbox) — modificado para o Deadzone (rosto, cabelo, olhos, barba, abdômen, tatuagem)
-  (Copyright (c) 2020 Microsoft, licença MIT), convertido para GLB com ossos renomeados e texturas ajustadas.
-- Animações de captura de movimento: `Soldier.glb` dos exemplos do three.js (Mixamo).
-- Avião C-130: "YC-130 (Prototype of C-130)" por [KOG_THORNS](https://sketchfab.com/ioai25312),
-  [Sketchfab](https://sketchfab.com/3d-models/yc-130prototype-of-c-130-11d237757851434ab5cb853db80376bb),
-  licença [CC-BY 4.0](http://creativecommons.org/licenses/by/4.0/) (texturas reduzidas e convertidas para WebP).
-- Prédios e casas com interior: gerados por código (`src/js/world/structures.js`).
-- Cidade (ruas, calçadas, muretas, praças): gerada por código (`src/js/world/city.js`).
-- Paraquedas: velame e linhas do parapente "paraglider-red-ridge" da
-  [SwissAirfields](https://github.com/SwissAirfields/SwissAirfieldsFS2020) (CC0).
-- Veículos (buggy e helicóptero): biblioteca Microsoft Remix 3D
-  (CC0), via [Ethereal Engine Open Asset Kit](https://github.com/ir-engine/ir-engine-assets-basic).
-- Planador (ultraleve de asa-delta): trike `trike.glb` e asa `glider_trike_ixess15.glb` do projeto
-  [Deltaplan](https://github.com/thegriglat/deltaplan) © 2026 Grigory Latyshev, licença MIT
-  (vela recolorida e textura do pneu embutida no arquivo).
-- Armas: "Flat Guns West" e "Flat Guns East" ([OpenGameArt](https://opengameart.org/content/cc0-flat-guns-west), CC0),
-  via [fps-asset-kit](https://github.com/petroulacl/fps-asset-kit) (materiais trocados por código).
-- Sons de tiro: Free Firearm Sound Library (CC0), via fps-asset-kit.
-- Lunetas e silenciadores: "Ultimate Gun Pack" da [Quaternius](https://quaternius.com/packs/ultimategun.html) (CC0),
-  via [jam-ready-assets](https://github.com/series-ai/jam-ready-assets).
-- Cartuchos e granadas: "Weapon Pack" da [Kenney](https://kenney.nl) (CC0), cores trocadas por código.
-- Texturas de grama, tijolo e ondas da água: exemplos do three.js.
-- Folhas, agulhas, casca, pedra, telhas e reboco: geradas por código.
-
 © Deadzone 3D. Todos os direitos reservados ao autor.
