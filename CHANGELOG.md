@@ -1,5 +1,10 @@
 # Histórico de versões
 
+## 3.37.3 — miras de ferro alinhadas
+- O jogo mede, em cada arma, o centro do aro (ou entalhe) da mira de trás e inclina levemente a arma na tela de mira
+  para que ele fique na mesma linha da ponta da mira da frente. Resultado: a ponta da frente aparece no meio do aro de
+  trás, exatamente no centro da tela, onde o tiro vai. Feito nas 20 armas.
+
 ## 3.37.2 — arco ajustado
 - Ao mirar/puxar, o braço do arco fica **esticado para a frente** e a mão da corda para no rosto (antes atravessava as costas).
 - O anel de mira voltou a ficar **preso na lateral do arco**, com o ponto de mira no centro dele.

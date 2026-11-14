@@ -130,6 +130,25 @@
     const gr = x.createRadialGradient(128, 128, 104, 128, 128, 128); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,.85)'); x.fillStyle = gr; x.fillRect(0, 0, 256, 256);
     _ret = new T.CanvasTexture(c); return _ret; }
   const EYZ = { pistol: -.15, rifle: -.12, shotgun: -.13, sniper: -.12 }, SIGHT = {};
+  // centro do aro (ou topo do entalhe) da mira de trás: desenha só a fatia da arma em volta da mira de trás
+  // e procura, na linha do meio, o buraco do aro; sem aro, usa o topo da lâmina com entalhe
+  function rearSight(inner, sz, yF) {
+    try {
+      const S = 200, R = .08, PX = S / (2 * R), cx = S / 2, c = document.createElement('canvas'); c.width = c.height = S; const g = c.getContext('2d');
+      g.fillStyle = '#000'; g.fillRect(0, 0, S, S); g.fillStyle = '#fff';
+      const z0 = sz - .06, z1 = sz + .06, A = new T.Vector3(), B = new T.Vector3(), C = new T.Vector3();
+      inner.traverse(o => { if (!o.isMesh) return; const P = o.geometry.attributes.position, ix = o.geometry.index, n = ix ? ix.count : P.count;
+        for (let i = 0; i < n; i += 3) { A.fromBufferAttribute(P, ix ? ix.getX(i) : i).applyMatrix4(o.matrixWorld); B.fromBufferAttribute(P, ix ? ix.getX(i + 1) : i + 1).applyMatrix4(o.matrixWorld); C.fromBufferAttribute(P, ix ? ix.getX(i + 2) : i + 2).applyMatrix4(o.matrixWorld);
+          if (Math.max(A.z, B.z, C.z) < z0 || Math.min(A.z, B.z, C.z) > z1) continue; g.beginPath(); for (const q of [A, B, C]) g.lineTo(cx + q.x * PX, S / 2 - (q.y - yF) * PX); g.closePath(); g.fill(); } });
+      const d = g.getImageData(cx - 1, 0, 3, S).data, runs = []; let st = -1;
+      for (let y = 0; y < S; y++) { const on = d[(y * 3 + 1) * 4] > 128; if (on && st < 0) st = y; if (!on && st >= 0) { runs.push([st, y - 1]); st = -1; } } if (st >= 0) runs.push([st, S - 1]);
+      const toY = py => yF + (S / 2 - py) / PX;
+      if (runs.length >= 2 && runs[1][0] - runs[0][1] > 3) return toY((runs[0][1] + runs[1][0]) / 2);
+      const w = Math.round(PX * .06), dd = g.getImageData(Math.round(cx - w / 2), 0, w, S).data;
+      for (let y = 0; y < S; y++) for (let x = 0; x < w; x++) if (dd[(y * w + x) * 4] > 128) return toY(y);
+    } catch (e) { }
+    return null;
+  }
   function build(t, lv, sil, vm, v) {
     if (!v || !WV[v] || WV[v].t !== t) v = BYT[t][0];
     const D = WV[v], src = SRC[v]; if (!src) return null;
@@ -193,19 +212,25 @@
         ey = [0, ax, zc - .35];
       }
     }
-    // MIRA DE FERRO: mede no modelo a ponta da massa de mira (parte da frente do cano) e põe o olho exatamente
-    // nessa altura -> a ponta da mira fica no centro da tela, onde o tiro vai (antes a mira ficava acima do ponto do tiro)
-    if (!((t === 'rifle' || t === 'sniper') && lv > 0)) { try { const k = t + ':' + v; let yS = SIGHT[k];
-      if (yS == null) { g.updateMatrixWorld(true); const zM = Mm[0], zG = Gm[0], L = zM - zG, z0 = zM - L * (t === 'pistol' ? .45 : .32), lo = Math.min(z0, zM), hi = Math.max(z0, zM); let my = -1e9, ma = -1e9; const vv = new T.Vector3();
-        inner.traverse(o => { if (!o.isMesh) return; const P = o.geometry.attributes.position; for (let i = 0; i < P.count; i++) { vv.fromBufferAttribute(P, i).applyMatrix4(o.matrixWorld); if (vv.y > ma) ma = vv.y; if (vv.z >= lo && vv.z <= hi && vv.y > my) my = vv.y; } });
-        if (t === 'sniper' && ma - my > .03) my = ma + .004; // sniper pesada sem luneta: a traseira tapava a visão -> mira por cima da arma
-        yS = SIGHT[k] = my > -1e8 ? my : null; }
-      if (yS != null) ey = [0, yS + .0015, ey[2]]; } catch (e) { } }
+    // MIRA DE FERRO: mede no modelo a ponta da massa de mira (frente) e o centro do aro/entalhe de trás.
+    // O olho fica na altura da ponta da frente (= centro da tela, onde o tiro vai) e, na tela de mira, a arma é
+    // inclinada de leve para que o centro do aro de trás fique na mesma linha (as duas miras alinhadas).
+    let tilt = 0;
+    if (!((t === 'rifle' || t === 'sniper') && lv > 0)) { try { const k = t + ':' + v; let SG = SIGHT[k];
+      if (!SG) { g.updateMatrixWorld(true); const zM = Mm[0], zG = Gm[0], L = zM - zG, z0 = zM - L * (t === 'pistol' ? .45 : .32), lo = Math.min(z0, zM), hi = Math.max(z0, zM); let my = -1e9, ma = -1e9, mz = 0; const vv = new T.Vector3();
+        inner.traverse(o => { if (!o.isMesh) return; const P = o.geometry.attributes.position; for (let i = 0; i < P.count; i++) { vv.fromBufferAttribute(P, i).applyMatrix4(o.matrixWorld); if (vv.y > ma) ma = vv.y; if (vv.z >= lo && vv.z <= hi && vv.y > my) { my = vv.y; mz = vv.z; } } });
+        let over = false; if (t === 'sniper' && ma - my > .03) { my = ma + .004; over = true; } // sniper pesada sem luneta: mira por cima da arma
+        SG = SIGHT[k] = { y: my > -1e8 ? my : null, z: mz, r: (over || my < -1e8) ? null : rearSight(inner, Sm[0], my) }; }
+      if (SG.y != null) {
+        ey = [0, SG.y + .0015, ey[2]];
+        if (vm && SG.r != null) { const dy = SG.y - SG.r, dz = SG.z - Sm[0]; if (Math.abs(dy) < .015 && dz > .05) { tilt = Math.atan2(dy, dz); ey[1] = SG.y * Math.cos(tilt) - SG.z * Math.sin(tilt) + .0015; } }
+      } } catch (e) { } }
     u.ey = ey;
     if (vm) { // luvas e mangas na tela de mira
       for (let k = 0; k < 2; k++) { const p = u.hg[k]; add(new T.BoxGeometry(.07, .08, .1), MAT.Black_Lighter, p[0], p[1], p[2]); add(new T.BoxGeometry(.075, .075, .5), Mt(0x55663f, 0, .9), p[0] + (k ? -.02 : .02), p[1] - .06, p[2] - .3, -.25); }
     }
     if (it.length) { const q = new T.Group(); bake(q, it); q.traverse(o => { if (o.isMesh) o.castShadow = !vm; }); g.add(q); }
+    if (tilt) { const pv = new T.Group(); while (g.children.length) pv.add(g.children[0]); pv.rotation.x = tilt; g.add(pv); }
     return g;
   }
 
