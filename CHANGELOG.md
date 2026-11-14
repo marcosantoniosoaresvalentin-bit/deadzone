@@ -1,5 +1,10 @@
 # Histórico de versões
 
+## 3.43.0 — cidades orgânicas e avião alto
+- **Cidades sem malha quadrada**: 19 cidades agora têm avenida principal curva, travessas e rotatórias, com casas dos dois lados e atrás delas;
+  acabou o asfalto cercando cada quarteirão e o contorno quadrado. Muito mais casas por cidade.
+- **Avião**: voa a 900 m (antes 450 m, bem perto das montanhas) e mais rápido (120 m/s, antes 62).
+
 ## 3.42.0 — cidades maiores, bugs do arco e da luneta
 - **Arco**: corrigido o estilhaço marrom na tela ao trocar de arma (o arco largado no chão era montado errado).
 - **Luneta 2x e 8x**: voltou a mostrar a imagem na lente (o corte de peças coladas no olho cortava a própria lente, ficava só o tubo preto).

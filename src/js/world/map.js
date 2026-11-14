@@ -6,7 +6,8 @@
  * Tudo que depende do tamanho do mapa (limites, zona, rota do avião, mapa grande) lê MAPH.
  */
 const MAPH=3800;         // metade do lado da ilha principal, em metros (ilha de ~7,6 x 7,6 km + Ilha Zênite)
-const PLV=62;            // velocidade do avião (m/s)
+const PLV=120;           // velocidade do avião (m/s)
+const PLY=900;           // altura do avião (m): bem acima das montanhas (até ~300 m)
 // ---------- LITORAL da ilha principal (o terreno usa a mesma função) ----------
 const DZN=(()=>{const hh=(x,z)=>{const v=Math.sin(x*127.1+z*311.7)*43758.5453;return v-Math.floor(v)};
  const vn=(x,z)=>{const xi=Math.floor(x),zi=Math.floor(z),xf=x-xi,zf=z-zi,u=xf*xf*(3-2*xf),w=zf*zf*(3-2*zf);return(hh(xi,zi)*(1-u)+hh(xi+1,zi)*u)*(1-w)+(hh(xi,zi+1)*(1-u)+hh(xi+1,zi+1)*u)*w};
@@ -47,6 +48,44 @@ function genTown(cfg){
  C.x=(C.x0+C.x1)/2;C.z=(C.z0+C.z1)/2;
  const pal=[0xd8cfc0,0xc7b7a3,0xc9b79c,0xb7c0b8,0xe2d6b8,0xd1c4b4,0xbfae96,0xd9c7a8,0xa9b4b8,0xcfc1ad,0xe0d0c0,0xb8a48c,0xc4a88a,0x9fa8a3];
  const e=C.RW/2+C.SW;
+
+ // ===== CIDADE ORGÂNICA: ruas curvas (avenida principal, travessas, anel/rotatória) com casas dos dois lados, sem malha quadrada =====
+ if(cfg.organic){
+  const cx=C.x,cz=C.z,W=C.x1-C.x0,Dd=C.z1-C.z0,R_=(a,b)=>a+rnd()*(b-a),streets=[],ph=rnd()*6.28,vert=rnd()<.5;
+  const lenM=Math.max(W,Dd)*.5+30;
+  // avenida principal: atravessa a cidade (horizontal ou vertical) ondulando
+  { const pts=[];const n=Math.max(5,Math.round(lenM*2/42));for(let i=0;i<=n;i++){const t=-lenM+i*(lenM*2/n),w=Math.sin(i*.9+ph)*13+Math.sin(i*2.1+ph*2)*5;pts.push(vert?[cx+w,cz+t]:[cx+t,cz+w])}streets.push(pts)}
+  const main=streets[0];
+  // travessas curvas saindo da avenida
+  const nc=2+Math.floor(rnd()*3);
+  for(let k=0;k<nc;k++){const q=main[1+Math.floor(rnd()*(main.length-2))],sg=rnd()<.5?-1:1,len=R_(60,Math.min(130,(vert?W:Dd)*.5+30)),pts=[[q[0],q[1]]],m=3+Math.floor(rnd()*2);let jog=0;
+   for(let i=1;i<=m;i++){jog+=R_(-14,14);const t=len*i/m;pts.push(vert?[q[0]+sg*t,q[1]+jog]:[q[0]+jog,q[1]+sg*t])}streets.push(pts)}
+  // anel (rotatória grande) em volta do centro, às vezes
+  if(rnd()<.55){const rr=R_(48,68),a0=rnd()*6.28,pts=[];for(let i=0;i<=11;i++){const a=a0+i/11*Math.PI*1.85,rj=rr+Math.sin(i*1.7+ph)*6;pts.push([cx+Math.cos(a)*rj,cz+Math.sin(a)*rj])}streets.push(pts)}
+  C.streets=streets;
+  // amostras densas das ruas (para colocar casas e evitar sobreposição)
+  const SM=[];for(const L of streets)for(let i=0;i<L.length-1;i++){const a=L[i],b=L[i+1],len=Math.hypot(b[0]-a[0],b[1]-a[1]),nn=Math.max(1,Math.ceil(len/3));for(let j=0;j<nn;j++){const t=j/nn;SM.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t])}}
+  const placed=[];const hitStreet=(x,z,hx,hz,m)=>SM.some(q=>q[0]>x-hx-m&&q[0]<x+hx+m&&q[1]>z-hz-m&&q[1]<z+hz+m);
+  const hitB=(x,z,hx,hz,m)=>placed.some(b=>Math.abs(b.x-x)<b.hx+hx+m&&Math.abs(b.z-z)<b.hz+hz+m);
+  const inRect=(x,z,hx,hz)=>x-hx>C.x0+4&&x+hx<C.x1-4&&z-hz>C.z0+4&&z+hz<C.z1-4;
+  const mk=(x,z,fx,fz)=>{ // frente voltada para (fx,fz), alinhada ao eixo mais próximo
+   const dc=Math.hypot(x-cx,z-cz),core=dc<Math.min(W,Dd)*.2,sr=rnd(),style=core?(sr<.35?'shop':sr<.65?'panel':sr<.85?'brick':'plaster'):(sr<.55?'plaster':sr<.82?'brick':'shop');
+   const fr=rnd();let floors=core?(fr<.3?2:fr<.7?3:4):(fr<.5?1:fr<.92?2:3);if(style==='shop')floors=Math.max(2,Math.min(3,floors));if(style==='panel')floors=Math.max(3,floors);
+   const w=style==='panel'?R_(14,19):R_(8,13),d=style==='panel'?R_(9.5,12):R_(7,11),rot=Math.abs(fz)>=Math.abs(fx)?(fz>0?0:Math.PI):(fx>0?Math.PI/2:-Math.PI/2),sw=Math.abs(Math.sin(rot))>.5,hx=(sw?d:w)/2,hz=(sw?w:d)/2;
+   return {w,d,floors,style,rot,hx,hz,dc}};
+  const addB=(x,z,B)=>{const S={id:T_+'c'+C.lots.length,w:+B.w.toFixed(1),d:+B.d.toFixed(1),floors:B.floors,rot:B.rot,color:pal[Math.floor(rnd()*pal.length)],mg:T_+'q'+Math.floor((x-C.x0)/70)+'_'+Math.floor((z-C.z0)/70),city:1,style:B.style,x:+x.toFixed(2),z:+z.toFixed(2)};
+   if(B.style==='panel')S.color=[0xb9b6ae,0xa7a59e,0xc6c0b4][Math.floor(rnd()*3)];if(B.style==='shop')S.awn=[0x2f5d3a,0x7a2e2a,0x2b4a6b,0x6b5a2b][Math.floor(rnd()*4)];
+   if(B.floors<=2&&B.style!=='shop'&&rnd()<.55)S.roof='gable';if(B.floors>=2&&B.style!=='panel'&&rnd()<.4)S.balcony=1;S.band=B.style!=='plaster'||rnd()<.5?1:0;
+   C.lots.push({kind:'org',x0:x-B.hx,x1:x+B.hx,z0:z-B.hz,z1:z+B.hz,S});placed.push({x,z,hx:B.hx,hz:B.hz})};
+  // casas dos dois lados de cada rua
+  for(const L of streets)for(let i=0;i<L.length-1;i++){const a=L[i],b=L[i+1],len=Math.hypot(b[0]-a[0],b[1]-a[1]),ux=(b[0]-a[0])/len,uz=(b[1]-a[1])/len;
+   for(let t=R_(4,10);t<len-6;t+=R_(12,17)){for(const sd of [-1,1]){if(rnd()<.08)continue;const nx=-uz*sd,nz=ux*sd,ax=a[0]+ux*t,az=a[1]+uz*t;
+     const B=mk(ax,az,-nx,-nz),off=3.5+2.2+(Math.abs(nz)>Math.abs(nx)?B.hz:B.hx)+R_(0,3.5),x=ax+nx*off,z=az+nz*off;
+     if(!inRect(x,z,B.hx,B.hz)||hitStreet(x,z,B.hx,B.hz,5.5)||hitB(x,z,B.hx,B.hz,3.5))continue;addB(x,z,B)}}}
+  // segunda fileira / preenchimento: casas atrás das primeiras, voltadas para a rua mais perto
+  for(let k=0;k<900;k++){const x=R_(C.x0+8,C.x1-8),z=R_(C.z0+8,C.z1-8);let bq=null,bd=1e9;for(const q of SM){const d=Math.hypot(q[0]-x,q[1]-z);if(d<bd){bd=d;bq=q}}if(bd<17||bd>62)continue;
+   const fx=bq[0]-x,fz=bq[1]-z,B=mk(x,z,fx,fz);if(!inRect(x,z,B.hx,B.hz)||hitStreet(x,z,B.hx,B.hz,6)||hitB(x,z,B.hx,B.hz,4)||rnd()<.12)continue;addB(x,z,B)}
+  C.rnd=rnd;C.XL=[];C.ZL=[];C.blocks=[];return C}
  // estádio: junta os quarteirões (2,0) e (3,0) (a rua entre eles some)
  if(cfg.stadium){C.skipV={'3_0':1};C.stadium={x0:C.XL[2]+e,x1:C.XL[4]-e,z0:C.ZL[0]+e,z1:C.ZL[1]-e};C.blocks.push(Object.assign({id:T_+'stad',stadium:1},C.stadium))}
  const mkStr=(L,b,lw,ld,rt,wide)=>{
@@ -84,14 +123,14 @@ const onLand=(x,z,m)=>{let k=0;while(coastMain(x,z)<m&&k++<80){x*=.97;z*=.97}ret
 const mvT=(c,dx,dz)=>Object.assign({},c,{x0:c.x0+dx,x1:c.x1+dx,z0:c.z0+dz,z1:c.z1+dz,XL:c.XL.map(v=>v+dx),ZL:c.ZL.map(v=>v+dz)});
 const atT=(c,X,Z)=>{[X,Z]=onLand(X,Z,330);return mvT(c,X-(c.x0+c.x1)/2,Z-(c.z0+c.z1)/2)};
 // cidade nova em grade: nx x nz quarteirões de 'b' metros, centrada em (X,Z)
-const gridT=(n,tag,seed,X,Z,nx,nz,b,o)=>{[X,Z]=onLand(X,Z,330+Math.max(nx,nz)*b/2);const XL=[],ZL=[];for(let i=0;i<=nx;i++)XL.push(Math.round(X-nx*b/2+i*b));for(let j=0;j<=nz;j++)ZL.push(Math.round(Z-nz*b/2+j*b));return Object.assign({n,tag,seed,x0:XL[0]-8,x1:XL[nx]+8,z0:ZL[0]-8,z1:ZL[nz]+8,XL,ZL,bl:30,holes:1},o||{})};
+const gridT=(n,tag,seed,X,Z,nx,nz,b,o)=>{[X,Z]=onLand(X,Z,330+Math.max(nx,nz)*b/2);const XL=[],ZL=[];for(let i=0;i<=nx;i++)XL.push(Math.round(X-nx*b/2+i*b));for(let j=0;j<=nz;j++)ZL.push(Math.round(Z-nz*b/2+j*b));return Object.assign({n,tag,seed,x0:XL[0]-8,x1:XL[nx]+8,z0:ZL[0]-8,z1:ZL[nz]+8,XL,ZL,bl:30,holes:1,organic:1},o||{})};
 // cidades (bem longe uma da outra, como num mapa grande de battle royale)
 const CITY=genTown(atT({n:'Nova Esperança',tag:'pv',seed:7331,x0:-36,x1:176,z0:-196,z1:-8,XL:[-28,22,72,122,168],ZL:[-188,-128,-72,-16],stadium:1},400,-1100));
 const TOWNS=[CITY,
- genTown(atT({n:'Vila Rubra',tag:'vs',seed:4242,x0:-218,x1:-102,z0:112,z1:188,XL:[-210,-160,-110],ZL:[120,180],bl:20},-2150,1650)),
- genTown(atT({n:'Cerro Azul',tag:'mv',seed:9119,x0:133,x1:207,z0:143,z1:217,XL:[145,195],ZL:[155,205],bl:20},2350,2050)),
+ genTown(atT({n:'Vila Rubra',tag:'vs',seed:4242,x0:-258,x1:-62,z0:62,z1:238,XL:[-210,-160,-110],ZL:[120,180],bl:20,organic:1,holes:0},-2150,1650)),
+ genTown(atT({n:'Cerro Azul',tag:'mv',seed:9119,x0:90,x1:250,z0:100,z1:260,XL:[145,195],ZL:[155,205],bl:20,organic:1,holes:0},2350,2050)),
  genTown(mvT({n:'Zênite',tag:'zn',seed:2468,x0:-571,x1:-409,z0:-141,z1:21,XL:[-565,-515,-465,-415],ZL:[-135,-85,-35,15],bl:20,hFix:6,tower:1},ZEN_DX,ZEN_DZ)),
- genTown(atT({n:'Monte Alto',tag:'as',seed:5150,x0:52,x1:114,z0:58,z1:120,XL:[58,108],ZL:[64,114],bl:26},1650,350)),
+ genTown(atT({n:'Monte Alto',tag:'as',seed:5150,x0:3,x1:163,z0:9,z1:169,XL:[58,108],ZL:[64,114],bl:26,organic:1,holes:0},1650,350)),
  genTown(gridT('São Jorge','sj',3301,-1700,-1950,6,4,52)),
  genTown(gridT('Lagoa Seca','ls',3302,2850,-2250,4,4,50)),
  genTown(gridT('Vila Nova','vn',3303,-250,2750,5,3,50)),
@@ -154,6 +193,7 @@ const ROADLINES=(()=>{const L=[];let sd=777;const r=()=>{sd=(sd*16807)%214748364
   for(let i=1;i<k;i++){const t=i/k;let x=A.x+(B.x-A.x)*t,z=A.z+(B.z-A.z)*t;const off=(r()-.5)*Math.min(260,len*.12);x+=nx*off;z+=nz*off;let g=0;while(!inland(x,z,80)&&g++<30){x*=.96;z*=.96}pts.push([x,z])}
   pts.push([B.x,B.z]);L.push(pts)}
  return L})();
+for(const t of TOWNS)if(t.streets)for(const L of t.streets)ROADLINES.push(L);
 // cabeceiras da ponte (chão plano na altura do tabuleiro) — a ponte liga a pedreira à Ilha Zênite
 const BRIDGE={z:-78+ZEN_DZ,x0:-238+ZEN_DX,x1:-372+ZEN_DX,y:6};
 const BRIDGE_FLATS=[{id:'pontA',x0:-250+ZEN_DX,x1:-226+ZEN_DX,z0:-90+ZEN_DZ,z1:-66+ZEN_DZ,bl:16,hFix:6},{id:'pontB',x0:-384+ZEN_DX,x1:-360+ZEN_DX,z0:-90+ZEN_DZ,z1:-66+ZEN_DZ,bl:16,hFix:6}];

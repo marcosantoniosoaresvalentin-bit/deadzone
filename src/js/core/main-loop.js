@@ -88,7 +88,7 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;try{d
   if(b.air){
    if(b.waitForPlayer){
     if(mode==='plane'){
-     b.x=pS.x+pD.x*PLV*gt+(b.waitOffsetX||0);b.z=pS.z+pD.z*PLV*gt+(b.waitOffsetZ||0);b.y=450;
+     b.x=pS.x+pD.x*PLV*gt+(b.waitOffsetX||0);b.z=pS.z+pD.z*PLV*gt+(b.waitOffsetZ||0);b.y=PLY;
      b.g.position.set(b.x,b.y,b.z);b.g.visible=true;continue;
     }
     b.waitForPlayer=false;b.tx=P.x+(b.waitOffsetX||0)*2;b.tz=P.z+(b.waitOffsetZ||0)*2;
@@ -118,7 +118,7 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;try{d
   b.g.position.set(b.x,TERH(b.x,b.z),b.z);{const t_=b.g.rotation.y;if(b.sy==null)b.sy=t_;b.sy+=(((t_-b.sy+Math.PI*3)%(Math.PI*2))-Math.PI)*Math.min(1,dt*9);b.g.rotation.y=b.sy}if(b.g.visible)animBot(b,dt,mv,dp)}catch(e_){/* um bot com erro não pode travar a câmera nem os outros bots */if(!b.__e){b.__e=1;dzErr(e_)}}}
  if(hp<=0&&mode!=='dead'&&!MP)die();
  if(trt>0){trt-=dt;if(trt<=0)trl.visible=false}
- if(plane.visible){for(const p of props)p.rotation.z+=dt*45;plane.position.set(pS.x+pD.x*PLV*gt,450,pS.z+pD.z*PLV*gt);if(gt>=PLT&&mode==='plane')jumpOut();if(gt>PLT+8)plane.visible=false}
+ if(plane.visible){for(const p of props)p.rotation.z+=dt*45;plane.position.set(pS.x+pD.x*PLV*gt,PLY,pS.z+pD.z*PLV*gt);if(gt>=PLT&&mode==='plane')jumpOut();if(gt>PLT+8)plane.visible=false}
  $('hpi').style.width=Math.max(0,hp)+'%';updArm();$('wpt').textContent=mode==='drive'?carTxt():wp?WS[wp].n+(scp?' · '+(scp===3?8:scp)+'x':'')+(silP?' · SIL':'')+' · '+slots[cur].mag+'/'+slots[cur].res+(rlOn?' · recarregando':''):(mode==='ground'?'Sem arma':'');$('alive').textContent='Vivos: '+alive;$('kl').textContent='Abates: '+kills;
  cross.style.display=(mode==='ground'&&wp&&adk<.3)?'block':'none';refreshLoot();
  insB=null;if(mode==='ground'&&!RIDE)for(const b of FP)if(P.x>b.x0&&P.x<b.x1&&P.z>b.z0&&P.z<b.z1){insB=b;break}insK+=((insB?1:0)-insK)*Math.min(1,dt*4);

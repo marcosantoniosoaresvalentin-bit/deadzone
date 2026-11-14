@@ -1,7 +1,7 @@
 /* Deadzone · player/actions.js
  * Salto do avião, paraquedas, pouso, pulo, agachar e deitar.
  */
-function jumpOut(){mode='sky';P.x=pS.x+pD.x*PLV*gt;P.z=pS.z+pD.z*PLV*gt;P.y=445;P.vy=0;pl.visible=true;setLabel();say('Queda livre: empurre o analógico p/ frente para mergulhar · toque em Abrir',6)}
+function jumpOut(){mode='sky';P.x=pS.x+pD.x*PLV*gt;P.z=pS.z+pD.z*PLV*gt;P.y=PLY-5;P.vy=0;pl.visible=true;setLabel();say('Queda livre: empurre o analógico p/ frente para mergulhar · toque em Abrir',6)}
 function openChute(){mode='chute';canopy.visible=true;setLabel();say('Paraquedas: frente = mergulho · trás = planar · lados = puxar corda',5)}
 function land(){mode='ground';canopy.visible=false;P.y=GY(P.x,P.z,P.y);P.vy=0;mvp(0,0);setLabel();say('Pousou! Procure armas perto das casas',5)}
 function act(){if(mode==='plane'&&gt>3)jumpOut();else if(mode==='sky')openChute();else if(mode==='ground'&&typeof ropeNear==='function'&&ropeNear()){ropeStart(ropeNear())}else if(mode==='ground'&&P.vy<-1&&P.y-GY(P.x,P.z,P.y)>3){window.__hiF=0;st=0;openChute()}else if(mode==='ground'&&P.y<=GY(P.x,P.z,P.y)+.02&&st!==2){if(!tryVault())P.vy=5.3}}/* pulo baixo (~70 cm): janela e mureta só com a animação de pular obstáculo */
