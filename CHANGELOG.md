@@ -1,5 +1,18 @@
 # Histórico de versões
 
+## 3.38.0 — lunetas, miras de ferro e escudo destrutível
+- **Lunetas (2x e 8x)**: como nos battle royales — o tubo da luneta aparece e a imagem ampliada fica só dentro da lente
+  (antes a 8x deixava a tela preta em volta).
+- **Miras de ferro**: a parte da arma colada no olho (coronha/caixa) não aparece mais cortada na tela de mira; nas armas
+  sem mira de trás aparece um aro alinhado com a mira da frente; M870 e Serrada miram por cima com alça e bolinha e o
+  cabo continua visível; luvas não tapam mais a mira.
+- **Escudo**: mais alto (1,55 m, dá para ficar agachado atrás), placas um pouco mais estreitas e janela de tiro mais larga
+  com vidro, na altura do olho agachado (dá para atirar por ela; o vidro trinca e deixa a bala passar).
+- **Escudo destrutível**: cada tiro deixa uma marca no ponto exato onde pegou; vários tiros no mesmo ponto abrem um furo
+  redondo ali (a bala passa). Pistola ~35 tiros, fuzil ~22, fuzil pesado ~14, escopeta ~9 disparos (mais longe = mais
+  tiros). Snipers furam com um tiro só (pesadas até 150 m, comuns até 40 m) e acertam quem está atrás.
+  Marcas e furos aparecem para todos no online.
+
 ## 3.37.4 — escopetas sem mira de trás
 - M870 e Serrada (sem mira de trás no modelo): a mira passa por cima da arma e ganhou uma alça com bolinha na ponta do
   cano, exatamente no centro da tela (antes a tela de mira mostrava só um bloco preto).
