@@ -764,7 +764,7 @@
     let h, v, b;
     if (typeof pl !== 'undefined' && rig.pl === pl) { try { h = ARM.helm > 0; v = ARM.vest > 0; b = bagLv > 0; } catch (e) { h = v = b = false; } }
     else { h = rig.seed % 2 === 0; v = rig.seed % 3 !== 1; b = rig.seed % 4 !== 0; }
-    if (av.gear.helm) av.gear.helm.visible = !!h; if (av.gear.hair) av.gear.hair.visible = !h; if (av.gear.vest) av.gear.vest.visible = !!v; if (av.gear.bag) av.gear.bag.visible = !!b;
+    if (av.gear.helm) av.gear.helm.visible = !!h; if (av.gear.hair) av.gear.hair.visible = false; // o personagem novo já tem cabelo próprio if (av.gear.vest) av.gear.vest.visible = !!v; if (av.gear.bag) av.gear.bag.visible = !!b;
   }
 
   function load() {
