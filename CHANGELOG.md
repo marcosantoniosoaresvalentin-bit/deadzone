@@ -1,5 +1,8 @@
 # Histórico de versões
 
+## 3.43.1 — menos ruas nas cidades
+- Dentro das cidades fica só a estrada principal (a que dá acesso à cidade); as travessas e rotatórias de asfalto foram removidas. As casas continuam espalhadas.
+
 ## 3.43.0 — cidades orgânicas e avião alto
 - **Cidades sem malha quadrada**: 19 cidades agora têm avenida principal curva, travessas e rotatórias, com casas dos dois lados e atrás delas;
   acabou o asfalto cercando cada quarteirão e o contorno quadrado. Muito mais casas por cidade.

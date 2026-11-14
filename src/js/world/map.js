@@ -62,7 +62,7 @@ function genTown(cfg){
    for(let i=1;i<=m;i++){jog+=R_(-14,14);const t=len*i/m;pts.push(vert?[q[0]+sg*t,q[1]+jog]:[q[0]+jog,q[1]+sg*t])}streets.push(pts)}
   // anel (rotatória grande) em volta do centro, às vezes
   if(rnd()<.55){const rr=R_(48,68),a0=rnd()*6.28,pts=[];for(let i=0;i<=11;i++){const a=a0+i/11*Math.PI*1.85,rj=rr+Math.sin(i*1.7+ph)*6;pts.push([cx+Math.cos(a)*rj,cz+Math.sin(a)*rj])}streets.push(pts)}
-  C.streets=streets;
+  C.streets=[streets[0]]; // só a avenida principal vira estrada de verdade; as travessas só orientam as casas (sem asfalto)
   // amostras densas das ruas (para colocar casas e evitar sobreposição)
   const SM=[];for(const L of streets)for(let i=0;i<L.length-1;i++){const a=L[i],b=L[i+1],len=Math.hypot(b[0]-a[0],b[1]-a[1]),nn=Math.max(1,Math.ceil(len/3));for(let j=0;j<nn;j++){const t=j/nn;SM.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t])}}
   const placed=[];const hitStreet=(x,z,hx,hz,m)=>SM.some(q=>q[0]>x-hx-m&&q[0]<x+hx+m&&q[1]>z-hz-m&&q[1]<z+hz+m);
