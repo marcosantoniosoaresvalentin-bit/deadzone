@@ -140,12 +140,12 @@
     };
   });
   // mapa grande: dentro da arena mostra só o mapa da arena
+  window.dzArenaMap = () => !!curA();
   const _om = window.openMap;
   if (typeof _om === 'function') {
     window.openMap = function () {
       const A = curA(); if (!A || mode === 'lobby' || mode === 'dead') return _om.apply(this, arguments);
-      bmap.style.display = 'flex'; const dpr = Math.min(2, devicePixelRatio || 1), W = innerWidth, H = innerHeight;
-      bmc.style.width = W + 'px'; bmc.style.height = H + 'px'; bmc.width = Math.round(W * dpr); bmc.height = Math.round(H * dpr); BG = null;
+      bmap.style.display = 'flex'; const dpr = bmFit().dpr; BG = null; try { bmMis(true); } catch (e) { }
       const draw = () => {
         if (bmap.style.display !== 'flex' || !curA()) { clearInterval(iv); return; }
         const Wc = bmc.width, Hc = bmc.height, E = Math.max(A.hw, A.hd) + 20, k = Math.min(Wc, Hc) / (2 * E), X = x => Wc / 2 + (x - A.x) * k, Y = z => Hc / 2 + (z - A.z) * k, d = dpr;

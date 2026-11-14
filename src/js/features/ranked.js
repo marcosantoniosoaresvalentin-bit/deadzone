@@ -54,6 +54,19 @@
     try { savePR(); updPn(); sfx(780, .3, .15, 0); setTimeout(() => sfx(1040, .3, .15, 0), 110); } catch (e) { }
   }
 
+  // progresso AO VIVO (mapa grande): o salvo + o que já foi feito nesta partida (só no modo clássico)
+  window.dzMisLive = function () {
+    const D = daily(), S = window.DZSTAT || {}; let live = false;
+    try { live = mode !== 'lobby' && !MP && !(typeof SQ !== 'undefined' && SQ) && !window.DZTRAIN && !(window.DZAR_ON); } catch (e) { }
+    let K = 0, DM = 0, tm = 0; try { K = kills || 0; DM = Math.round(dmgDone || 0); tm = typeof gt !== 'undefined' ? gt : 0; } catch (e) { }
+    const inc = { kills: K, dmg: DM, rev: S.rev || 0, ad: S.ad || 0, hs: S.hs || 0, dist: Math.round((S.dist || 0) / 100) / 10, surv: tm >= 720 ? 1 : 0 };
+    return D.L.map(q => {
+      let p = q.p;
+      if (live && !q.ok) { if (q.id === 'k1') p = Math.max(p, K); else if (q.id === 'd1') p = Math.max(p, DM); else p = Math.round((p + (inc[q.id] || 0)) * 10) / 10; }
+      p = Math.min(p, q.n); return { t: txt(q), p, n: q.n, done: q.ok || p >= q.n };
+    });
+  };
+
   // ---------- fim de partida: pontos de patente e progresso das missões ----------
   function onEnd(win) {
     let classic = true; try { classic = !MP && !(typeof SQ !== 'undefined' && SQ); } catch (e) { }
