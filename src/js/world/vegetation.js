@@ -11,6 +11,9 @@
   const M_ = DZR.mats();
   // mancha de floresta: "ruído" suave feito de senos (mais árvores onde é alto)
   const fn = (x, z) => .5 + .2 * Math.sin(x * .021 + Math.sin(z * .017) * 2.1) + .2 * Math.sin(z * .026 + Math.cos(x * .013) * 1.7) + .25 * Math.sin(x * .0023 + Math.cos(z * .0019) * 2.3) * Math.cos(z * .0027);
+  // regiões: campo aberto (sem árvore), mata esparsa e floresta densa — em escala de quilômetros
+  const biome = (x, z) => .5 + .5 * Math.sin(x * .00125 + Math.sin(z * .00095) * 2.4 + 1.3) * Math.cos(z * .00135 + Math.sin(x * .0008) * 2.1) * .9 + .12 * Math.sin((x + z) * .0031);
+  const bmul = (x, z) => { const g = biome(x, z); return g < .42 ? .015 : g < .6 ? .3 : 1; };
   const FLs = (typeof FLATS !== 'undefined' ? FLATS : []);
   const RP = []; try { for (const R of ROADS) for (const q of R.pts) RP.push(q); } catch (e) { }
   const G = new Map(), gk = (x, z) => Math.floor(x / 20) + ',' + Math.floor(z / 20); for (const q of RP) { const k = gk(q[0], q[1]); if (!G.has(k)) G.set(k, []); G.get(k).push(q); }
@@ -31,16 +34,16 @@
   const T_ = [], PN = [], BU = [], RK = [];
   const span = [MAPB.x0, MAPB.x1, MAPB.z0, MAPB.z1];
   const OG = new Map(), ok_ = (x, z) => { const i = Math.floor(x / 6), j = Math.floor(z / 6); for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) { const L = OG.get((i + a) * 100003 + j + b); if (L) for (const q of L) if (Math.abs(q[0] - x) < 5.5 && Math.abs(q[1] - z) < 5.5) return false; } return true; }, addO = q => { const k = Math.floor(q[0] / 6) * 100003 + Math.floor(q[1] / 6); let L = OG.get(k); if (!L) OG.set(k, L = []); L.push(q); };
-  for (let i = 0; i < 900000 && (T_.length + PN.length) < 26000; i++) {
+  for (let i = 0; i < 900000 && (T_.length + PN.length) < 15000; i++) {
     const x = span[0] + rnd() * (span[1] - span[0]), z = span[2] + rnd() * (span[3] - span[2]), f = fn(x, z);
-    const dense = f > .68, p = dense ? .95 : f > .52 ? .2 : .04; if (rnd() > p) continue;
+    const dense = f > .68, p = dense ? .95 : f > .52 ? .2 : .04; if (rnd() > p * bmul(x, z)) continue;
     if (!free(x, z, 6) || slope(x, z) > .55) continue;
     if (!ok_(x, z)) continue;
     const q = [x, z, .8 + rnd() * .45, rnd() * 6.283]; addO(q); (TERH(x, z) > 25 || f > .8 ? PN : T_).push(q);
   }
   for (let i = 0; i < 200000 && BU.length < 22000; i++) {
     const x = span[0] + rnd() * (span[1] - span[0]), z = span[2] + rnd() * (span[3] - span[2]);
-    if (rnd() > .25 + fn(x, z) * .6 || !free(x, z, 2)) continue; BU.push([x, z, .7 + rnd() * .8, rnd() * 6.283]);
+    if (rnd() > (.25 + fn(x, z) * .6) * (biome(x, z) < .42 ? .2 : 1) || !free(x, z, 2)) continue; BU.push([x, z, .7 + rnd() * .8, rnd() * 6.283]);
   }
   for (let i = 0; i < 160000 && RK.length < 7000; i++) {
     const x = span[0] + rnd() * (span[1] - span[0]), z = span[2] + rnd() * (span[3] - span[2]), sl = slope(x, z);

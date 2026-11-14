@@ -44,9 +44,13 @@ const PLC=(typeof FLATS!=='undefined'?FLATS:[]).map(A=>[(A.x0+A.x1)/2,(A.z0+A.z1
   h+=gau(x,z,40*M,-40*M,50*M)*15;
   h+=gau(x,z,175*M,-20*M,40*M)*22;
   h+=peaks(x,z);
+  // RELEVO EXTRA (longe das cidades): cadeias de montanhas em cristas, morros ondulados e vales; planícies ficam planas
+  { let dm=1e9;for(const q of PLC){const d=Math.abs(q[0]-x)+Math.abs(q[1]-z);if(d<dm)dm=d} const w=ss(300,800,dm);
+    if(w>0){const mk=ss(.4,.68,fbm(x/2300+20,z/2300+9)),rg=ridge(x/950+8,z/950+3),pl=ss(.3,.55,fbm(x/1700+40,z/1700+3)); // pl: 0 = planície
+     h+=w*(mk*rg*85+pl*(fbm(x/430+11,z/430+5)-.42)*36+pl*mk*Math.pow(ridge(x/260+2,z/260+7),2)*18);}}
   // vale largo cruzando a ilha
   const vy=z-(x*.35+20*M)+Math.sin(x/900)*270;h-=gau(0,vy,0,0,22*M)*8*(1-mt);
-  return h;
+  return Math.max(h,1.8);
  }
  // ILHA ZÊNITE (oeste): quadrado arredondado com metade do lado da ilha principal, relevo baixo com um morro
  const Z2={x:-490+ZEN_DX,z:-60+ZEN_DZ,R:125};
@@ -111,13 +115,12 @@ const PLC=(typeof FLATS!=='undefined'?FLATS:[]).map(A=>[(A.x0+A.x1)/2,(A.z0+A.z1
    /* não desenha estrada só onde já existe chão pronto: dentro das RUAS da cidade (não na área toda dela, senão sobra um pedaço de grama entre a estrada e a primeira rua) e dentro do pátio dos locais */
    const onGrid=(A,x,z)=>{if(!A.XL)return true;const hw=(A.RW||8)/2+.5;return x>=Math.min(...A.XL)-hw&&x<=Math.max(...A.XL)+hw&&z>=Math.min(...A.ZL)-hw&&z<=Math.max(...A.ZL)+hw};
    const R={pts:pts.map((p,k)=>[p.x,p.z,hs[k],inF[k]&&!/^pont/.test(inF[k].id||'')&&onGrid(inF[k],p.x,p.z)?1:0])};ROADS.push(R);for(const q of R.pts){ALL.push(q);const key=Math.floor(q[0]/8)*100003+Math.floor(q[1]/8);let L=AG.get(key);if(!L)AG.set(key,L=[]);L.push(q)}
-   pts.forEach((p,k)=>{const i0=Math.floor((p.x-22-OX)/S),i1=Math.ceil((p.x+22-OX)/S),j0=Math.floor((p.z-22-OZ)/S),j1=Math.ceil((p.z+22-OZ)/S);
-    for(let j=Math.max(0,j0);j<=Math.min(NZ-1,j1);j++)for(let i=Math.max(0,i0);i<=Math.min(NX-1,i1);i++){const d=Math.hypot(OX+i*S-p.x,OZ+j*S-p.z),q=idx(i,j);if(d<bD[q]){bD[q]=d;bH[q]=hs[k]}}})}
-  for(let q=0;q<NX*NZ;q++){const d=bD[q];if(d>22)continue;if(inFlat(OX+(q%NX)*S,OZ+Math.floor(q/NX)*S))continue;/* não mexe no chão plano de cidade/local */const k=d<=10?1:1-ss(10,22,d);H[q]=H[q]*(1-k)+(bH[q]-.02)*k}
-  // garantia final: embaixo de QUALQUER pista (inclusive cruzamentos e chegadas nas cidades) o terreno fica
-  // sempre um pouco abaixo do asfalto — a terra nunca aparece por cima da estrada
-  for(const R of ROADS)for(const q of R.pts){if(q[3])continue;const i0=Math.floor((q[0]-8-OX)/S),i1=Math.ceil((q[0]+8-OX)/S),j0=Math.floor((q[1]-8-OZ)/S),j1=Math.ceil((q[1]+8-OZ)/S);
-   for(let j=Math.max(0,j0);j<=Math.min(NZ-1,j1);j++)for(let i=Math.max(0,i0);i<=Math.min(NX-1,i1);i++){const d=Math.hypot(OX+i*S-q[0],OZ+j*S-q[1]);if(d>7.5)continue;const m=idx(i,j),lim=q[2]-.2;if(H[m]>lim)H[m]=lim}}}
+   // cada ponto da grade a até 22 m guarda a altura da pista no ponto MAIS PRÓXIMO DO EIXO (projeção no segmento): numa
+   // reta o terreno vira exatamente o mesmo plano da pista, sem degrau nem pista flutuando em ladeira
+   for(let k=0;k<pts.length-1;k++){const A=pts[k],B=pts[k+1],dx=B.x-A.x,dz=B.z-A.z,l2=dx*dx+dz*dz||1,i0=Math.floor((Math.min(A.x,B.x)-22-OX)/S),i1=Math.ceil((Math.max(A.x,B.x)+22-OX)/S),j0=Math.floor((Math.min(A.z,B.z)-22-OZ)/S),j1=Math.ceil((Math.max(A.z,B.z)+22-OZ)/S);
+    for(let j=Math.max(0,j0);j<=Math.min(NZ-1,j1);j++)for(let i=Math.max(0,i0);i<=Math.min(NX-1,i1);i++){const X=OX+i*S,Z=OZ+j*S;let t=((X-A.x)*dx+(Z-A.z)*dz)/l2;t=Math.max(0,Math.min(1,t));const d=Math.hypot(X-(A.x+dx*t),Z-(A.z+dz*t)),q=idx(i,j);if(d<bD[q]){bD[q]=d;bH[q]=hs[k]+(hs[k+1]-hs[k])*t}}}}
+  for(let q=0;q<NX*NZ;q++){const d=bD[q];if(d>22)continue;if(inFlat(OX+(q%NX)*S,OZ+Math.floor(q/NX)*S))continue;/* não mexe no chão plano de cidade/local */const k=d<=10?1:1-ss(10,22,d);H[q]=H[q]*(1-k)+(bH[q]-.06)*k}
+}
  // ALTURA DA PISTA (para pés e rodas pisarem no asfalto, não no terreno rebaixado embaixo dele)
  const RG=new Map(),rk=(x,z)=>Math.floor(x/8)*100003+Math.floor(z/8);
  if(window.ROADS)ROADS.forEach((R,ri)=>R.pts.forEach((q,k)=>{for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const key=(Math.floor(q[0]/8)+a)*100003+Math.floor(q[1]/8)+b;let L=RG.get(key);if(!L)RG.set(key,L=[]);L.push(ri*100000+k)}}));
@@ -210,7 +213,7 @@ window.TERH=TER.terh;window.TERG=TER.terg;
  };
  // blocos do terreno: o nível de detalhe de cada um muda com a distância da câmera (some a malha velha)
  const STEPS=[1,2,4,8],TGRP=new T.Group();TGRP.name='terreno';sc.add(TGRP);
- function upd(){const c=cam.position,hi=c.y>150;for(const C of TER.CHUNKS){const d=Math.hypot(C.cx-c.x,C.cz-c.z);let l=d<620?0:d<1300?1:d<2600?2:3;if(hi&&l<1)l=1;
+ function upd(){const c=cam.position,hi=c.y>150;for(const C of TER.CHUNKS){const d=Math.hypot(C.cx-c.x,C.cz-c.z);let l=d<900?0:d<1500?1:d<2700?2:3;
    if(l===C.lod)continue;if(!C.g[l])C.g[l]=TER.chunkGeo(C.ci,C.cj,STEPS[l]);if(!C.mesh){C.mesh=new T.Mesh(C.g[l],m);C.mesh.receiveShadow=true;C.mesh.renderOrder=-2;C.mesh.matrixAutoUpdate=false;C.mesh.updateMatrix();TGRP.add(C.mesh)}else C.mesh.geometry=C.g[l];
    // libera a malha detalhada de blocos que ficaram longe
    if(l>=2&&C.g[0]){C.g[0].dispose();C.g[0]=null}C.lod=l}}

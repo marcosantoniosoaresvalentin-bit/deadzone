@@ -1,5 +1,11 @@
 # Histórico de versões
 
+## 3.41.0 — relevo e estradas
+- **Estradas não flutuam mais**: o terreno embaixo da pista agora segue exatamente a altura do asfalto (antes ficava até 1,6 m abaixo em ladeiras). Medido nas 39 estradas: de 6.777 pontos flutuando para 16.
+- **Mais relevo**: cadeias de montanhas em cristas, morros ondulados e vales; planícies continuam planas e as cidades ficam em terreno nivelado.
+- **Vegetação por regiões**: campos abertos sem árvore nenhuma, mata esparsa e florestas densas (bem menos árvores no total).
+- Terreno detalhado até 900 m do jogador (antes 620 m) para a pista acompanhar o chão.
+
 ## 3.40.0 — mais casas e ruínas
 - **Mais casas pelo campo**: ~90 casas em 40+ sítios e povoados pequenos, perto das estradas.
 - **Locais em ruínas** (paredes quebradas, entulho, vigas caídas, loot e colisão): Vila Abandonada / Povoado Esquecido / Aldeia Velha,
