@@ -27,6 +27,7 @@ const PLC=(typeof FLATS!=='undefined'?FLATS:[]).map(A=>[(A.x0+A.x1)/2,(A.z0+A.z1
  const farPts=(n,minCoast,minD)=>{const out=[];for(let k=0;k<n;k++){let best=null,bd=0;for(let x=-MAPH;x<=MAPH;x+=200)for(let z=-MAPH;z<=MAPH;z+=200){if(coastMain(x,z)<minCoast)continue;let d=1e9;for(const q of PLC)d=Math.min(d,Math.hypot(q[0]-x,q[1]-z));for(const q of out)d=Math.min(d,Math.hypot(q[0]-x,q[1]-z)*.9);if(d>bd){bd=d;best=[x,z]}}if(!best||bd<minD)break;out.push(best)}return out};
  const FAR=farPts(8,500,380),PEAKS=FAR.slice(0,5).map((q,i)=>({x:q[0],z:q[1],r:520+(i%3)*160,h:75+(i*37%50)})),LAKES=FAR.slice(5).map((q,i)=>({x:q[0],z:q[1],r:210+(i%2)*90}));
  window.DZLAKES=LAKES;window.DZPEAKS=PEAKS;
+ for(let i=STRS.length-1;i>=0;i--){const b=STRS[i];if(b.rural&&LAKES.some(K=>Math.hypot(b.x-K.x,b.z-K.z)<K.r*2.6))STRS.splice(i,1)}
  // estradas desviam das lagoas
  for(const L_ of (typeof ROADLINES!=='undefined'?ROADLINES:[]))for(const q of L_)for(const K of LAKES){const dx=q[0]-K.x,dz=q[1]-K.z,d=Math.hypot(dx,dz)||1,lim=K.r*2.1;if(d<lim){q[0]=K.x+dx/d*lim;q[1]=K.z+dz/d*lim}}
  const M=MAPH/250;                     // escala (posições pensadas para a ilha antiga de 500 m)

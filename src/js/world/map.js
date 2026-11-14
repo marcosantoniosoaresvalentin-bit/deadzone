@@ -180,6 +180,21 @@ const BLDS=[];
 // prédios com interior (world/structures.js): dá para entrar e subir em todos os andares
 // w,d = largura e fundo (m); floors = andares; roof:'gable' = telhado de telha; balcony = varandas
 const STRS=[].concat(...TOWNS.map(T=>T.lots.filter(L=>L.S).map(L=>L.S)),SITE_STRS);
+// SÍTIOS: casas isoladas e grupinhos de 2 a 4 casas pelo campo, perto das estradas (muito mais casa pelo mapa)
+const RURAL=(()=>{let sd=5522;const r=()=>{sd=(sd*16807)%2147483647;return (sd-1)/2147483646};
+ const pal=[0xe9e0c6,0xd8cfc0,0xc9b79c,0xb7c0b8,0xe2d6b8,0xcdb99a,0xd9c7a8,0xa9b4b8,0xc4a88a,0xe0d0c0];
+ const inTown=(x,z)=>FLATS.some(A=>x>A.x0-70&&x<A.x1+70&&z>A.z0-70&&z<A.z1+70);
+ const out=[],pts=[];for(const L of ROADLINES)for(let i=1;i<L.length-1;i++)pts.push(L[i]);
+ for(let c=0;c<44&&pts.length;c++){const q=pts[Math.floor(r()*pts.length)],a=r()*6.283,d=70+r()*120,cx=q[0]+Math.cos(a)*d,cz=q[1]+Math.sin(a)*d;
+  if(coastMain(cx,cz)<320||inTown(cx,cz))continue;if(out.some(h=>Math.hypot(h.x-cx,h.z-cz)<160))continue;
+  const n=r()<.35?1:2+Math.floor(r()*3);
+  for(let k=0;k<n;k++){const x=cx+(k%2?1:-1)*(10+r()*16)+(r()-.5)*10,z=cz+(k<2?-1:1)*(8+r()*14);
+   if(coastMain(x,z)<260||inTown(x,z)||out.some(h=>Math.hypot(h.x-x,h.z-z)<18))continue;
+   const fl=r()<.45?1:2,st=r()<.55?'plaster':r()<.6?'brick':'panel';
+   const S={id:'rur'+out.length,x:+x.toFixed(1),z:+z.toFixed(1),w:+(8.5+r()*4).toFixed(1),d:+(7.5+r()*2.5).toFixed(1),floors:fl,rot:[0,Math.PI/2,Math.PI,-Math.PI/2][Math.floor(r()*4)],style:st,color:pal[Math.floor(r()*pal.length)],band:r()<.6?1:0,mg:'rural'+c,rural:1};
+   if(r()<.7)S.roof='gable';if(fl>=2&&r()<.5)S.balcony=1;out.push(S)}}
+ return out})();
+for(const S of RURAL)STRS.push(S);
 
 // ---- dados do mapa (vazios) que outros sistemas consultam ----
 const CX=[],CZ=[],BP=42,LK=[];

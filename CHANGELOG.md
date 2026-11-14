@@ -1,5 +1,11 @@
 # Histórico de versões
 
+## 3.40.0 — mais casas e ruínas
+- **Mais casas pelo campo**: ~90 casas em 40+ sítios e povoados pequenos, perto das estradas.
+- **Locais em ruínas** (paredes quebradas, entulho, vigas caídas, loot e colisão): Vila Abandonada / Povoado Esquecido / Aldeia Velha,
+  Igreja Velha (torre do sino partida), Forte Antigo (muralha e fortaleza), Fábrica Velha (chaminé e tanques) e Faróis na costa.
+- Todos aparecem no mapa com nome e só são desenhados perto do jogador.
+
 ## 3.39.1 — ilha realista
 - **Costa de ilha de verdade**: penínsulas, baías e pontas (não é mais um quadrado); praias largas de areia em alguns
   trechos, falésias de pedra em outros e praia normal no resto.
