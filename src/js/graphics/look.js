@@ -4,7 +4,6 @@
  *    verdes menos "limão", saturação e contraste naturais, sombras levemente frias e luzes levemente quentes.
  *  - Céu com azul mais profundo e horizonte com névoa; neblina da mesma cor do horizonte (profundidade).
  *  - Sol de fim de manhã (um pouco mais baixo e quente), luz ambiente céu/chão mais suave, sombras mais macias.
- *  - Vinheta leve nas bordas da tela.
  */
 (function () {
   // ---------- correção de cor (todos os materiais com tone mapping) ----------
@@ -33,30 +32,16 @@
     m.needsUpdate = true;
   } catch (e) { }
 
-  // ---------- luz, neblina, exposição ----------
+  // ---------- luz, neblina, exposição (aplicado só ao iniciar a partida; o sol continua seguindo o jogador) ----------
   const HOR = new THREE.Color(0xc3cdd3);
   function apply() {
     try {
-      ren.toneMappingExposure = 1.0;
-      sun.color.set(0xfff0da); sun.intensity = 2.5; sun.position.set(70, 75, 38);
-      try { sky.material.uniforms.sd.value.copy(sun.position).normalize(); } catch (e) { }
-      sun.shadow.bias = -.0003; sun.shadow.normalBias = .035; if (sun.shadow.radius < 2) sun.shadow.radius = 2;
-      sc.traverse(o => { if (o.isHemisphereLight && !o.userData.dzLobby) { o.color.set(0xc9dbee); o.groundColor.set(0x5b5444); } });
-      if (sc.fog && (typeof mode === 'undefined' || mode !== 'lobby')) { sc.fog.color.copy(HOR).convertSRGBToLinear(); }
-      if (sc.background && sc.background.isColor && (typeof mode === 'undefined' || mode !== 'lobby')) sc.background.copy(HOR);
+      ren.toneMappingExposure = 1.0; sun.color.set(0xfff0da); sun.intensity = 2.4;
+      for (const o of sc.children) if (o.isHemisphereLight && !o.userData.dzLobby) { o.color.set(0xc9dbee); o.groundColor.set(0x5b5444); }
+      if (sc.fog) sc.fog.color.copy(HOR).convertSRGBToLinear();
+      if (sc.background && sc.background.isColor) sc.background.copy(HOR);
     } catch (e) { }
   }
-  // recompila os materiais que já existem para receberem a correção de cor
-  function recompile() { try { sc.traverse(o => { if (o.material) [].concat(o.material).forEach(m => { m.needsUpdate = true; }); }); } catch (e) { } }
-
-  // ---------- vinheta ----------
-  const vg = document.createElement('div');
-  vg.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:1;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 62%,rgba(0,0,0,.22) 100%)';
-  document.body.appendChild(vg);
-  setInterval(() => { vg.style.display = (typeof mode !== 'undefined' && mode !== 'lobby') ? 'block' : 'none'; }, 500);
-
-  window.addEventListener('load', () => { apply(); recompile(); setTimeout(() => { apply(); recompile(); }, 3000); });
-  // a cada partida volta tudo para o "dia" (a luz pode ter sido mexida pelo lobby)
+  window.addEventListener('load', () => { try { sc.traverse(o => { if (o.material) [].concat(o.material).forEach(m => { m.needsUpdate = true; }); }); } catch (e) { } });
   const _sg = window.startGame; if (typeof _sg === 'function') window.startGame = function () { const r = _sg.apply(this, arguments); apply(); return r; };
-  setInterval(() => { if (typeof mode !== 'undefined' && mode !== 'lobby' && sc.fog && !sc.fog.color.equals(new THREE.Color().copy(HOR).convertSRGBToLinear())) apply(); }, 2000);
 })();

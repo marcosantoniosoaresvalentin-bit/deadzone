@@ -2,22 +2,22 @@
  * Arco e flecha.
  */
 // ===== Arco e flechas (v6): puxar a corda, flecha com física, mira lateral =====
-WS.bow={n:'Arco e flechas',d:70,r:.9,rg:110,mag:3,rt:1.1};HG.bow=[[0,-.05,-.2],[0,-.05,.12]];MG.bow=[0,-.08,.1];EY.bow=[-.06,0,-.26];EY.bow1=[-.06,0,-.14];
+WS.bow={n:'Arco e flechas',d:70,r:.9,rg:110,mag:3,rt:1.1};HG.bow=[[0,-.05,-.2],[0,-.05,.12]];MG.bow=[0,-.08,.1];EY.bow=[-.12,0,-.4];EY.bow1=[-.12,0,-.28];
 IC.bow='<svg viewBox="0 0 64 24"><path d="M20 2Q50 12 20 22" fill="none" stroke="currentColor" stroke-width="3"/><path d="M20 2V22" stroke="currentColor" stroke-width="1"/><path d="M8 12H52" stroke="currentColor" stroke-width="2"/><path d="M52 12l-6-4v8z"/></svg>';
 if(typeof LN==='object')LN.bow='Arco e flechas';
 WL.push('bow');ACC.bow=.25;SP.splice(4,0,['bow','Arco e flechas',900]);SP.push(['sc1','Luneta 1x',200]);
 const _mkW=mkW;mkW=function(t,lv,sil,vm){if(t!=='bow')return _mkW(t,lv,sil,vm);
  const g=new T.Group(),wd=new T.MeshStandardMaterial({color:0x6b4423,roughness:.8}),dk=new T.MeshStandardMaterial({color:0x2a2a2a}),tp=new T.MeshStandardMaterial({color:0x888888}),ad=(m,x,y,z)=>{m.position.set(x,y,z);g.add(m);return m};
- const arc=new T.Mesh(new T.TorusGeometry(.32,.016,6,20,Math.PI),wd);arc.rotation.set(0,-Math.PI/2,-Math.PI/2);g.add(arc);
- const sm=new T.MeshBasicMaterial({color:0xe8e4d0}),s1=ad(new T.Mesh(new T.BoxGeometry(.004,.004,1),sm),0,.16,0),s2=ad(new T.Mesh(new T.BoxGeometry(.004,.004,1),sm),0,-.16,0);s1.rotation.x=s2.rotation.x=Math.PI/2;s1.scale.z=s2.scale.z=.32;
+ let TY=.32;if(window.BOWM){const m=new T.Mesh(BOWM.geo,BOWM.mat);m.castShadow=!vm;g.add(m);TY=BOWM.ty}else{const arc=new T.Mesh(new T.TorusGeometry(.32,.016,6,20,Math.PI),wd);arc.rotation.set(0,-Math.PI/2,-Math.PI/2);g.add(arc)}
+ const sm=new T.MeshBasicMaterial({color:0xe8e4d0}),s1=ad(new T.Mesh(new T.BoxGeometry(.004,.004,1),sm),0,TY/2,0),s2=ad(new T.Mesh(new T.BoxGeometry(.004,.004,1),sm),0,-TY/2,0);s1.rotation.x=s2.rotation.x=Math.PI/2;s1.scale.z=s2.scale.z=TY;
  ad(new T.Mesh(new T.BoxGeometry(vm?.014:.04,vm?.1:.12,vm?.02:.05),dk),0,0,.32);
  ad(new T.Mesh(new T.BoxGeometry(lv===1?.03:.033,.016,.016),dk),lv===1?-.015:-.0165,lv===1?-.04:0,.32);
- if(lv===1){const B_=(w,h,d,x,y)=>ad(new T.Mesh(new T.BoxGeometry(w,h,d),dk),-.06+x,y,.32);B_(.07,.02,.08,0,-.04);B_(.012,.07,.08,-.04,0);B_(.012,.07,.08,.04,0);B_(.092,.012,.08,0,.041)}
- else{ad(new T.Mesh(new T.TorusGeometry(.027,.0028,6,18),dk),-.06,0,.32)}
+ if(lv===1){const B_=(w,h,d,x,y)=>ad(new T.Mesh(new T.BoxGeometry(w,h,d),dk),-.12+x,y,.32);B_(.07,.02,.08,0,-.04);B_(.012,.07,.08,-.04,0);B_(.012,.07,.08,.04,0);B_(.092,.012,.08,0,.041)}
+ else{ad(new T.Mesh(new T.TorusGeometry(.027,.0028,6,18),dk),-.12,0,.32)}
  const ar=new T.Group(),sh=new T.Mesh(new T.CylinderGeometry(.006,.006,.7,6),wd);sh.rotation.x=Math.PI/2;sh.position.z=.3;ar.add(sh);
  const hd=new T.Mesh(new T.ConeGeometry(.018,.07,6),tp);hd.rotation.x=Math.PI/2;hd.position.z=.67;ar.add(hd);
  const fl=new T.Mesh(new T.BoxGeometry(.05,.004,.08),new T.MeshBasicMaterial({color:0xc03030,side:T.DoubleSide}));fl.position.z=-.03;ar.add(fl);g.add(ar);let hand=null;if(vm){hand=new T.Mesh(new T.BoxGeometry(.05,.045,.09),new T.MeshStandardMaterial({color:0xd9a37a}));hand.position.set(0,-.01,-.06);g.add(hand)}
- g.position.z=-.2;const o=new T.Group();o.add(g);o.ud={t:'bow',ar,s1,s2,hand};return o};
+ g.position.z=-.2;const o=new T.Group();o.add(g);o.ud={t:'bow',ar,s1,s2,hand,ty:TY};return o};
 const _animW=animW;animW=function(w,kv,rv,fc){const u=w&&w.ud;if(u&&u.t==='bow')return;_animW(w,kv,rv,fc)};
 // disparo normal do jogo vira "nada" para o arco (o tiro real é ao soltar a corda)
 let BD=0,BC=0,BM=0,SPH=0,SNC=0,BDs=0;const _fire2=fire;fire=function(fx,fz){if(wp==='bow'){const q=slots[cur];if(q)q.mag++;BM=1;kk=0;return}_fire2(fx,fz)};
@@ -52,9 +52,9 @@ const _sqBuy=sqBuy;sqBuy=function(i){const it=SP[i];if(it[0]!=='sc1')return _sqB
  if(!q||!(q.t==='bow'||q.t==='rifle'||q.t==='sniper')){say('Empunhe arco, rifle ou sniper',1.8);return}if(q.sc){say('Já tem luneta',1.5);return}if(S.m<it[2]){say('Dinheiro insuficiente',1.5);return}
  S.m-=it[2];q.sc=1;drawSlots();say('Luneta 1x equipada',1.5);sqShop()};
 
-function bowPose(u){const d=.32*BD+(BC>0?Math.sin(BC*70)*.025*(BC/.45):0),L=Math.hypot(.32,d);
+function bowPose(u){const ty=u.ty||.32,d=.32*BD+(BC>0?Math.sin(BC*70)*.025*(BC/.45):0),L=Math.hypot(ty,d);
  u.ar.position.z=-.32*BD;u.ar.visible=BC<=0&&!rlOn;
- u.s1.scale.z=u.s2.scale.z=L;u.s1.position.set(0,.16,-d/2);u.s2.position.set(0,-.16,-d/2);u.s1.rotation.x=Math.atan2(.32,-d);u.s2.rotation.x=Math.atan2(-.32,-d);
+ u.s1.scale.z=u.s2.scale.z=L;u.s1.position.set(0,ty/2,-d/2);u.s2.position.set(0,-ty/2,-d/2);u.s1.rotation.x=Math.atan2(ty,-d);u.s2.rotation.x=Math.atan2(-ty,-d);
  if(u.hand){u.hand.position.z=-.32*BD-.06-(BC>0?.12*BC/.45:0);u.hand.visible=!rlOn}}
 let KB=null;
 function bowSnd(k,vol){if(!AC)return;vol=vol==null?1:vol;try{if(AC.state==='suspended')AC.resume();const t=AC.currentTime,out=AC.destination,sr=AC.sampleRate;
@@ -67,3 +67,16 @@ function bowSnd(k,vol){if(!AC)return;vol=vol==null?1:vol;try{if(AC.state==='susp
  else{sn(160,60,.4,.09);nz(900,.8,'lowpass',.3,0,.07)}}catch(e){}}
 {const d=document.createElement('div');d.id='bdc';d.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3;display:none;pointer-events:none';d.innerHTML='<svg width="44" height="44"><circle cx="22" cy="22" r="2.6" fill="#ff3a2a"/><path d="M22 4v9M22 31v9M4 22h9M31 22h9" stroke="#fff" stroke-opacity=".85" stroke-width="1.6"/></svg>';document.body.appendChild(d)}
 function bowElev(sp,phi,ZR){const c=Math.cos(phi),s_=Math.sin(phi),k=Math.exp(-.35*.02);let x=0,y=0,vx=sp*c,vy=sp*s_;for(let i=0;i<400;i++){vx*=k;vy=vy*k-9*.02;x+=vx*.02;y+=vy*.02;if(x*c+y*s_>=ZR)return Math.atan(Math.max(0,x*s_-y*c)/ZR)}return 0}
+
+// ===== arco realista (modelo GLB): corda do modelo sai (a corda do jogo estica ao puxar) =====
+(function(){try{new T.GLTFLoader().load('assets/models/weapons/bow.glb',g=>{try{
+ const gs=[];let mat=null;g.scene.updateMatrixWorld(true);
+ g.scene.traverse(o=>{if(!o.isMesh||/string/i.test(o.material&&o.material.name||''))return;gs.push(o.geometry.clone().applyMatrix4(o.matrixWorld));mat=o.material});
+ if(!gs.length)return;let geo=gs[0];if(gs.length>1&&T.BufferGeometryUtils)geo=T.BufferGeometryUtils.mergeBufferGeometries(gs);
+ geo.computeBoundingBox();const bb=geo.boundingBox,S=.8;
+ // corda em +x, empunhadura em -x -> no jogo: corda em z=0, empunhadura em z=+.32 (para onde a flecha vai)
+ geo.translate(-bb.max.x,-(bb.min.y+bb.max.y)/2,-(bb.min.z+bb.max.z)/2);geo.rotateY(Math.PI/2);geo.scale(S,S,S);
+ geo.computeBoundingBox();window.BOWM={geo,mat,ty:(bb.max.y-bb.min.y)/2*S*.985};
+ try{for(const k of Object.keys(WC))if(/^bow/.test(k))delete WC[k]}catch(e){}try{for(const k of Object.keys(LMC))if(/^bow/.test(k))delete LMC[k]}catch(e){}
+ try{if(window.DZPICCLR)DZPICCLR()}catch(e){}try{rfk='';slk='';vmk='';sltxt='';drawSlots()}catch(e){}
+}catch(e){}})}catch(e){}})();

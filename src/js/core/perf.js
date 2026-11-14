@@ -10,7 +10,8 @@
   const touch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
   if (CFG.q == null) CFG.q = touch ? 1 : 2;
   if (CFG.rd == null) CFG.rd = touch ? 1 : 2;
-  if (CFG.sh == null) CFG.sh = CFG.q >= 1 ? 1 : 0;
+  if (CFG.sh == null) CFG.sh = touch ? 0 : 1;
+  if (!CFG.shM) { CFG.shM = 1; if (touch) CFG.sh = 0; try { saveCfg(); } catch (e) { } } // 3.37.1: no celular as sombras começam desligadas (pesavam e tremiam)
   if (CFG.fps == null) CFG.fps = touch ? 1 : 0;   // 0 = 60 FPS, 1 = 30 FPS (economiza bateria e não esquenta)
   if (CFG.showFps == null) CFG.showFps = 0;
   const q = () => Math.max(0, Math.min(3, CFG.q | 0));

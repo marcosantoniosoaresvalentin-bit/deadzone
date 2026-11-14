@@ -1,5 +1,14 @@
 # Histórico de versões
 
+## 3.37.1 — sem travamentos, miras de ferro certas e arco novo
+- **Travamentos corrigidos**: o visual novo brigava com o sol que segue o jogador (sombras tremendo e cena sendo refeita a
+  cada 2 s) e a vinheta pesava no celular; agora fica só a correção de cor, que não custa nada.
+- **Sombras**: opção em Configurações -> Gráficos (Ligadas/Desligadas); no celular começam desligadas.
+- **Miras de ferro**: a altura da mira de cada uma das 20 armas é medida no próprio modelo; a ponta da massa de mira fica
+  exatamente no centro da tela, onde o tiro vai (antes era preciso mirar mais alto). Snipers pesadas sem luneta miram por cima.
+- **Arco novo** (modelo realista de madeira) no lugar do antigo: na mão, nas costas, no chão e na mira (ao lado, com a
+  visão livre); a corda estica ao puxar.
+
 ## 3.37.0 — visual realista, sem clima
 - **Sem sistema de clima**: a partida é sempre de dia (sem chuva, neblina, noite ou entardecer sorteados).
 - **Visual novo**: correção de cor de cinema em todos os objetos (verdes naturais em vez de verde-limão, contraste e

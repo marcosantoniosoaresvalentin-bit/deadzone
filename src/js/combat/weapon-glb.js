@@ -129,7 +129,7 @@
     x.fillStyle = '#e22'; x.beginPath(); x.arc(128, 128, 3.5, 0, 7); x.fill();
     const gr = x.createRadialGradient(128, 128, 104, 128, 128, 128); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,.85)'); x.fillStyle = gr; x.fillRect(0, 0, 256, 256);
     _ret = new T.CanvasTexture(c); return _ret; }
-  const EYZ = { pistol: -.15, rifle: -.12, shotgun: -.13, sniper: -.12 };
+  const EYZ = { pistol: -.15, rifle: -.12, shotgun: -.13, sniper: -.12 }, SIGHT = {};
   function build(t, lv, sil, vm, v) {
     if (!v || !WV[v] || WV[v].t !== t) v = BYT[t][0];
     const D = WV[v], src = SRC[v]; if (!src) return null;
@@ -193,8 +193,14 @@
         ey = [0, ax, zc - .35];
       }
     }
-    // escopeta: o olho fica logo ACIMA do topo da arma (antes ficava dentro do corpo e a arma tapava a mira)
-    if (t === 'shotgun') { try { g.updateMatrixWorld(true); const bb = new T.Box3().setFromObject(inner); if (isFinite(bb.max.y)) ey = [0, bb.max.y + .02, Math.min(ey[2], bb.min.z - .06)]; } catch (e) { } }
+    // MIRA DE FERRO: mede no modelo a ponta da massa de mira (parte da frente do cano) e põe o olho exatamente
+    // nessa altura -> a ponta da mira fica no centro da tela, onde o tiro vai (antes a mira ficava acima do ponto do tiro)
+    if (!((t === 'rifle' || t === 'sniper') && lv > 0)) { try { const k = t + ':' + v; let yS = SIGHT[k];
+      if (yS == null) { g.updateMatrixWorld(true); const zM = Mm[0], zG = Gm[0], L = zM - zG, z0 = zM - L * (t === 'pistol' ? .45 : .32), lo = Math.min(z0, zM), hi = Math.max(z0, zM); let my = -1e9, ma = -1e9; const vv = new T.Vector3();
+        inner.traverse(o => { if (!o.isMesh) return; const P = o.geometry.attributes.position; for (let i = 0; i < P.count; i++) { vv.fromBufferAttribute(P, i).applyMatrix4(o.matrixWorld); if (vv.y > ma) ma = vv.y; if (vv.z >= lo && vv.z <= hi && vv.y > my) my = vv.y; } });
+        if (t === 'sniper' && ma - my > .03) my = ma + .004; // sniper pesada sem luneta: a traseira tapava a visão -> mira por cima da arma
+        yS = SIGHT[k] = my > -1e8 ? my : null; }
+      if (yS != null) ey = [0, yS + .0015, ey[2]]; } catch (e) { } }
     u.ey = ey;
     if (vm) { // luvas e mangas na tela de mira
       for (let k = 0; k < 2; k++) { const p = u.hg[k]; add(new T.BoxGeometry(.07, .08, .1), MAT.Black_Lighter, p[0], p[1], p[2]); add(new T.BoxGeometry(.075, .075, .5), Mt(0x55663f, 0, .9), p[0] + (k ? -.02 : .02), p[1] - .06, p[2] - .3, -.25); }
