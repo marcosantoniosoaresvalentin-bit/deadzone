@@ -4,14 +4,14 @@
 // junta as peças de um modelo (arma/item) em 1 malha por material: muito menos desenhos por item no chão
 function mergeModel(root){root.updateMatrixWorld(true);const inv=new T.Matrix4().copy(root.matrixWorld).invert(),by=new Map();
  root.traverse(o=>{if(!o.isMesh||!o.geometry||!o.visible||Array.isArray(o.material))return;const g=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();g.applyMatrix4(new T.Matrix4().multiplyMatrices(inv,o.matrixWorld));
-  for(const k of Object.keys(g.attributes))if(k!=='position'&&k!=='normal'&&k!=='uv')g.deleteAttribute(k);if(!g.attributes.normal)g.computeVertexNormals();if(!by.has(o.material))by.set(o.material,[]);by.get(o.material).push(g)});
- const out=new T.Group();for(const [m,L] of by){let n=0,uv=L.every(g=>g.attributes.uv);for(const g of L)n+=g.attributes.position.count;const P=new Float32Array(n*3),N=new Float32Array(n*3),U=uv?new Float32Array(n*2):null;let o=0;
-  for(const g of L){P.set(g.attributes.position.array,o*3);N.set(g.attributes.normal.array,o*3);if(U)U.set(g.attributes.uv.array,o*2);o+=g.attributes.position.count}
-  const ge=new T.BufferGeometry();ge.setAttribute('position',new T.BufferAttribute(P,3));ge.setAttribute('normal',new T.BufferAttribute(N,3));if(U)ge.setAttribute('uv',new T.BufferAttribute(U,2));ge.computeBoundingSphere();const me=new T.Mesh(ge,m);me.castShadow=true;out.add(me)}
+  for(const k of Object.keys(g.attributes))if(k!=='position'&&k!=='normal'&&k!=='uv'&&k!=='color')g.deleteAttribute(k);if(!g.attributes.normal)g.computeVertexNormals();if(!by.has(o.material))by.set(o.material,[]);by.get(o.material).push(g)});
+ const out=new T.Group();for(const [m,L] of by){let n=0,uv=L.every(g=>g.attributes.uv);for(const g of L)n+=g.attributes.position.count;const hc=L.some(g=>g.attributes.color),P=new Float32Array(n*3),N=new Float32Array(n*3),U=uv?new Float32Array(n*2):null,Cc=hc?new Float32Array(n*3).fill(1):null;let o=0;
+  for(const g of L){P.set(g.attributes.position.array,o*3);N.set(g.attributes.normal.array,o*3);if(U)U.set(g.attributes.uv.array,o*2);if(Cc&&g.attributes.color&&g.attributes.color.itemSize===3)Cc.set(g.attributes.color.array,o*3);o+=g.attributes.position.count}
+  const ge=new T.BufferGeometry();ge.setAttribute('position',new T.BufferAttribute(P,3));ge.setAttribute('normal',new T.BufferAttribute(N,3));if(U)ge.setAttribute('uv',new T.BufferAttribute(U,2));if(Cc)ge.setAttribute('color',new T.BufferAttribute(Cc,3));ge.computeBoundingSphere();const me=new T.Mesh(ge,m);me.castShadow=true;out.add(me)}
  return out}
 const LMC={};
 function mkLoot(t,x,z,am,lv,sil){const top=new T.Group(),g=new T.Group();
- if(!WS[t]&&window.DZItem&&DZItem.has(t)){const m=DZItem(t);if(m)g.add(m)}
+ if(!WS[t]&&window.DZItem&&DZItem.has(t)){const m=DZItem(t);if(m){let n_=0;m.traverse(o=>{if(o.isMesh)n_++});if(n_>4){try{const h=new T.Group();h.add(m);g.add(mergeModel(h))}catch(e){g.add(m)}}else g.add(m)}}
  else if(WS[t]){const ck=t+':'+(lv||0)+':'+(sil||0);if(!LMC[ck]){const w0=WC[ck]||(WC[ck]=mkW(t,lv,sil)),h=new T.Group();h.add(w0.clone(true));LMC[ck]=mergeModel(h)}const w=LMC[ck].clone(true);w.scale.setScalar(1.5);w.position.y=.7;g.add(w)}
  else if(t==='bandage'){const m=new T.Mesh(new T.CylinderGeometry(.2,.2,.14,12),M(0xf2f2f2));m.position.y=.5;g.add(m);const r=new T.Mesh(new T.CylinderGeometry(.21,.21,.05,12),M(0xd9382c));r.position.y=.5;g.add(r)}
  else if(t==='bp1'||t==='bp2'||t==='bp3'){const m=new T.Mesh(new T.BoxGeometry(.5,.6,.3),M(t==='bp1'?0x5a7a3a:t==='bp2'?0x2a5a9a:0x8a2a2a));m.position.y=.5;g.add(m);const p=new T.Mesh(new T.BoxGeometry(.4,.25,.1),M(0x222222));p.position.set(0,.4,.2);g.add(p)}

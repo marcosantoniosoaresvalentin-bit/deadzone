@@ -21,7 +21,7 @@
 
   // ---------- qualidade ----------
   window.applyQ = function () {
-    const Q = q(), dpr = devicePixelRatio || 1, pr = [Math.min(dpr, .65), Math.min(dpr, .95), Math.min(dpr, 1.3), Math.min(dpr, 2)][Q];
+    const Q = q(), dpr = devicePixelRatio || 1, pr = [Math.min(dpr, .85), Math.min(dpr, 1.1), Math.min(dpr, 1.4), Math.min(dpr, 2)][Q];
     try { if (typeof DYN !== 'undefined') { DYN.base = pr; DYN.k = 1; } } catch (e) { }
     ren.setPixelRatio(pr); try { rs(); } catch (e) { }
     sun.castShadow = !!CFG.sh;

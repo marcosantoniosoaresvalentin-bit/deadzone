@@ -90,7 +90,7 @@
   const att = k => { const A = window.DZATT && DZATT[k]; if (!A) return null; const g = new T.Group(), m = new T.Mesh(A.geo, A.mat); m.castShadow = true; m.position.set(0, -A.bottom, -A.len / 2); g.add(m); g.scale.setScalar(1.25); return g; };
   const CA = {};
   const cached = (k, f) => { if (!CA[k]) { const m = f(); if (!m) return null; CA[k] = m; } return CA[k].clone(true); };
-  window.DZItem = function (t) {
+  const _DZI = function (t) {
     try {
       if (t && t.startsWith('ammo:')) return SRC.ammo_uzi ? cached(t, () => ammoBox(t.slice(5))) : ammoBox(t.slice(5));
       if (t === 'ammo') return ammoBox('a556');
@@ -104,6 +104,14 @@
       if (t === 'bandage') return cached('band', bandage);
     } catch (e) { console.warn('item', t, e); }
     return _DZ(t);
+  };
+  // junta as peças do item por material (a caixa de munição tinha ~49 peças = 49 desenhos por caixa no chão)
+  const MC2 = {};
+  window.DZItem = function (t) {
+    if (MC2[t]) return MC2[t].clone(true);
+    const m = _DZI(t); if (!m) return m; let n = 0; m.traverse(o => { if (o.isMesh) n++; });
+    if (n <= 4 || typeof mergeModel !== 'function') return m;
+    try { const h = new T.Group(); h.add(m); const out = mergeModel(h); if (SRC.ammo_uzi && window.DZATT && DZATT.s2) { MC2[t] = out; return out.clone(true); } return out; } catch (e) { return m; }
   };
   DZItem.has = t => (t && t.startsWith('ammo:')) || (_has ? _has(t) : false);
 

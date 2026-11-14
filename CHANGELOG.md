@@ -1,5 +1,10 @@
 # Histórico de versões
 
+## 3.44.1 — menos desenhos por quadro
+- A munição e outros itens no chão tinham ~49 peças cada (49 desenhos por caixa); agora são poucas. Perto das cidades, os desenhos por quadro caíram de ~690 para ~420 (medido no jogo).
+- As árvores agora também juntam as peças por material.
+- Resolução interna da qualidade Baixa e Média voltou a ser mais nítida (85% e 110%).
+
 ## 3.44.0 — desempenho em celulares fracos
 - Celulares com pouca memória (4 GB ou menos) ou poucos núcleos passam automaticamente para a qualidade **Baixa** (uma vez; dá para mudar nas configurações). Os demais ficam no **Médio**. Todos com 30 FPS.
 - Resolução interna menor nas qualidades Baixa e Média; distância de visão menor (Baixa 150 m, Média 210 m); o ajuste automático de distância agora pode baixar mais quando o FPS cai.

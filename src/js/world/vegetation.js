@@ -53,7 +53,18 @@
   // ---------- desenho por instância ----------
   const _m = new T.Matrix4(), _q = new T.Quaternion(), _s = new T.Vector3(), _p = new T.Vector3(), UP = new T.Vector3(0, 1, 0);
   // divide em blocos de 120 m: cada bloco some quando fica longe (distância automática do jogo)
+  // junta as peças de cada árvore por material (a árvore tinha 49 peças = 49 desenhos por bloco; agora 2 a 4)
+  function mergeParts(parts) {
+    try { const BU_ = T.BufferGeometryUtils; if (!BU_ || !BU_.mergeBufferGeometries) return parts;
+      const by = new Map(); for (const [g, m, w] of parts) { const k = m.uuid + '|' + (w ? 1 : 0); if (!by.has(k)) by.set(k, { m, w, gs: [] }); by.get(k).gs.push(g); }
+      const out = []; for (const e of by.values()) { const L = e.gs.map(g => { const q = g.index ? g.toNonIndexed() : g.clone(); return q; });
+        const keep = ['position', 'normal', 'uv', 'color'].filter(a => L.every(g => g.attributes[a])); for (const g of L) for (const a of Object.keys(g.attributes)) if (!keep.includes(a)) g.deleteAttribute(a);
+        const mg = L.length > 1 ? BU_.mergeBufferGeometries(L) : L[0]; if (!mg) return parts; out.push([mg, e.m, e.w]); }
+      return out;
+    } catch (e) { return parts; }
+  }
   function inst(parts, pts0, sh, sy) {
+    parts = mergeParts(parts);
     const B = new Map(); for (const q of pts0) { const k = Math.floor(q[0] / 240) + "," + Math.floor(q[1] / 240); if (!B.has(k)) B.set(k, []); B.get(k).push(q); }
     for (const pts of B.values()) inst1(parts, pts, sh, sy);
   }
