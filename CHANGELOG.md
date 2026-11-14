@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 3.37.0 — visual realista, sem clima
+- **Sem sistema de clima**: a partida é sempre de dia (sem chuva, neblina, noite ou entardecer sorteados).
+- **Visual novo**: correção de cor de cinema em todos os objetos (verdes naturais em vez de verde-limão, contraste e
+  saturação equilibrados, sombras levemente frias e luzes quentes), céu azul mais profundo com névoa no horizonte,
+  neblina da cor do horizonte (mais profundidade), sol mais quente, luz ambiente mais suave, sombras mais macias e
+  vinheta leve nas bordas. Feito dentro do sombreador, sem custo extra de desempenho.
+
 ## 3.36.0 — atualização dentro do jogo
 - **Atualizar sem baixar outro APK**: ao abrir o jogo (no lobby), ele confere se existe versão nova. Se houver, aparece
   "Atualização disponível" -> Atualizar (barra de progresso) -> Reiniciar, e o jogo abre já atualizado. O pacote é
