@@ -13,6 +13,7 @@
   const T = THREE;
   const ASSET = {
     human: 'assets/models/human.glb',
+    bag1: 'assets/models/gear/backpack1.glb',
     anim: 'assets/models/animations.glb',
     grass: 'assets/textures/grass.jpg',
     brick: 'assets/textures/brick.jpg',
@@ -649,7 +650,19 @@
     }
     return G;
   }
-  let GEAR = null;
+  let GEAR = null, BAGM = null, BAGDET = null;
+  function setBag(scene) {
+    const g = new T.Group(); BAGDET = new T.MeshStandardMaterial({ vertexColors: true, roughness: .72, metalness: .05 });
+    scene.updateMatrixWorld(true);
+    scene.traverse(o => { if (!o.isMesh) return; const m = new T.Mesh(o.geometry.clone().applyMatrix4(o.matrixWorld), null); m.name = /detail/.test(o.name) ? 'detail' : 'fabric'; m.geometry.computeBoundingSphere(); g.add(m); });
+    BAGM = g;
+    // item no chão / foto da mochila
+    window.DZBAGMESH = () => { const c = BAGM.clone(true); c.traverse(o => { if (o.isMesh) { o.material = o.name === 'detail' ? BAGDET : (window.__dzBagFab || (window.__dzBagFab = new T.MeshStandardMaterial({ color: lin(0x4d5a3a), vertexColors: true, roughness: .9 }))); o.castShadow = true; } }); return c; };
+    try { if (window.DZItem) { const _d = DZItem, _h = DZItem.has; window.DZItem = function (t) { if (/^bp[123]$/.test(t)) { const c = DZBAGMESH(); c.scale.setScalar(.55); return c; } return _d.apply(this, arguments); }; DZItem.has = t => /^bp[123]$/.test(t) || (_h ? _h(t) : false); } } catch (e) { }
+    try { if (window.DZPICCLR) DZPICCLR(); } catch (e) { }
+    // mochilas que já estavam no chão trocam o modelo
+    try { for (const o of loot) { if (!/^bp[123]$/.test(o.t)) continue; const gg = o.g; while (gg.children.length) gg.remove(gg.children[0]); const m = DZItem(o.t); gg.add(m); gg.rotation.x = 0; gg.position.y = 0; o.top.updateMatrixWorld(true); const bb = new T.Box3().setFromObject(gg); if (bb.min.y < 1e8) gg.position.y -= bb.min.y - o.top.position.y - .01; o.top.updateMatrixWorld(true); o.top.traverse(q => { q.updateMatrix(); }); } } catch (e) { }
+  }
   function gearMeshes(G) {
     if (!GEAR) {
       const helm = new T.Group();
@@ -662,8 +675,9 @@
         const bp = new T.Mesh(new T.BoxGeometry(.6, .3, .05), null); bp.position.set(0, .02, -.31); vest.add(bp);
         for (let i = -1; i <= 1; i++) { const p = new T.Mesh(new T.BoxGeometry(.13, .1, .06), null); p.position.set(i * .16, -.06, .355); vest.add(p); }
         for (const s of [-1, 1]) { const sh = new T.Mesh(new T.BoxGeometry(.08, .04, .5), null); sh.position.set(s * .17, .2, 0); vest.add(sh); } }
-      const bag = new T.Group();
-      { const b = new T.Mesh(new T.BoxGeometry(1, 1.35, .55), null); bag.add(b);
+      let bag = new T.Group();
+      if (BAGM) { bag = BAGM.clone(true); bag.userData.real = 1; }
+      else { const b = new T.Mesh(new T.BoxGeometry(1, 1.35, .55), null); bag.add(b);
         const t = new T.Mesh(new T.CylinderGeometry(.28, .28, 1, 12), null); t.rotation.z = Math.PI / 2; t.position.set(0, .72, 0); bag.add(t);
         const p = new T.Mesh(new T.BoxGeometry(.7, .5, .2), null); p.position.set(0, -.25, .34); bag.add(p);
         for (const s of [-1, 1]) { const sd = new T.Mesh(new T.BoxGeometry(.22, .6, .4), null); sd.position.set(s * .58, -.1, 0); bag.add(sd); } }
@@ -678,11 +692,12 @@
     const G = TPL.gear, M = gearMeshes(G), B = av.B;
     const mk = (key, scale, mat, mesh) => {
       const def = G[key]; if (!def || !B[def.bone]) return null;
-      const g = M[mesh || key].clone(true); g.traverse(o => { if (o.isMesh) { o.material = mat; o.castShadow = true; } });
+      const g = M[mesh || key].clone(true); g.traverse(o => { if (o.isMesh) { o.material = (o.name === 'detail' && BAGDET) ? BAGDET : mat; o.castShadow = true; } });
+      if (key === 'bag' && M.bag.userData.real) { const BF = window.DZBAGFIT || [.47, -.1, .105]; g.position.set(0, BF[1], BF[2]); scale = BF[0]; }
       const holder = new T.Group(); holder.matrixAutoUpdate = false; holder.matrix.copy(def.m); holder.add(g); g.scale.setScalar(scale);
       B[def.bone].add(holder); holder.visible = false; return holder;
     };
-    av.gearMat = { helm: FAB(0x3b4430, .55), vest: FAB(0x2f3828), bag: FAB(0x4d5a3a), hair: FAB(0x2a1d14, .95) };
+    av.gearMat = { helm: FAB(0x3b4430, .55), vest: FAB(0x2f3828), bag: (() => { const m = FAB(0x4d5a3a, .9); m.vertexColors = true; return m; })(), hair: FAB(0x2a1d14, .95) };
     av.gear = { hair: mk('helm', G.helm ? G.helm.r * .8 : .1, av.gearMat.hair, 'hair'), helm: mk('helm', G.helm ? G.helm.r : .13, av.gearMat.helm), vest: mk('vest', G.vest ? G.vest.w : .36, av.gearMat.vest), bag: mk('bag', G.bag ? G.bag.w * .9 : .3, av.gearMat.bag) };
   }
 
@@ -764,7 +779,7 @@
     let h, v, b;
     if (typeof pl !== 'undefined' && rig.pl === pl) { try { h = ARM.helm > 0; v = ARM.vest > 0; b = bagLv > 0; } catch (e) { h = v = b = false; } }
     else { h = rig.seed % 2 === 0; v = rig.seed % 3 !== 1; b = rig.seed % 4 !== 0; }
-    if (av.gear.helm) av.gear.helm.visible = !!h; if (av.gear.hair) av.gear.hair.visible = false; // o personagem novo já tem cabelo próprio if (av.gear.vest) av.gear.vest.visible = !!v; if (av.gear.bag) av.gear.bag.visible = !!b;
+    if (av.gear.helm) av.gear.helm.visible = !!h; if (av.gear.hair) av.gear.hair.visible = false; /* o personagem novo já tem cabelo próprio */ if (av.gear.vest) av.gear.vest.visible = !!v; if (av.gear.bag) av.gear.bag.visible = !!b;
   }
 
   function load() {
@@ -773,9 +788,9 @@
       if (url.startsWith('data:')) new T.GLTFLoader().parse(b64ab(url), '', cb, e => console.warn(e));
       else new T.GLTFLoader().load(url, cb, undefined, e => console.warn(url, e));
     };
-    let human = null, anim = null;
+    let human = null, anim = null, bagOk = false;
     const done = () => {
-      if (!human || !anim) return;
+      if (!human || !anim || !bagOk) return;
       try { ANI = bakeClips(anim.scene, Object.fromEntries((anim.animations || []).map(c => [c.name, c]))); } catch (e) { console.warn('animações', e); }
       const scene = human.scene;
       scene.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false; if (o.material) o.material.envMapIntensity = .7; } });
@@ -783,7 +798,11 @@
       TPL = { scene, D, gear: gearDefs(D) }; D.wrap.remove(scene); DZR.ready = true;
       for (const r of DZR.rigs) attach(r);
     };
-    try { get(ASSET.human, g => { human = g; done(); }); get(ASSET.anim, g => { anim = g; done(); }); } catch (e) { console.warn('DZR.load', e); }
+    try {
+      get(ASSET.human, g => { human = g; done(); }); get(ASSET.anim, g => { anim = g; done(); });
+      // mochila (nível 1; os níveis 2 e 3 usam o mesmo visual por enquanto)
+      new T.GLTFLoader().load(ASSET.bag1.startsWith('data:') ? ASSET.bag1 : ASSET.bag1, g => { try { setBag(g.scene); } catch (e) { } bagOk = true; done(); }, undefined, () => { bagOk = true; done(); });
+    } catch (e) { bagOk = true; }
   }
 
   function attach(rig) {

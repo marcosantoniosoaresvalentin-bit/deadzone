@@ -115,17 +115,18 @@
     cur_ = c; mode = 'glide'; pl.visible = false; cur = -1; ads = 0; firing = 0; c.thr = 0; camY = c.yaw;
     try { setLabel(); } catch (e) { } say('Planador: ACELERAR para ganhar velocidade · analógico para cima sobe, para baixo desce, para os lados vira', 5);
   }
+  function unseat(c) { try { const pg = c.g.userData.pilot; if (pg) pg.visible = false; } catch (e) { } try { vaultReset(); pl.rotation.set(0, pl.rotation.y, 0); } catch (e) { } }
   function exit() {
     const c = cur_; if (!c) return; const gy = GY(c.x, c.z, c.y + 2), h = c.y - gy;
-    if (h > 12) { P.x = c.x; P.z = c.z; P.y = c.y - 1; P.vy = -4; cur_ = null; pl.visible = true; c.thr = 0; c.ab = 1; try { openChute(); } catch (e) { mode = 'chute'; } say('🪂 Você saltou do planador!', 3); return; }
+    if (h > 12) { unseat(c); P.x = c.x; P.z = c.z; P.y = c.y - 1; P.vy = -4; cur_ = null; pl.visible = true; c.thr = 0; c.ab = 1; try { openChute(); } catch (e) { mode = 'chute'; } say('🪂 Você saltou do planador!', 3); return; }
     if (c.spd > 6) { say('Diminua a velocidade para sair (Frear)', 1.6); return; }
-    P.x = c.x + Math.cos(c.yaw) * 1.6; P.z = c.z - Math.sin(c.yaw) * 1.6; P.y = GY(P.x, P.z, c.y + 2); P.vy = 0; cur_ = null; mode = 'ground'; pl.visible = true; yaw = c.yaw; c.spd = 0; c.thr = 0;
+    unseat(c); P.x = c.x + Math.cos(c.yaw) * 1.6; P.z = c.z - Math.sin(c.yaw) * 1.6; P.y = GY(P.x, P.z, c.y + 2); P.vy = 0; cur_ = null; mode = 'ground'; pl.visible = true; yaw = c.yaw; c.spd = 0; c.thr = 0;
     try { setLabel(); } catch (e) { }
   }
   function boom(c) {
     c.dead = 1; c.thr = 0; try { expl(c.x, c.y + .5, c.z, 6, 0, 0); } catch (e) { }
     c.g.traverse(o => { if (o.isMesh && o.material && o.material.color) { o.material = o.material.clone(); o.material.color.multiplyScalar(.25); } });
-    if (cur_ === c) { cur_ = null; P.x = c.x; P.z = c.z; P.y = GY(c.x, c.z, c.y + 2); mode = 'ground'; pl.visible = true; hp -= 45; try { setLabel(); } catch (e) { } say('O planador bateu!', 2.5); }
+    if (cur_ === c) { unseat(c); cur_ = null; P.x = c.x; P.z = c.z; P.y = GY(c.x, c.z, c.y + 2); mode = 'ground'; pl.visible = true; hp -= 45; try { setLabel(); } catch (e) { } say('O planador bateu!', 2.5); }
   }
 
   // ---------- voo ----------
@@ -165,7 +166,7 @@
     }
     c.air = c.y > g2 + .5 ? 1 : 0;
     c.g.position.set(c.x, c.y, c.z); c.g.rotation.set(0, 0, 0); c.g.rotateY(c.yaw); c.g.rotateX(-c.pitch); c.g.rotateZ(c.roll);
-    { const pg = c.g.userData.pilot; if (pg) { const on = cur_ === c; if (pg.visible !== on) pg.visible = on; if (on) seat(pg); } }
+    { const pg = c.g.userData.pilot; if (pg && cur_ === c && pg.visible) pg.visible = false; }
     const hub = c.g.userData.hub; if (hub) { hub.rotation.z += dt * (6 + 60 * c.thr); c.g.userData.disc.material.opacity = .25 * c.thr; }
     // som do motor
     if (pil && c.thr > .1) { c.sn = (c.sn || 0) - dt; if (c.sn <= 0) { c.sn = .09; try { sfx(220 + 160 * c.thr, .09 * c.thr, .08, 0); } catch (e) { } } }
@@ -173,6 +174,22 @@
   // planador sem piloto que foi abandonado no ar: plana e cai sozinho
   function idle(c, dt) { if (c.dead) return; if (c.ab && c.y > GY(c.x, c.z, c.y + 1) + .2) { tick(c, dt, 0); if (c.y <= GY(c.x, c.z, c.y + 1) + .05 && c.spd < 1) c.ab = 0; } }
 
+  // pose do próprio personagem pilotando (igual ao boneco do banco, com leve balanço nas curvas)
+  const _gp = new T.Vector3(), _gq = new T.Quaternion(), _go = new T.Vector3(), GLOFF = [0, -.64, -.17]; let gpT = 0;
+  function pilotPose(dt) {
+    gpT += dt; const c = cur_, rl = c ? c.roll : 0;
+    try { CH.loco = { w: 0, sp: 0, arm: false, fw: 1 }; for (const r of DZR.rigs) if (r.pl === pl && r.av) r.av.lw = 0; } catch (e) { }
+    hips.position.set(0, .5, 0); hips.rotation.set(0, 0, 0); tor.rotation.set(-.08, 0, -rl * .25); head.rotation.set(-.1, -rl * .3, 0);
+    for (const L of [lg1, lg2]) { L.th.rotation.set(-1.35, 0, 0); L.kn.rotation.x = .9; }
+    aR.sh.rotation.set(-1.15 + rl * .25, 0, .18); aL.sh.rotation.set(-1.15 - rl * .25, 0, -.18); aR.el.rotation.x = aL.el.rotation.x = -.35;
+    try { rf.visible = false; } catch (e) { }
+  }
+  // aplica logo antes de desenhar (o laço principal desenha no fim dele e reposiciona o personagem antes)
+  { const _rr = ren.render.bind(ren); let lr = 0;
+    ren.render = function (s_, c_) {
+      if (c_ === cam && mode === 'glide' && cur_) { try { const c = cur_, pg = c.g.userData.pilot; if (pg) { const now = performance.now(), dt = Math.min(.05, (now - lr) / 1000 || 0); lr = now; c.g.updateMatrixWorld(true); pg.getWorldPosition(_gp); c.g.getWorldQuaternion(_gq); { const o = window.DZGLOFF || GLOFF; _go.set(o[0], o[1], o[2]).applyQuaternion(_gq); _gp.add(_go); } pl.visible = true; pl.position.copy(_gp); pl.quaternion.copy(_gq); pilotPose(dt); pl.updateMatrixWorld(true); } } catch (e) { } }
+      return _rr(s_, c_);
+    }; }
   // ---------- liga no laço principal ----------
   const _lb = window.loopBody;
   window.loopBody = function (t) {
@@ -185,8 +202,9 @@
       const d = 14 + c.spd * .08, h = 4.2; cam.position.set(c.x - Math.sin(camY) * d, Math.max(GY(c.x - Math.sin(camY) * d, c.z - Math.cos(camY) * d, c.y + 5) + 1.5, c.y + h + Math.sin(-c.pitch) * 2), c.z - Math.cos(camY) * d);
       cam.lookAt(c.x + Math.sin(c.yaw) * 6, c.y + 1.4, c.z + Math.cos(c.yaw) * 6);
       if (cam.far < 600) { cam.far = 800; cam.updateProjectionMatrix(); }
+
       // zona também machuca no planador
-      try { if (Math.hypot(c.x - zX, c.z - zZ) > zR) hp -= dt * (1.5 + zI * 1.2); if (hp <= 0 && mode !== 'dead') { cur_ = null; pl.visible = true; mode = 'ground'; die(); } } catch (e) { }
+      try { if (Math.hypot(c.x - zX, c.z - zZ) > zR) hp -= dt * (1.5 + zI * 1.2); if (hp <= 0 && mode !== 'dead') { unseat(c); cur_ = null; pl.visible = true; mode = 'ground'; die(); } } catch (e) { }
     }
   };
 

@@ -82,5 +82,5 @@
     die = function () { try { if (mode === 'ground' && !(typeof MP !== 'undefined' && MP)) dzPlayerBox(); } catch (e) { } return _d.apply(this, arguments); };
   });
   // nova partida: limpa as caixas
-  const _sg = window.startGame; if (typeof _sg === 'function') window.startGame = function () { for (const B of BOXES) sc.remove(B.g); BOXES.length = 0; return _sg.apply(this, arguments); };
+  const _sg = window.startGame; if (typeof _sg === 'function') window.startGame = function () { for (const B of BOXES) sc.remove(B.g); BOXES.length = 0; try { bagLv = 0; } catch (e) { } return _sg.apply(this, arguments); };
 })();

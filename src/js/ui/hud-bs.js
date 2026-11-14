@@ -170,7 +170,7 @@ html body .dzQ .it small{position:absolute;right:3px;bottom:1px;padding:0!import
     SW = null; if (fits(o)) { try { take(o); } catch (e) { } } try { drawBag(); } catch (e) { } render(true);
   }
   // substitui a lista antiga
-  window.refreshLoot = function () { render(false); };
+  let rlT = 0; window.refreshLoot = function () { const n = performance.now(); if (n - rlT < 100) return; rlT = n; render(false); };
   try { refreshLoot = window.refreshLoot; } catch (e) { }
 
   // ---------- armas: quadradinhos só com ícone e munição ----------

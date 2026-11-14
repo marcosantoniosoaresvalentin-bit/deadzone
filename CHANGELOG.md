@@ -1,5 +1,23 @@
 # Histórico de versões
 
+## 3.35.0 — HUD novo, mapa novo, caixa de morte e mochila nível 1
+- **Personagem**: sem a "touca" antiga por cima da cabeça.
+- **Mapa grande** (no chão, avião e paraquedas): missões diárias ao vivo à esquerda (recolhíveis), zoom com + / − / barra /
+  pinça, arrastar com o dedo, uma marcação só (tocar de novo apaga), botão Excluir e rota do avião.
+- **HUD novo**: moedas e abates à esquerda (vivos só no avião); minimapa quadrado à direita com configurações, microfone,
+  som e mensagens rápidas, e o botão de marcar embaixo; "Nos arredores" com foto do item e nome (2 por vez, rolagem,
+  troca rápida quando a mochila está cheia); armas grandes + pistola menor, cura e arremessáveis só com ícones;
+  barras de colete (em cima) e vida (embaixo).
+- **Escopeta e sniper**: no botão com "mirar enquanto atira", segurar mira e soltar dispara; no outro botão, dispara no toque.
+  Mira da escopeta não tapa mais a visão.
+- **Caixa de morte**: bot ou jogador eliminado deixa uma caixa com o loot dele.
+- **Mochila nível 1 nova** (modelo realista remodelado e pintado: verde-oliva, alças pretas, colchonete, bolso lateral);
+  aparece nas costas do personagem e dos bots e no chão. Níveis 2 e 3 usam o mesmo visual por enquanto.
+- A partida começa **sem mochila** (pouco espaço).
+- **Planador**: o próprio personagem pilota sentado no banco; o boneco que ficava no planador depois de sair foi removido.
+- Colete e mochila voltaram a aparecer/sumir no corpo conforme o equipamento.
+- Lista de itens do chão atualiza menos vezes por segundo (mais leve).
+
 ## 3.34.0 — personagem próprio do Deadzone e mais ossos
 - **Personagem próprio**: rosto remodelado (nariz mais largo, queixo e mandíbula mais fortes, maçãs do rosto e
   sobrancelhas mais marcadas, crânio mais largo), cabelo e sobrancelhas escuros, barba mais cheia, olhos castanhos,
