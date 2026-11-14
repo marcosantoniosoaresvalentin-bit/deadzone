@@ -25,7 +25,7 @@
     g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(0, h - 32, w, 2);
   });
   const STEEL = Mt({ map: STEELT, metalness: .65, roughness: .5 }), DARK = Mt({ color: lin(0x2a2d30), metalness: .6, roughness: .45 }), GLASS = Mt({ color: lin(0x203040), metalness: .9, roughness: .1, transparent: true, opacity: .75 });
-  const box = (w, h, d, m, x, y, z, p) => { const me = new T.Mesh(new T.BoxGeometry(w, h, d), m); me.position.set(x, y, z); me.castShadow = true; me.receiveShadow = true; p.add(me); return me; };
+  const box = (w, h, d, m, x, y, z, p) => { const bg = new T.BoxGeometry(w, h, d); if (m === STEEL) { const uv = bg.attributes.uv; for (let i = 20; i < 24; i++) uv.setX(i, 1 - uv.getX(i)); } const me = new T.Mesh(bg, m); me.position.set(x, y, z); me.castShadow = true; me.receiveShadow = true; p.add(me); return me; };
 
   // placa do meio: chapa com visor, alças e pés de apoio atrás
   function center() {
@@ -35,6 +35,7 @@
     // janela de tiro aberta (sem vidro) com moldura escura
     box(WW + .04, .025, .08, DARK, 0, WB - .005, .01, g); box(WW + .04, .025, .08, DARK, 0, WT + .005, .01, g);
     for (const s of [-1, 1]) box(.025, WH + .04, .08, DARK, s * (WW / 2 + .005), WC, .01, g);
+    const gl = box(WW, WH, .012, GLASS, 0, WC, 0, g); gl.userData.glass = 1; gl.castShadow = false;                    // vidro: a bala atravessa (trinca)
     for (const s of [-1, 1]) { const leg = box(.05, PH * .8, .05, DARK, s * PW * .3, PH * .38, -.32, g); leg.rotation.x = -.45; box(.12, .03, .25, DARK, s * PW * .3, .015, -.5, g); }
     box(PW * .1, .1, .06, DARK, 0, PH - .04, -.03, g);                                            // alça
     return g;
@@ -94,19 +95,94 @@
     S.root.updateMatrixWorld(true); const v = new T.Vector3();
     // cada placa vira 3 caixinhas ao longo da largura (segue a curva)
     const add = (obj, x0, x1, yb0, yt0, pd) => { const PD = pd != null ? pd : .13; for (let i = 0; i < 3; i++) { const xa = x0 + (x1 - x0) * (i / 3), xb = x0 + (x1 - x0) * ((i + 1) / 3); const p1 = v.set(xa, 0, 0).applyMatrix4(obj.matrixWorld).clone(), p2 = v.set(xb, 0, 0).applyMatrix4(obj.matrixWorld).clone();
-      S.boxes.push(addBox({ x0: Math.min(p1.x, p2.x) - PD, x1: Math.max(p1.x, p2.x) + PD, z0: Math.min(p1.z, p2.z) - .13, z1: Math.max(p1.z, p2.z) + .13, yb: S.y + (yb0 != null ? yb0 : -1), yt: S.y + (yt0 != null ? yt0 : PH), w: 1 })); } };
+      S.boxes.push(addBox({ shd: 1, x0: Math.min(p1.x, p2.x) - PD, x1: Math.max(p1.x, p2.x) + PD, z0: Math.min(p1.z, p2.z) - .13, z1: Math.max(p1.z, p2.z) + .13, yb: S.y + (yb0 != null ? yb0 : -1), yt: S.y + (yt0 != null ? yt0 : PH), w: 1 })); } };
     // placa do meio: o vão da janela fica livre para atirar (só a parte de baixo e a de cima seguram bala)
     add(S.body, -PW / 2, PW / 2, -1, WB); add(S.body, -PW / 2, PW / 2, WT, PH);
     for (const sx of [-1, 1]) add(S.body, sx * WW / 2, sx * PW / 2, WB, WT, .02);
     for (const side of ['L', 'R']) for (const h of S.W[side]) add(h, 0, side === 'R' ? PW : -PW);
   }
+  // ---------- BALAS NO ESCUDO: marcas, furos e sniper atravessando ----------
+  // Cada tiro marca o ponto exato. Tiros perto do mesmo ponto (até 6 cm) somam força; ao chegar em 100 abre um furo
+  // redondo ali (a bala passa e dá para ver através). Sniper fura com um tiro só (pesada até 150 m, comum até 40 m).
+  const HEAVY = /material/;
+  function power(w, v, d) {
+    const f = d <= 25 ? 1 : Math.max(.5, 1 - (d - 25) / 250);
+    if (w === 'sniper') { const hv = HEAVY.test(v || ''); if (d <= (hv ? 150 : 40)) return { pen: 1 }; return { p: (hv ? 40 : 20) * f }; }
+    const base = w === 'pistol' ? 3 : w === 'shotgun' ? 1.4 : w === 'bow' ? 5 : /battle/.test(v || '') ? 7 : 4.5;
+    return { p: base * f };
+  }
+  const RC = new T.Raycaster(), _o = new T.Vector3(), _d = new T.Vector3(), _l = new T.Vector3();
+  function near_(S, o, d, len) { const vx = S.x - o.x, vz = S.z - o.z, t = Math.max(0, Math.min(len, vx * d.x + vz * d.z)); return Math.hypot(o.x + d.x * t - S.x, o.z + d.z * t - S.z) < 4; }
+  function inHole(me, p) { const H = me.userData.holes; if (!H) return false; for (const h of H) if (Math.hypot(p.x - h.x, p.y - h.y) < h.r) return true; return false; }
+  // percorre a linha: devolve o primeiro aço que segura a bala (ou null). apply = registra marcas/furos (tiro de verdade)
+  function trace(o, d, len, w, v, apply) {
+    for (const S of LIVE) {
+      if (S.u < .99 || S.closing || !near_(S, o, d, len)) continue;
+      S.root.updateMatrixWorld(true); RC.set(o, d); RC.far = len;
+      const hits = RC.intersectObjects(S.steel.concat(S.glass), false);
+      for (const h of hits) {
+        const me = h.object; _l.copy(h.point); me.worldToLocal(_l);
+        if (me.userData.glass) { if (apply) mark(S, me, _l, h.face && h.face.normal, 'g', 1); continue; }
+        if (inHole(me, _l)) continue;
+        const pw = power(w, v, h.distance);
+        if (pw.pen) { if (apply) mark(S, me, _l, h.face && h.face.normal, 'h', 1); continue; }   // sniper atravessa
+        if (apply) mark(S, me, _l, h.face && h.face.normal, 'd', 1, pw.p);
+        if (apply && inHole(me, _l)) continue;                                                     // este tiro abriu o furo
+        return { S, t: h.distance };
+      }
+    }
+    return null;
+  }
+  // marca/furo no ponto local p da placa me
+  const DECG = new T.CircleGeometry(.016, 12), DECM = new T.MeshBasicMaterial({ color: 0x15171a, side: T.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2 }),
+    RIMG = new T.RingGeometry(.016, .024, 14), RIMM = new T.MeshStandardMaterial({ color: 0xb8bec4, metalness: .9, roughness: .3, side: T.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2 }),
+    CRKM = new T.MeshBasicMaterial({ color: 0xdfe8ee, transparent: true, opacity: .75, side: T.DoubleSide, depthWrite: false });
+  function crackGeo() { const P = []; for (let i = 0; i < 7; i++) { const a = i / 7 * 6.283 + Math.random() * .5, L = .03 + Math.random() * .05; P.push(0, 0, 0, Math.cos(a) * L, Math.sin(a) * L, 0); } const g = new T.BufferGeometry(); g.setAttribute('position', new T.Float32BufferAttribute(P, 3)); return g; }
+  function decal(S, me, p, n, glass) {
+    if (S.nd > 150) return; S.nd++;
+    const z = (n && n.z < 0 ? -1 : 1) * (me.geometry.parameters.depth / 2 + .002);
+    if (glass) { const c = new T.LineSegments(crackGeo(), CRKM); c.position.set(p.x, p.y, 0); me.add(c); return; }
+    for (const zz of [z, -z]) { const d = new T.Mesh(DECG, DECM); d.position.set(p.x, p.y, zz); me.add(d); const r = new T.Mesh(RIMG, RIMM); r.position.set(p.x, p.y, zz); me.add(r); }
+  }
+  function hole(S, me, p, r) {
+    const P = me.geometry.parameters; (me.userData.holes = me.userData.holes || []).push({ x: p.x, y: p.y, r });
+    if (!me.userData.am) { const c = document.createElement('canvas'); c.width = 64; c.height = 80; const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, 64, 80); const t = new T.CanvasTexture(c);
+      me.material = me.material.clone(); me.material.alphaMap = t; me.material.alphaTest = .5; me.material.needsUpdate = true; me.userData.am = { c, g, t }; }
+    const A = me.userData.am, u = (p.x + P.width / 2) / P.width, v = (p.y + P.height / 2) / P.height;
+    A.g.fillStyle = '#000'; A.g.beginPath(); A.g.ellipse(u * 64, (1 - v) * 80, r / P.width * 64, r / P.height * 80, 0, 0, 7); A.g.fill(); A.t.needsUpdate = true;
+  }
+  // k: 'd' marca (soma força), 'h' furo direto (sniper), 'g' vidro trincado
+  function mark(S, me, p, n, k, net_, pts) {
+    if (k === 'g') decal(S, me, p, n, 1);
+    else if (k === 'h') { decal(S, me, p, n); hole(S, me, p, .03); }
+    else { const L = me.userData.imp = me.userData.imp || []; let best = null, bd = .06; for (const q of L) { const dd = Math.hypot(q.x - p.x, q.y - p.y); if (dd < bd) { bd = dd; best = q; } }
+      if (!best) { best = { x: p.x, y: p.y, s: 0, h: 0 }; L.push(best); } best.s += pts; decal(S, me, p, n);
+      if (!best.h && best.s >= 100) { best.h = 1; hole(S, me, best, .04); } }
+    if (net_) net({ t: 'shd', a: 'd', id: S.id, m: S.steel.indexOf(me), gi: me.userData.glass ? S.glass.indexOf(me) : -1, k, x: +p.x.toFixed(3), y: +p.y.toFixed(3), p: pts ? +pts.toFixed(2) : 0, nz: n && n.z < 0 ? -1 : 1 });
+  }
+  // linha de visão / bala: o escudo segura, a menos que tenha furo no caminho (ou a arma atravesse)
+  const _blk = blocked;
+  blocked = function (x0, y0, z0, x1, y1, z1) {
+    if (_blk(x0, y0, z0, x1, y1, z1)) return true; if (!LIVE.length) return false;
+    _o.set(x0, y0, z0); _d.set(x1 - x0, y1 - y0, z1 - z0); const len = _d.length(); if (len < .01) return false; _d.multiplyScalar(1 / len);
+    const W_ = window.__shW; return !!trace(_o, _d, len, W_ ? W_[0] : null, W_ ? W_[1] : null, false);
+  };
+  // tiro do jogador: marca o escudo onde a bala parou (ou furou)
+  window.addEventListener('load', () => {
+    try { const _f = fire; fire = function (fx, fz) { const q = cur >= 0 ? slots[cur] : null; window.__shW = q ? [q.t, q.v] : null; try { return _f.apply(this, arguments); } finally { window.__shW = null; } }; } catch (e) { }
+    try { const _s = DZW.shoot; DZW.shoot = function (o, dr, maxT) { const r = _s ? _s.apply(this, arguments) : undefined; try { if (LIVE.length && window.__shW) trace(o, dr, (maxT || 300) + .5, __shW[0], __shW[1], true); } catch (e) { } return r; }; } catch (e) { }
+  });
+  // tiro de bot: segura no escudo e deixa a marca
+  window.dzShotBlk = function (b, x0, y0, z0, x1, y1, z1) {
+    window.__shW = [b.w || 'rifle', b.v]; try { const r = blocked(x0, y0, z0, x1, y1, z1); if (LIVE.length) { _o.set(x0, y0, z0); _d.set(x1 - x0, y1 - y0, z1 - z0); const len = _d.length(); _d.multiplyScalar(1 / len); trace(_o, _d, len, b.w || 'rifle', b.v, true); } return r; } finally { window.__shW = null; }
+  };
   // ---------- rede: todo mundo da partida vê o escudo ----------
   let seq = 0;
   function net(m) { try { if (typeof N !== 'undefined' && N) gp(m, 1); else if (typeof MP !== 'undefined' && MP && opId && opId !== 'BOT') snd(m, 1); } catch (e) { } }
   const ANIM = [];
   function spawnAt(x, y, z, r, id) {
     const S = build(); S.root.position.set(x, y, z); S.root.rotation.y = r; sc.add(S.root); pose(S, 0);
-    Object.assign(S, { x, z, y, r, id, u: 0, boxes: [] }); LIVE.push(S); return S;
+    Object.assign(S, { x, z, y, r, id, u: 0, boxes: [], steel: [], glass: [], nd: 0 }); S.root.traverse(o => { if (!o.isMesh) return; if (o.material === STEEL) S.steel.push(o); else if (o.userData.glass) S.glass.push(o); }); LIVE.push(S); return S;
   }
   function deploy() {
     if (busy || mode !== 'ground' || !(bag.shield > 0) || (window.dzKnocked && dzKnocked())) return;
@@ -132,6 +208,7 @@
     if (!m || m.t !== 'shd' || mode === 'lobby') return;
     let S = LIVE.find(s => s.id === m.id);
     if (m.a === 'o') { if (S) return; S = spawnAt(m.x, m.y, m.z, m.r, m.id); ANIM.push({ S, t: 0, dir: 1, dur: 1.8 }); }
+    else if (m.a === 'd' && S) { const me = m.k === 'g' ? S.glass[m.gi] : S.steel[m.m]; if (me) mark(S, me, new T.Vector3(m.x, m.y, 0), { z: m.nz }, m.k, 0, m.p); }
     else if (m.a === 'c' && S && !S.closing) {
       for (let i = ANIM.length - 1; i >= 0; i--) if (ANIM[i].S === S) { if (ANIM[i] === busy) busy = null; ANIM.splice(i, 1); }
       S.closing = 1; colliders(S, false); ANIM.push({ S, t: (1 - S.u) * 1.2, dir: -1, dur: 1.2 });

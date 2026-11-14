@@ -215,15 +215,15 @@
     // MIRA DE FERRO: mede no modelo a ponta da massa de mira (frente) e o centro do aro/entalhe de trás.
     // O olho fica na altura da ponta da frente (= centro da tela, onde o tiro vai) e, na tela de mira, a arma é
     // inclinada de leve para que o centro do aro de trás fique na mesma linha (as duas miras alinhadas).
-    let tilt = 0;
+    let tilt = 0, noGl = false;
     if (!((t === 'rifle' || t === 'sniper') && lv > 0)) { try { const k = t + ':' + v; let SG = SIGHT[k];
       if (!SG) { g.updateMatrixWorld(true); const zM = Mm[0], zG = Gm[0], L = zM - zG, z0 = zM - L * (t === 'pistol' ? .45 : .32), lo = Math.min(z0, zM), hi = Math.max(z0, zM); let my = -1e9, ma = -1e9, mz = 0; const vv = new T.Vector3();
         inner.traverse(o => { if (!o.isMesh) return; const P = o.geometry.attributes.position; for (let i = 0; i < P.count; i++) { vv.fromBufferAttribute(P, i).applyMatrix4(o.matrixWorld); if (vv.y > ma) ma = vv.y; if (vv.z >= lo && vv.z <= hi && vv.y > my) { my = vv.y; mz = vv.z; } } });
-        let over = false, fy = my; if ((t === 'sniper' && ma - my > .03) || (t === 'shotgun' && ma - my > .008)) { my = ma + .004; over = true; } // sniper pesada sem luneta: mira por cima da arma
+        let over = false, fy = my; if ((t === 'sniper' && ma - my > .03) || (t === 'shotgun' && (ma - my > .008 || /pump/.test(v)))) { my = ma + .004; over = true; } // sniper pesada sem luneta: mira por cima da arma
         SG = SIGHT[k] = { rt: (() => { let r = -1e9; const v2 = new T.Vector3(); inner.traverse(o => { if (!o.isMesh) return; const P = o.geometry.attributes.position; for (let i = 0; i < P.count; i++) { v2.fromBufferAttribute(P, i).applyMatrix4(o.matrixWorld); if (Math.abs(v2.z - Sm[0] - .02) < .03 && Math.abs(v2.x) < .02 && v2.y > r && v2.y < fy - .004) r = v2.y; } }); return r > -1e8 ? r : null; })(), y: my > -1e8 ? my : null, z: mz, r: (over || my < -1e8) ? null : rearSight(inner, Sm[0], my), post: over && t === 'shotgun' ? [fy, mz] : null }; }
       if (SG.post) { const [fy0, pz] = SG.post, h = SG.y - fy0; add(new T.BoxGeometry(.005, h, .008), blk, 0, fy0 + h / 2, pz); add(new T.SphereGeometry(.0045, 10, 8), M.metal || blk, 0, SG.y - .002, pz); } // escopeta sem mira de trás: alça com bolinha na ponta do cano
       if (SG.y != null) {
-        ey = [0, SG.y + .0015, ey[2]];
+        ey = [0, SG.y + .0015, SG.post ? Math.min(ey[2], -.2) : ey[2]]; noGl = !!SG.post || t === 'shotgun';
         let okR = false;
         if (vm && SG.r != null) { const dy = SG.y - SG.r, dz = SG.z - Sm[0]; if (Math.abs(dy) < .015 && dz > .05) { okR = true; tilt = Math.atan2(dy, dz); ey[1] = SG.y * Math.cos(tilt) - SG.z * Math.sin(tilt) + .0015; } }
         // sem mira de trás no modelo (ou não encontrada): aro de trás na linha exata da mira da frente
@@ -233,9 +233,14 @@
       } } catch (e) { } }
     u.ey = ey;
     if (vm) { // luvas e mangas na tela de mira
-      for (let k = 0; k < 2; k++) { const p0 = u.hg[k], lim = (ey ? ey[1] : 1) - .05, p = [p0[0], Math.min(p0[1], lim - .04), p0[2]]; add(new T.BoxGeometry(.07, .08, .1), MAT.Black_Lighter, p[0], p[1], p[2]); add(new T.BoxGeometry(.075, .075, .5), Mt(0x55663f, 0, .9), p[0] + (k ? -.02 : .02), p[1] - .06, p[2] - .3, -.25); }
+      for (let k = 0; k < 2 && !noGl; k++) { const p0 = u.hg[k], lim = (ey ? ey[1] : 1) - .05, p = [p0[0], Math.min(p0[1], lim - .04), p0[2]]; add(new T.BoxGeometry(.07, .08, .1), MAT.Black_Lighter, p[0], p[1], p[2]); add(new T.BoxGeometry(.075, .075, .5), Mt(0x55663f, 0, .9), p[0] + (k ? -.02 : .02), p[1] - .06, p[2] - .3, -.25); }
     }
     if (it.length) { const q = new T.Group(); bake(q, it); q.traverse(o => { if (o.isMesh) o.castShadow = !vm; }); g.add(q); }
+    // tela de mira: some a parte da arma colada no olho (coronha/caixa a menos de 12 cm), que aparecia cortada por dentro
+    if (vm && ey) { try { g.updateMatrixWorld(true); const zc = ey[2] + .14, v3 = new T.Vector3();
+      g.traverse(o => { if (!o.isMesh) return; const G0 = o.geometry, P = G0.attributes.position, ix = G0.index, n = ix ? ix.count : P.count, keep = [];
+        for (let i = 0; i < n; i += 3) { let mn = 1e9; for (let k = 0; k < 3; k++) { v3.fromBufferAttribute(P, ix ? ix.getX(i + k) : i + k).applyMatrix4(o.matrixWorld); if (v3.z < mn) mn = v3.z; } if (mn < zc) continue; for (let k = 0; k < 3; k++) keep.push(ix ? ix.getX(i + k) : i + k); }
+        if (keep.length < n) { const G1 = G0.clone(); G1.setIndex(keep); o.geometry = G1; } }); } catch (e) { } }
     if (tilt) { const pv = new T.Group(); while (g.children.length) pv.add(g.children[0]); pv.rotation.x = tilt; g.add(pv); }
     return g;
   }

@@ -64,4 +64,4 @@ function botNavigate(b,tx,tz,speed,dt){
  return 1;
 }
 
-function blocked(x0,y0,z0,x1,y1,z1){const n=Math.ceil(Math.hypot(x1-x0,z1-z0)/.25)+1;for(let i=1;i<n;i++){const u=i/n,x=x0+(x1-x0)*u,y=y0+(y1-y0)*u,z=z0+(z1-z0)*u;if(i%4===0&&y<TERH(x,z)-.15)return true;for(const b of near(x,z))if(b.w&&!b.off&&(b.yt!==undefined?(y>b.yb&&y<b.yt):y<(b.h||(b.ice?2.8:6)))&&x>b.x0&&x<b.x1&&z>b.z0&&z<b.z1&&!(window.DZW&&DZW.broken&&DZW.hole(x,y,z)))return true}return false}
+function blocked(x0,y0,z0,x1,y1,z1){const n=Math.ceil(Math.hypot(x1-x0,z1-z0)/.25)+1;for(let i=1;i<n;i++){const u=i/n,x=x0+(x1-x0)*u,y=y0+(y1-y0)*u,z=z0+(z1-z0)*u;if(i%4===0&&y<TERH(x,z)-.15)return true;for(const b of near(x,z))if(b.w&&!b.off&&!b.shd&&(b.yt!==undefined?(y>b.yb&&y<b.yt):y<(b.h||(b.ice?2.8:6)))&&x>b.x0&&x<b.x1&&z>b.z0&&z<b.z1&&!(window.DZW&&DZW.broken&&DZW.hole(x,y,z)))return true}return false}

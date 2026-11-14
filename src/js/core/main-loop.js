@@ -107,8 +107,8 @@ function loopBody(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tt+=dt;try{d
   if(b.w&&tg){const tp=tg==='P'?P:tg,tx=tp.x-b.x,tz=tp.z-b.z,td=Math.hypot(tx,tz)||1;b.g.rotation.y=Math.atan2(tx,tz);b.cd-=dt;
    if(td>14){botNavigate(b,tp.x,tp.z,2.2,dt);mv=1}
    if(b.cd<=0){b.cd=R(1,1.8);b.kk=1;botShot(b,dp);
-    if(tg==='P'){if(Math.random()<.5&&!blocked(b.x,TERH(b.x,b.z)+1.3,b.z,P.x,P.y+1.2,P.z)&&!smokeB(b.x,b.z,P.x,P.z)){hurtP(b.w==='shotgun'?(dp<20?14:3):b.w==='rifle'?7:5,b);if(!b.sil)pingDir(b.x,b.z,'hit')}}
-    else if(Math.random()<.4&&!blocked(b.x,TERH(b.x,b.z)+1.3,b.z,tg.x,TERH(tg.x,tg.z)+1.2,tg.z)&&!smokeB(b.x,b.z,tg.x,tg.z))hurtB2(tg,b,b.w==='shotgun'?(td<20?18:5):b.w==='rifle'?9:7)}}
+    if(tg==='P'){if(Math.random()<.5&&!(window.dzShotBlk?dzShotBlk(b,b.x,TERH(b.x,b.z)+1.3,b.z,P.x,P.y+1.2,P.z):blocked(b.x,TERH(b.x,b.z)+1.3,b.z,P.x,P.y+1.2,P.z))&&!smokeB(b.x,b.z,P.x,P.z)){hurtP(b.w==='shotgun'?(dp<20?14:3):b.w==='rifle'?7:5,b);if(!b.sil)pingDir(b.x,b.z,'hit')}}
+    else if(Math.random()<.4&&!(window.dzShotBlk?dzShotBlk(b,b.x,TERH(b.x,b.z)+1.3,b.z,tg.x,TERH(tg.x,tg.z)+1.2,tg.z):blocked(b.x,TERH(b.x,b.z)+1.3,b.z,tg.x,TERH(tg.x,tg.z)+1.2,tg.z))&&!smokeB(b.x,b.z,tg.x,tg.z))hurtB2(tg,b,b.w==='shotgun'?(td<20?18:5):b.w==='rifle'?9:7)}}
   else if(b.isCompanion&&window.dzRvBot&&dzRvBot(b,dt)){mv=b.rvMv}/* indo reanimar um aliado */
   else if(!b.w){mv=botLoot(b,dt)}
   else if(b.isCompanion){const followD=Math.hypot(P.x-b.x,P.z-b.z);if(followD>8){botNavigate(b,P.x,P.z,2.7,dt);mv=1}else{mv=0;b.tgt=null}}
