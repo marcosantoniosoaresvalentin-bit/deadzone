@@ -55,6 +55,15 @@ jobs:
           cp android/app/build/outputs/apk/release/app-release.apk "Deadzone-${VERSION}.apk"
           cp android/app/build/outputs/apk/release/app-release.apk "Deadzone.apk"
           cp dist/Deadzone.html "Deadzone-${VERSION}.html"
+      - name: Pacote de atualização dentro do app (www.zip + version.json)
+        env:
+          VERSION: ${{ inputs.version || github.ref_name }}
+        run: |
+          (cd android/app/src/main/assets/www && zip -qr -X "$GITHUB_WORKSPACE/www.zip" .)
+          CODE=$(grep -o 'versionCode [0-9]*' android/app/build.gradle | grep -o '[0-9]*')
+          SHA=$(sha256sum www.zip | cut -d' ' -f1); SIZE=$(stat -c%s www.zip)
+          printf '{"v":"%s","code":%s,"url":"https://github.com/%s/releases/download/%s/www.zip","sha256":"%s","size":%s}\n' "${VERSION#v}" "$CODE" "${{ github.repository }}" "$VERSION" "$SHA" "$SIZE" > version.json
+          cat version.json
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.version || github.ref_name }}
@@ -64,4 +73,6 @@ jobs:
             Deadzone.apk
             Deadzone-*.apk
             Deadzone-*.html
+            www.zip
+            version.json
           generate_release_notes: true

@@ -1,5 +1,10 @@
 # Histórico de versões
 
+## 3.36.0 — atualização dentro do jogo
+- **Atualizar sem baixar outro APK**: ao abrir o jogo (no lobby), ele confere se existe versão nova. Se houver, aparece
+  "Atualização disponível" -> Atualizar (barra de progresso) -> Reiniciar, e o jogo abre já atualizado. O pacote é
+  conferido (SHA-256) antes de instalar e os dados salvos continuam. Esta é a última versão que precisa ser instalada pelo APK.
+
 ## 3.35.1 — alças da mochila
 - **Alças novas** feitas sob medida no corpo do personagem: saem do topo da mochila, passam por cima dos ombros, descem
   pela frente do peito (com fivela de ajuste) e voltam por baixo dos braços. As alças antigas do modelo, que ficavam

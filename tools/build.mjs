@@ -42,6 +42,9 @@ fs.rmSync(DIST, { recursive: true, force: true });
 fs.mkdirSync(WEB, { recursive: true });
 for (const d of ['src', 'assets', 'vendor']) copyDir(path.join(ROOT, d), path.join(WEB, d));
 for (const f of ['index.html', 'manifest.webmanifest']) fs.copyFileSync(path.join(ROOT, f), path.join(WEB, f));
+// versão do conteúdo (usada pela atualização dentro do app)
+{ const g = read('android/app/build.gradle'), code = +(g.match(/versionCode\s+(\d+)/) || [])[1] || 0, v = (g.match(/versionName\s+'([^']+)'/) || [])[1] || '0';
+  fs.writeFileSync(path.join(WEB, 'version.json'), JSON.stringify({ v, code })); }
 
 // ---------- dist/Deadzone.html: tudo embutido em um arquivo ----------
 const dataUri = rel => {
