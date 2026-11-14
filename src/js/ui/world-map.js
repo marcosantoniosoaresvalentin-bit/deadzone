@@ -47,7 +47,7 @@ const MK = [], bmap = $('bmap'), bmc = $('bmc'), bmg = bmc.getContext('2d'); let
 })();
 
 // ---------- vista (zoom e posição) ----------
-const BMV = { z: 1.3, cx: null, cz: null }, BMZ0 = 1, BMZ1 = 6;
+const BMV = { z: 1.15, cx: null, cz: null }, BMZ0 = 1, BMZ1 = 40;
 function bmE() { return Math.max(MAPB.x1 - MAPB.x0, MAPB.z1 - MAPB.z0) / 2 + 25; }
 const bmCX = () => (MAPB.x0 + MAPB.x1) / 2, bmCZ = () => (MAPB.z0 + MAPB.z1) / 2;
 function bmGeo() {

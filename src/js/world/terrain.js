@@ -9,7 +9,7 @@
  */
 const TER=(()=>{
  // grade de 4 m, retangular: cobre o mapa todo (ilha principal + Ilha Zênite) com 150 m de mar em volta
- const S=4, OX=MAPB.x0-150, OZ=MAPB.z0-150, NX=Math.round((MAPB.x1-MAPB.x0+300)/S)+1, NZ=Math.round((MAPB.z1-MAPB.z0+300)/S)+1, N=NX, O=OZ;
+ const S=8, OX=MAPB.x0-100, OZ=MAPB.z0-100, NX=Math.round((MAPB.x1-MAPB.x0+200)/S)+1, NZ=Math.round((MAPB.z1-MAPB.z0+200)/S)+1, N=NX, O=OZ;
  const idx=(i,j)=>j*NX+i;
  // ---------- ruído suave ----------
  const hh=(x,z)=>{const v=Math.sin(x*127.1+z*311.7)*43758.5453;return v-Math.floor(v)};
@@ -20,30 +20,26 @@ const TER=(()=>{
  const gau=(x,z,cx,cz,r)=>Math.exp(-((x-cx)**2+(z-cz)**2)/(r*r));
 
  // ---------- litoral: quadrado arredondado com recortes (baías e pontas) ----------
- function coastDist(x,z){
-  const p=8,d=Math.pow(Math.pow(Math.abs(x),p)+Math.pow(Math.abs(z),p),1/p),a=Math.atan2(z,x);
-  const cn=fbm(Math.cos(a)*2.2+7,Math.sin(a)*2.2+3)*.75+fbm(Math.cos(a)*6+1,Math.sin(a)*6+9)*.25;
-  const R=MAPH+6-cn*34;                 // raio do litoral varia ~34 m (baías)
-  return R-d;                           // >0 dentro da ilha (m até a costa)
- }
+ const coastDist=coastMain;
  window.DZCOAST=coastDist;
  // ---------- relevo em terra ----------
- const M=MAPH/250;                     // escala (posições pensadas para MAPH=250)
+ const M=MAPH/250;                     // escala (posições pensadas para a ilha antiga de 500 m)
+ const MTX=-135*M,MTZ=-115*M,MTR=72*M;
  function landH(x,z){
-  let h=1.6+Math.pow(fbm(x/150+3.1,z/150+7.7),1.4)*9+(fbm(x/42,z/42)-.5)*2.4;
-  // montanha a noroeste com cristas rochosas
-  const mt=gau(x,z,-135*M,-115*M,72*M);h+=mt*(30+ridge(x/38+4,z/38+2)*14);
+  let h=1.6+Math.pow(fbm(x/1400+3.1,z/1400+7.7),1.4)*34+(fbm(x/260+1.3,z/260+4.4)-.5)*10+(fbm(x/55,z/55)-.5)*2.4;
+  // serra a noroeste com cristas rochosas
+  const mt=gau(x,z,MTX,MTZ,MTR);h+=mt*(70+ridge(x/420+4,z/420+2)*40);
   // morros
-  h+=gau(x,z,125*M,95*M,58*M)*(16+ridge(x/30,z/30)*5);
-  h+=gau(x,z,-70*M,150*M,46*M)*12;
-  h+=gau(x,z,40*M,-40*M,50*M)*6;
-  h+=gau(x,z,175*M,-20*M,40*M)*9;
-  // vale raso cruzando a ilha (lugar natural para uma estrada no futuro)
-  const vy=z-(x*.35+20*M)+Math.sin(x/60)*18*M;h-=gau(0,vy,0,0,22*M)*3.2*(1-mt);
+  h+=gau(x,z,125*M,95*M,58*M)*(40+ridge(x/330,z/330)*12);
+  h+=gau(x,z,-70*M,150*M,46*M)*30;
+  h+=gau(x,z,40*M,-40*M,50*M)*15;
+  h+=gau(x,z,175*M,-20*M,40*M)*22;
+  // vale largo cruzando a ilha
+  const vy=z-(x*.35+20*M)+Math.sin(x/900)*270;h-=gau(0,vy,0,0,22*M)*8*(1-mt);
   return h;
  }
  // ILHA ZÊNITE (oeste): quadrado arredondado com metade do lado da ilha principal, relevo baixo com um morro
- const Z2={x:-490,z:-60,R:125};
+ const Z2={x:-490+ZEN_DX,z:-60+ZEN_DZ,R:125};
  function coast2(x,z){const dx=x-Z2.x,dz=z-Z2.z,p=6,d=Math.pow(Math.pow(Math.abs(dx),p)+Math.pow(Math.abs(dz),p),1/p),a=Math.atan2(dz,dx);
   const cn=fbm(Math.cos(a)*2.4+3,Math.sin(a)*2.4+11)*.7+fbm(Math.cos(a)*7+5,Math.sin(a)*7+2)*.3;return Z2.R+8-cn*26-d}
  function landH2(x,z){return 2+Math.pow(fbm(x/120+9.3,z/120+1.7),1.3)*6+gau(x,z,Z2.x-70,Z2.z+70,40)*14+(fbm(x/40,z/40)-.5)*2}
@@ -57,6 +53,7 @@ const TER=(()=>{
   if(t2>t1){const t=t2;if(t<=0)return Math.max(-14,.35+t*.09-Math.max(0,-t-30)*.05);const beach=.35+Math.min(t,22)*.085,k=ss(12,40,t);return beach+Math.max(0,landH2(x,z)-beach)*k}
   const t=t1;
   if(t<=0)return Math.max(-14,.35+t*.09-Math.max(0,-t-30)*.05);           // fundo do mar (segue o litoral)
+  if(t>48)return landH(x,z);
   const beach=.35+Math.min(t,22)*.085;                                    // praia sobe devagar
   const k=ss(12,48,t);return beach+Math.max(0,landH(x,z)-beach)*k;
  }
@@ -64,29 +61,30 @@ const TER=(()=>{
  const H=new Float32Array(NX*NZ);
  for(let j=0;j<NZ;j++)for(let i=0;i<NX;i++)H[idx(i,j)]=rawH(OX+i*S,OZ+j*S);
  // heliportos: área plana com borda suave
+ const RNG=(x0,z0,x1,z1,f)=>{const i0=Math.max(0,Math.floor((x0-OX)/S)),i1=Math.min(NX-1,Math.ceil((x1-OX)/S)),j0=Math.max(0,Math.floor((z0-OZ)/S)),j1=Math.min(NZ-1,Math.ceil((z1-OZ)/S));for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++)f(i,j)};
  for(const hp of (typeof HPS!=='undefined'?HPS:[])){const cx=hp[1],cz=hp[2],h0=rawH(cx,cz);
-  for(let j=0;j<NZ;j++)for(let i=0;i<NX;i++){const x=OX+i*S,z=OZ+j*S,d=Math.hypot(x-cx,z-cz);if(d>34)continue;const k=1-ss(13,32,d);H[idx(i,j)]=H[idx(i,j)]*(1-k)+h0*k}}
+  RNG(cx-34,cz-34,cx+34,cz+34,(i,j)=>{const x=OX+i*S,z=OZ+j*S,d=Math.hypot(x-cx,z-cz);if(d>34)return;const k=1-ss(13,32,d);H[idx(i,j)]=H[idx(i,j)]*(1-k)+h0*k})}
  // construções: terreno plano embaixo (e borda suave em volta)
  for(const b of (typeof BLDS!=='undefined'?BLDS:[])){if(b.city)continue;const cx=b.x,cz=b.z,h0=rawH(cx,cz),r0=b.flat||12,r1=r0+14;
   for(let j=0;j<NZ;j++)for(let i=0;i<NX;i++){const x=OX+i*S,z=OZ+j*S,d=Math.hypot(x-cx,z-cz);if(d>r1)continue;const k=1-ss(r0,r1,d);H[idx(i,j)]=H[idx(i,j)]*(1-k)+h0*k}}
  // prédios com interior: retângulo plano (com folga) e borda suave
  for(const b of (typeof STRS!=='undefined'?STRS:[])){if(b.city)continue;const cx=b.x,cz=b.z,h0=rawH(cx,cz),hw=Math.max(b.w,b.d)/2+3;
-  for(let j=0;j<NZ;j++)for(let i=0;i<NX;i++){const x=OX+i*S,z=OZ+j*S,d=Math.max(0,Math.max(Math.abs(x-cx),Math.abs(z-cz))-hw);if(d>14)continue;const k=1-ss(0,14,d);H[idx(i,j)]=H[idx(i,j)]*(1-k)+h0*k}}
+  RNG(cx-hw-14,cz-hw-14,cx+hw+14,cz+hw+14,(i,j)=>{const x=OX+i*S,z=OZ+j*S,d=Math.max(0,Math.max(Math.abs(x-cx),Math.abs(z-cz))-hw);if(d>14)return;const k=1-ss(0,14,d);H[idx(i,j)]=H[idx(i,j)]*(1-k)+h0*k})}
  // cidades e locais especiais: cada um vira um platô (nível médio do lugar) com borda suave
  for(const A of (typeof FLATS!=='undefined'?FLATS:[])){let sm=0,n=0;for(let x=A.x0;x<=A.x1;x+=6)for(let z=A.z0;z<=A.z1;z+=6){sm+=rawH(x,z);n++}const h0=A.h=A.hFix!=null?A.hFix:Math.max(1.6,sm/n),bl=A.bl||30;
-  for(let j=0;j<NZ;j++)for(let i=0;i<NX;i++){const x=OX+i*S,z=OZ+j*S,d=Math.hypot(Math.max(0,A.x0-x,x-A.x1),Math.max(0,A.z0-z,z-A.z1));if(d>bl+5)continue;const k=1-ss(5,bl+5,d);/* 5 m a mais totalmente plano em volta: piso e calçadas não ficam 'flutuando' */H[idx(i,j)]=H[idx(i,j)]*(1-k)+h0*k}}
+  RNG(A.x0-bl-6,A.z0-bl-6,A.x1+bl+6,A.z1+bl+6,(i,j)=>{const x=OX+i*S,z=OZ+j*S,d=Math.hypot(Math.max(0,A.x0-x,x-A.x1),Math.max(0,A.z0-z,z-A.z1));if(d>bl+5)return;const k=1-ss(5,bl+5,d);/* 5 m a mais totalmente plano em volta: piso e calçadas não ficam 'flutuando' */H[idx(i,j)]=H[idx(i,j)]*(1-k)+h0*k})}
  // ESTRADAS: curva suave pelos pontos. Altura da pista = terreno suavizado ao longo dela, PRESA na altura do
  // platô quando passa por cidade/local e na altura da outra estrada nos cruzamentos. Seção transversal plana:
  // tudo a até 10 m do eixo fica exatamente na altura da pista (o terreno nunca atravessa o asfalto).
  if(typeof ROADLINES!=='undefined'){const hAt=(x,z)=>{const fx=(x-OX)/S,fz=(z-OZ)/S,i=Math.max(0,Math.min(NX-2,Math.floor(fx))),j=Math.max(0,Math.min(NZ-2,Math.floor(fz))),u=fx-i,v=fz-j;return H[idx(i,j)]*(1-u)*(1-v)+H[idx(i+1,j)]*u*(1-v)+H[idx(i,j+1)]*(1-u)*v+H[idx(i+1,j+1)]*u*v};
-  const bD=new Float32Array(NX*NZ).fill(1e9),bH=new Float32Array(NX*NZ);window.ROADS=[];const ALL=[];
+  const bD=new Float32Array(NX*NZ).fill(1e9),bH=new Float32Array(NX*NZ);window.ROADS=[];const ALL=[],AG=new Map();
   const FL_=(typeof FLATS!=='undefined'?FLATS:[]),flatAt=(x,z)=>{for(const A of FL_)if(x>=A.x0-12&&x<=A.x1+12&&z>=A.z0-12&&z<=A.z1+12)return A.h;return null},inFlat=(x,z)=>FL_.some(A=>x>=A.x0-5&&x<=A.x1+5&&z>=A.z0-5&&z<=A.z1+5);
   const inFlatS=(x,z)=>{for(const A of FL_)if(x>=A.x0-3&&x<=A.x1+3&&z>=A.z0-3&&z<=A.z1+3)return A;return null};
   const G_=.1;   // inclinação máxima da pista (7,5%)
   for(const L of ROADLINES){const cv=new T.CatmullRomCurve3(L.map(p=>new T.Vector3(p[0],0,p[1])),false,'centripetal'),len=cv.getLength(),n=Math.max(2,Math.round(len/2)),pts=cv.getSpacedPoints(n);
    const ds=len/n,inF=pts.map(p=>inFlatS(p.x,p.z));
    // pontos fixos: dentro de cidade/local (altura do chão de lá) e encontro com outra estrada
-   const pin=pts.map((p,k)=>{if(inF[k])return inF[k].h;let best=null,bd=5;for(const q of ALL){const d=Math.hypot(q[0]-p.x,q[1]-p.z);if(d<bd){bd=d;best=q[2]}}return best});
+   const pin=pts.map((p,k)=>{if(inF[k])return inF[k].h;let best=null,bd=5;const ci=Math.floor(p.x/8),cj=Math.floor(p.z/8);for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const L=AG.get((ci+a)*100003+cj+b);if(L)for(const q of L){const d=Math.hypot(q[0]-p.x,q[1]-p.z);if(d<bd){bd=d;best=q[2]}}}return best});
    // base: terreno suavizado ao longo da pista
    let hs=pts.map(p=>hAt(p.x,p.z));for(let it=0;it<4;it++){const o=hs.slice();for(let k=0;k<hs.length;k++){let a=0,c=0;for(let q=-8;q<=8;q++){const m=k+q;if(m<0||m>=hs.length)continue;a+=o[m];c++}hs[k]=a/c}}
    // envelope de inclinação a partir dos pontos fixos: corta morro / aterra vale quando preciso
@@ -98,7 +96,7 @@ const TER=(()=>{
    for(let it=0;it<3;it++){const o=hs.slice();for(let k=1;k<hs.length-1;k++)if(pin[k]==null)hs[k]=(o[k-1]+o[k]*2+o[k+1])/4}
    /* não desenha estrada só onde já existe chão pronto: dentro das RUAS da cidade (não na área toda dela, senão sobra um pedaço de grama entre a estrada e a primeira rua) e dentro do pátio dos locais */
    const onGrid=(A,x,z)=>{if(!A.XL)return true;const hw=(A.RW||8)/2+.5;return x>=Math.min(...A.XL)-hw&&x<=Math.max(...A.XL)+hw&&z>=Math.min(...A.ZL)-hw&&z<=Math.max(...A.ZL)+hw};
-   const R={pts:pts.map((p,k)=>[p.x,p.z,hs[k],inF[k]&&!/^pont/.test(inF[k].id||'')&&onGrid(inF[k],p.x,p.z)?1:0])};ROADS.push(R);for(const q of R.pts)ALL.push(q);
+   const R={pts:pts.map((p,k)=>[p.x,p.z,hs[k],inF[k]&&!/^pont/.test(inF[k].id||'')&&onGrid(inF[k],p.x,p.z)?1:0])};ROADS.push(R);for(const q of R.pts){ALL.push(q);const key=Math.floor(q[0]/8)*100003+Math.floor(q[1]/8);let L=AG.get(key);if(!L)AG.set(key,L=[]);L.push(q)}
    pts.forEach((p,k)=>{const i0=Math.floor((p.x-22-OX)/S),i1=Math.ceil((p.x+22-OX)/S),j0=Math.floor((p.z-22-OZ)/S),j1=Math.ceil((p.z+22-OZ)/S);
     for(let j=Math.max(0,j0);j<=Math.min(NZ-1,j1);j++)for(let i=Math.max(0,i0);i<=Math.min(NX-1,i1);i++){const d=Math.hypot(OX+i*S-p.x,OZ+j*S-p.z),q=idx(i,j);if(d<bD[q]){bD[q]=d;bH[q]=hs[k]}}})}
   for(let q=0;q<NX*NZ;q++){const d=bD[q];if(d>22)continue;if(inFlat(OX+(q%NX)*S,OZ+Math.floor(q/NX)*S))continue;/* não mexe no chão plano de cidade/local */const k=d<=10?1:1-ss(10,22,d);H[q]=H[q]*(1-k)+(bH[q]-.02)*k}
@@ -119,25 +117,37 @@ const TER=(()=>{
   const i=Math.floor(fx),j=Math.floor(fz),u=fx-i,v=fz-j,a=H[idx(i,j)],b=H[idx(i,j+1)],c=H[idx(i+1,j+1)],d=H[idx(i+1,j)];
   return u+v<=1?a+(d-a)*u+(b-a)*v:c+(b-c)*(1-u)+(d-c)*(1-v);
  }
- // ---------- malha ----------
- const GW_=(NX-1)*S,GH_=(NZ-1)*S,g=new T.PlaneGeometry(GW_,GH_,NX-1,NZ-1),P=g.attributes.position;
- for(let k=0;k<P.count;k++)P.setZ(k,H[k]);
- g.rotateX(-Math.PI/2);g.translate(OX+GW_/2,0,OZ+GH_/2);g.computeVertexNormals();
- // ---------- mistura de solos por vértice: grama, terra, rocha, areia ----------
- const NR=g.attributes.normal,SPL=new Float32Array(P.count*4),GW=new Float32Array(P.count);
- for(let k=0;k<P.count;k++){
-  const x=P.getX(k),y=P.getY(k),z=P.getZ(k),sl=1-NR.getY(k);
-  let rock=ss(.07,.17,sl)+ss(30,40,y)*.6;
-  const mt=gau(x,z,-135*M,-115*M,72*M);rock+=mt*ss(.55,.75,ridge(x/38+4,z/38+2))*.8;
+ // ---------- normais e mistura de solos por ponto da grade (grama, terra, rocha, areia) ----------
+ const NRM=new Int8Array(NX*NZ*3),SPL=new Uint8Array(NX*NZ*4);
+ const hg=(i,j)=>H[idx(Math.max(0,Math.min(NX-1,i)),Math.max(0,Math.min(NZ-1,j)))];
+ for(let j=0;j<NZ;j++)for(let i=0;i<NX;i++){const k=idx(i,j),dx=(hg(i+1,j)-hg(i-1,j))/(2*S),dz=(hg(i,j+1)-hg(i,j-1))/(2*S),l=Math.hypot(dx,1,dz),ny=1/l;
+  NRM[k*3]=Math.round(-dx/l*127);NRM[k*3+1]=Math.round(ny*127);NRM[k*3+2]=Math.round(-dz/l*127);
+  const x=OX+i*S,z=OZ+j*S,y=H[k],sl=1-ny;
+  let rock=ss(.07,.17,sl)+ss(70,95,y)*.6;
+  const mt=gau(x,z,MTX,MTZ,MTR);rock+=mt*ss(.55,.75,ridge(x/420+4,z/420+2))*.8;
   let sand=1-ss(1.1,2.1,y);
   let dirt=ss(.55,.72,fbm(x/55+20,z/55+5))*.85+ss(.035,.07,sl)*.35+ss(2.4,3.2,y)*(1-ss(3.2,5,y))*.35;
   rock=Math.min(1,rock);sand=Math.min(1,sand);dirt=Math.min(1,dirt)*(1-rock)*(1-sand);rock*=(1-sand);
-  let grass=Math.max(0,1-rock-sand-dirt);const t=grass+dirt+rock+sand||1;
-  SPL[k*4]=grass/t;SPL[k*4+1]=dirt/t;SPL[k*4+2]=rock/t;SPL[k*4+3]=sand/t;GW[k]=grass/t;
- }
- g.setAttribute('spl',new T.BufferAttribute(SPL,4));g.computeBoundingSphere();
- function terg(x,z){const i=Math.round((x-OX)/S),j=Math.round((z-OZ)/S);if(i<0||j<0||i>=NX||j>=NZ)return 0;return GW[idx(i,j)]}
- return {H,N:NX,NX,NZ,S,O:OX,OX,OZ,g,SPL,terh,terg,fbm};
+  const grass=Math.max(0,1-rock-sand-dirt),t=grass+dirt+rock+sand||1;
+  SPL[k*4]=grass/t*255;SPL[k*4+1]=dirt/t*255;SPL[k*4+2]=rock/t*255;SPL[k*4+3]=sand/t*255}
+ // ---------- malha em BLOCOS com nível de detalhe (perto = detalhado, longe = simples) ----------
+ // só os blocos perto do jogador usam a grade inteira; o resto usa 1 a cada 2, 4 ou 8 pontos. Bordas com "saia" (sem frestas)
+ const CH=64,CX_=Math.ceil((NX-1)/CH),CZ_=Math.ceil((NZ-1)/CH),SK=18;
+ function chunkGeo(ci,cj,st){
+  const i0=ci*CH,j0=cj*CH,i1=Math.min(NX-1,i0+CH),j1=Math.min(NZ-1,j0+CH),ni=Math.ceil((i1-i0)/st),nj=Math.ceil((j1-j0)/st),W=ni+1,Hh=nj+1;
+  const nv=W*Hh+2*(W+Hh),pos=new Float32Array(nv*3),nor=new Int8Array(nv*3),spl=new Uint8Array(nv*4),ix=[];let v=0;
+  const put=(i,j,dy)=>{i=Math.min(i,i1);j=Math.min(j,j1);const k=idx(i,j);pos[v*3]=OX+i*S;pos[v*3+1]=H[k]-dy;pos[v*3+2]=OZ+j*S;nor[v*3]=NRM[k*3];nor[v*3+1]=NRM[k*3+1];nor[v*3+2]=NRM[k*3+2];spl[v*4]=SPL[k*4];spl[v*4+1]=SPL[k*4+1];spl[v*4+2]=SPL[k*4+2];spl[v*4+3]=SPL[k*4+3];return v++};
+  for(let b=0;b<Hh;b++)for(let a=0;a<W;a++)put(i0+a*st,j0+b*st,0);
+  for(let b=0;b<nj;b++)for(let a=0;a<ni;a++){const p=b*W+a,q=p+1,r=p+W,t=r+1;ix.push(p,r,q,q,r,t)}
+  // saias: borda duplicada 18 m para baixo
+  const skirt=(L,flip)=>{const base=v;for(const [a,b] of L)put(i0+a*st,j0+b*st,SK);for(let k=0;k<L.length-1;k++){const e0=L[k][1]*W+L[k][0],e1=L[k+1][1]*W+L[k+1][0],s0=base+k,s1=base+k+1;if(flip)ix.push(e0,e1,s0,e1,s1,s0);else ix.push(e0,s0,e1,e1,s0,s1)}};
+  const top=[],bot=[],lef=[],rig=[];for(let a=0;a<W;a++){top.push([a,0]);bot.push([a,nj])}for(let b=0;b<Hh;b++){lef.push([0,b]);rig.push([ni,b])}
+  skirt(top,0);skirt(bot,1);skirt(lef,1);skirt(rig,0);
+  const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(pos.subarray(0,v*3),3));g.setAttribute('normal',new T.BufferAttribute(nor.subarray(0,v*3),3,true));
+  g.setAttribute('spl',new T.BufferAttribute(spl.subarray(0,v*4),4,true));g.setIndex(ix);g.computeBoundingSphere();return g}
+ const CHUNKS=[];for(let cj=0;cj<CZ_;cj++)for(let ci=0;ci<CX_;ci++){const cx=OX+(ci*CH+CH/2)*S,cz=OZ+(cj*CH+CH/2)*S;CHUNKS.push({ci,cj,cx,cz,g:[null,null,null,null],lod:-1,mesh:null})}
+ function terg(x,z){const i=Math.round((x-OX)/S),j=Math.round((z-OZ)/S);if(i<0||j<0||i>=NX||j>=NZ)return 0;return SPL[idx(i,j)*4]/255}
+ return {H,N:NX,NX,NZ,S,O:OX,OX,OZ,g:null,SPL,terh,terg,fbm,CHUNKS,chunkGeo};
 })();
 window.TERH=TER.terh;window.TERG=TER.terg;
 
@@ -183,12 +193,18 @@ window.TERH=TER.terh;window.TERG=TER.terg;
    col=mix(col,vec3(.93,.95,.95),.45*smoothstep(.22,.02,abs(vWP.y-.12)));    // espuma na beira
    vec4 texelColor=mapTexelToLinear(vec4(col,1.));diffuseColor*=texelColor;`);
  };
- const gr=new T.Mesh(TER.g,m);gr.receiveShadow=true;gr.renderOrder=-2;sc.add(gr);
+ // blocos do terreno: o nível de detalhe de cada um muda com a distância da câmera (some a malha velha)
+ const STEPS=[1,2,4,8],TGRP=new T.Group();TGRP.name='terreno';sc.add(TGRP);
+ function upd(){const c=cam.position,hi=c.y>150;for(const C of TER.CHUNKS){const d=Math.hypot(C.cx-c.x,C.cz-c.z);let l=d<620?0:d<1300?1:d<2600?2:3;if(hi&&l<1)l=1;
+   if(l===C.lod)continue;if(!C.g[l])C.g[l]=TER.chunkGeo(C.ci,C.cj,STEPS[l]);if(!C.mesh){C.mesh=new T.Mesh(C.g[l],m);C.mesh.receiveShadow=true;C.mesh.renderOrder=-2;C.mesh.matrixAutoUpdate=false;C.mesh.updateMatrix();TGRP.add(C.mesh)}else C.mesh.geometry=C.g[l];
+   // libera a malha detalhada de blocos que ficaram longe
+   if(l>=2&&C.g[0]){C.g[0].dispose();C.g[0]=null}C.lod=l}}
+ upd();setInterval(upd,350);window.DZTERUPD=upd;
  // mar no nível 0
  const wm=new T.MeshStandardMaterial({color:lin(0x2f6f9a),metalness:.5,roughness:.12,transparent:true,opacity:.86});if(window.DZR)DZR.waterMat(wm);wm.opacity=.82;
- const sea=new T.Mesh(new T.PlaneGeometry(6000,6000),wm);sea.rotation.x=-Math.PI/2;sea.position.y=0;sc.add(sea);
+ const sea=new T.Mesh(new T.PlaneGeometry(40000,40000),wm);sea.rotation.x=-Math.PI/2;sea.position.y=0;sc.add(sea);
  // fundo do mar escuro além do terreno (senão aparece um "quadrado" claro em volta da ilha, visto do alto)
- const deep=new T.Mesh(new T.PlaneGeometry(6000,6000),new T.MeshStandardMaterial({color:lin(0x0d3550),roughness:.97,metalness:0}));deep.rotation.x=-Math.PI/2;deep.position.y=-14.05;deep.renderOrder=-3;sc.add(deep)}
+ const deep=new T.Mesh(new T.PlaneGeometry(40000,40000),new T.MeshStandardMaterial({color:lin(0x0d3550),roughness:.97,metalness:0}));deep.rotation.x=-Math.PI/2;deep.position.y=-14.05;deep.renderOrder=-3;sc.add(deep)}
 
 // ---------- imagem do terreno vista de cima (minimapa e mapa grande) ----------
 const TERMAP=(()=>{const W=1024,E=MAPR+30,c=document.createElement('canvas');c.width=c.height=W;const g=c.getContext('2d'),im=g.createImageData(W,W),d=im.data;
@@ -196,7 +212,7 @@ const TERMAP=(()=>{const W=1024,E=MAPR+30,c=document.createElement('canvas');c.w
  for(let py=0;py<W;py++)for(let px=0;px<W;px++){const x=MCX-E+(px+.5)/W*2*E,z=MCZ-E+(py+.5)/W*2*E,h=TERH(x,z),o=(py*W+px)*4;
   if(h<0){const k=Math.max(0,Math.min(1,-h/3.5));d[o]=58-28*k;d[o+1]=128-50*k;d[o+2]=170-40*k;d[o+3]=255;continue}
   const i=Math.max(0,Math.min(TER.NX-1,Math.round((x-TER.OX)/TER.S))),j=Math.max(0,Math.min(TER.NZ-1,Math.round((z-TER.OZ)/TER.S))),q=(j*TER.NX+i)*4,w=TER.SPL;
-  let r=0,gg=0,b=0;for(let s=0;s<4;s++){r+=col[s][0]*w[q+s];gg+=col[s][1]*w[q+s];b+=col[s][2]*w[q+s]}
+  let r=0,gg=0,b=0;for(let s=0;s<4;s++){const ww=w[q+s]/255;r+=col[s][0]*ww;gg+=col[s][1]*ww;b+=col[s][2]*ww}
   // sombreamento do relevo (luz vinda do noroeste) e leve clareamento com a altura
   const sh=Math.max(.55,Math.min(1.35,1+(TERH(x-3,z-3)-TERH(x+3,z+3))*.09)),ah=1+Math.min(h,40)*.004;
   d[o]=Math.min(255,r*sh*ah);d[o+1]=Math.min(255,gg*sh*ah);d[o+2]=Math.min(255,b*sh*ah);d[o+3]=255}

@@ -40,7 +40,8 @@
   const floor = (x0, z0, x1, z1, y) => { if (FLR && FLR.add) FLR.add({ x0, x1, z0, z1, y }); };
   function flushBoxes() {
     const bg = new T.BoxGeometry(1, 1, 1).toNonIndexed(), bp = bg.attributes.position.array, bn = bg.attributes.normal.array, bu = bg.attributes.uv.array;
-    for (const [m, list] of BK) {
+    const BK2 = new Map(); for (const [m, L] of BK) for (const q of L) { const key = Math.floor((q[0] + q[3]) / 400) + ',' + Math.floor((q[2] + q[5]) / 400); let mm = BK2.get(m); if (!mm) BK2.set(m, mm = new Map()); let a = mm.get(key); if (!a) mm.set(key, a = []); a.push(q); }
+    for (const [m, cells] of BK2) for (const list of cells.values()) {
       const P = new Float32Array(list.length * 108), N = new Float32Array(list.length * 108), Cc = new Float32Array(list.length * 108), U = new Float32Array(list.length * 72);
       list.forEach((q, i) => { tint.set(q[6]).convertSRGBToLinear(); const sx = q[3] - q[0], sy = q[4] - q[1], sz = q[5] - q[2], cx = (q[0] + q[3]) / 2, cy = (q[1] + q[4]) / 2, cz = (q[2] + q[5]) / 2;
         for (let j = 0; j < 36; j++) { const o = i * 108 + j * 3; P[o] = bp[j * 3] * sx + cx; P[o + 1] = bp[j * 3 + 1] * sy + cy; P[o + 2] = bp[j * 3 + 2] * sz + cz; N[o] = bn[j * 3]; N[o + 1] = bn[j * 3 + 1]; N[o + 2] = bn[j * 3 + 2]; Cc[o] = tint.r; Cc[o + 1] = tint.g; Cc[o + 2] = tint.b; U[i * 72 + j * 2] = bu[j * 2]; U[i * 72 + j * 2 + 1] = bu[j * 2 + 1]; } });
@@ -304,7 +305,8 @@
   function beam(ax, ay, az, bx, by, bz, th, cl) { const dx = bx - ax, dy = by - ay, dz = bz - az, L = Math.hypot(dx, dy, dz), ge = new T.BoxGeometry(th, th, L).toNonIndexed(), o = new T.Object3D();
     o.position.set((ax + bx) / 2, (ay + by) / 2, (az + bz) / 2); o.lookAt(bx, by, bz); o.updateMatrix(); ge.applyMatrix4(o.matrix);
     const n = ge.attributes.position.count, cc = new Float32Array(n * 3), t = new T.Color(cl).convertSRGBToLinear(); for (let i = 0; i < n; i++) { cc[i * 3] = t.r; cc[i * 3 + 1] = t.g; cc[i * 3 + 2] = t.b; } ge.setAttribute('color', new T.BufferAttribute(cc, 3)); BEAMS.push(ge); }
-  function flushBeams() { if (!BEAMS.length) return; let n = 0; for (const g of BEAMS) n += g.attributes.position.count; const P = new Float32Array(n * 3), N = new Float32Array(n * 3), Cc = new Float32Array(n * 3); let o = 0;
+  function flushBeams() { if (!BEAMS.length) return; const CEL = new Map(); for (const g of BEAMS) { if (!g.boundingSphere) g.computeBoundingSphere(); const c = g.boundingSphere.center, k = Math.floor(c.x / 200) + ',' + Math.floor(c.z / 200); let a = CEL.get(k); if (!a) CEL.set(k, a = []); a.push(g); } const ALLB = BEAMS.slice(); for (const L of CEL.values()) { BEAMS.length = 0; BEAMS.push(...L); flushBeams1(); } BEAMS.length = 0; }
+  function flushBeams1() { let n = 0; for (const g of BEAMS) n += g.attributes.position.count; const P = new Float32Array(n * 3), N = new Float32Array(n * 3), Cc = new Float32Array(n * 3); let o = 0;
     for (const g of BEAMS) { P.set(g.attributes.position.array, o * 3); N.set(g.attributes.normal.array, o * 3); Cc.set(g.attributes.color.array, o * 3); o += g.attributes.position.count; }
     const ge = new T.BufferGeometry(); ge.setAttribute('position', new T.BufferAttribute(P, 3)); ge.setAttribute('normal', new T.BufferAttribute(N, 3)); ge.setAttribute('color', new T.BufferAttribute(Cc, 3)); ge.computeBoundingSphere();
     const me = new T.Mesh(ge, MM); me.castShadow = true; sc.add(me); BEAMS.length = 0; }
@@ -384,9 +386,11 @@
   const contCols = [0xb03a2e, 0x2f6aa8, 0x3f7f43, 0xc98a2b, 0x7b8188, 0x8a4f9e];
 
   // ESTRADAS entre as cidades: faixa de asfalto seguindo o terreno, bordas brancas e tracejado amarelo
+  let MRD = null, MRP = null;
   function buildRoads() {
     const RS = window.ROADS || [], hw = 3.5;
-    RS.forEach((R, ri) => {
+    const RS0 = RS; const RSx = []; for (const R of RS0) { const L = R.pts; for (let a = 0; a < L.length - 1; a += 100) RSx.push({ pts: L.slice(a, Math.min(L.length, a + 102)) }); }
+    RSx.forEach((R, ri) => {
       const p = R.pts, n = p.length, P = [], U = [], M = [], Cm = [], wht = lin(0xe6e6e0), yel = lin(0xe2b83c); let dist = 0;
       const side = (k, o) => { const a = p[Math.max(0, k - 1)], b = p[Math.min(n - 1, k + 1)], dx = b[0] - a[0], dz = b[1] - a[1], l = Math.hypot(dx, dz) || 1, nx = -dz / l, nz = dx / l, x = p[k][0] + nx * o, z = p[k][1] + nz * o; return [x, p[k][2], z]; }; // seção plana na altura da pista
       const strip = (o0, o1, dy, k0, k1, col_) => { for (let k = k0; k < k1; k++) { if (p[k][3] && p[k + 1][3]) continue; const a0 = side(k, o0), a1 = side(k, o1), b0 = side(k + 1, o0), b1 = side(k + 1, o1); for (const q of [a0, b1, b0, a0, a1, b1]) { M.push(q[0], q[1] + .045 + dy, q[2]); Cm.push(col_.r, col_.g, col_.b); } } };
@@ -400,13 +404,38 @@
         dist += l; }
       strip(-hw + .3, -hw + .45, 0, 1, n - 2, wht); strip(hw - .45, hw - .3, 0, 1, n - 2, wht);
       const g1 = new T.BufferGeometry(); g1.setAttribute('position', new T.Float32BufferAttribute(P, 3)); g1.setAttribute('uv', new T.Float32BufferAttribute(U, 2)); g1.computeVertexNormals(); g1.computeBoundingSphere();
-      const mr = MR.clone(); mr.side = T.DoubleSide; mr.polygonOffset = true; mr.polygonOffsetFactor = -1; mr.polygonOffsetUnits = -2 - ri; const m1 = new T.Mesh(g1, mr); m1.receiveShadow = true; sc.add(m1);
+      const mr = MRD || (MRD = (() => { const q = MR.clone(); q.side = T.DoubleSide; q.polygonOffset = true; q.polygonOffsetFactor = -1; q.polygonOffsetUnits = -3; return q; })()); const m1 = new T.Mesh(g1, mr); m1.receiveShadow = true; sc.add(m1);
       const g2 = new T.BufferGeometry(); g2.setAttribute('position', new T.Float32BufferAttribute(M, 3)); g2.setAttribute('color', new T.Float32BufferAttribute(Cm, 3)); g2.computeVertexNormals(); g2.computeBoundingSphere();
-      const m2 = new T.Mesh(g2, new T.MeshStandardMaterial({ vertexColors: true, roughness: .8, side: T.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -12 - ri })); m2.receiveShadow = true; sc.add(m2);
+      const m2 = new T.Mesh(g2, MRP || (MRP = new T.MeshStandardMaterial({ vertexColors: true, roughness: .8, side: T.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -12 }))); m2.receiveShadow = true; sc.add(m2);
     });
   }
+  // monta um local no lugar original do desenho e depois move tudo que ele criou para o lugar novo (dx,dz)
+  function relocate(dx, dz, fn) {
+    if (!dx && !dz) { fn(); return; }
+    const bk0 = new Map(); for (const [m, L] of BK) bk0.set(m, L.length);
+    const NB = [], _ab = window.addBox; window.addBox = b => { NB.push(b); return b; }; const n = { beams: BEAMS.length, flr: FLR.length, rds: RDS.length, ls: LS.length, lamps: LAMPS.length, ceil: (window.DZCEIL || []).length, fp: FP.length, gar: GAR.length, adds: (window.__dzWorldAdds || []).length };
+    const _T = window.TERH, _G = window.GY; window.TERH = (x, z) => _T(x + dx, z + dz); window.GY = (x, z, y) => _G(x + dx, z + dz, y);
+    try { fn(); } finally { window.TERH = _T; window.GY = _G; window.addBox = _ab; }
+    for (const [m, L] of BK) for (let i = bk0.get(m) || 0; i < L.length; i++) { const q = L[i]; q[0] += dx; q[3] += dx; q[2] += dz; q[5] += dz; }
+    for (let i = n.beams; i < BEAMS.length; i++) BEAMS[i].translate(dx, 0, dz);
+    for (const b of NB) { b.x0 += dx; b.x1 += dx; b.z0 += dz; b.z1 += dz; _ab(b); }
+    for (let i = n.flr; i < FLR.length; i++) FLR.move(FLR[i], dx, dz);
+    const mv4 = q => { q[0] += dx; q[2] += dx; q[1] += dz; q[3] += dz; }, mvO = q => { q.x0 += dx; q.x1 += dx; q.z0 += dz; q.z1 += dz; }, mvP = q => { q.x += dx; q.z += dz; };
+    for (let i = n.rds; i < RDS.length; i++) mv4(RDS[i]);
+    for (let i = n.ls; i < LS.length; i++) mvP(LS[i]);
+    for (let i = n.lamps; i < LAMPS.length; i++) mvP(LAMPS[i]);
+    const CE = window.DZCEIL || []; for (let i = n.ceil; i < CE.length; i++) mvO(CE[i]);
+    for (let i = n.fp; i < FP.length; i++) mvO(FP[i]);
+    for (let i = n.gar; i < GAR.length; i++) mvP(GAR[i]);
+    const AD = window.__dzWorldAdds || []; for (let i = n.adds; i < AD.length; i++) { const o = AD[i]; if (o && o.position) { o.position.x += dx; o.position.z += dz; o.updateMatrixWorld(true); } }
+  }
   function buildSites() {
-    for (const S of (typeof SITES !== 'undefined' ? SITES : [])) { H = S.h != null ? S.h : TERH(S.x, S.z);
+    for (const S of (typeof SITES !== 'undefined' ? SITES : [])) { const dx = S.dx || 0, dz = S.dz || 0, h0 = S.h != null ? S.h : TERH(S.x, S.z);
+      S.x0 -= dx; S.x1 -= dx; S.z0 -= dz; S.z1 -= dz; S.x -= dx; S.z -= dz;
+      try { relocate(dx, dz, () => { H = h0; buildSite(S); }); } catch (e) { console.warn('local', S.id, e); }
+      S.x0 += dx; S.x1 += dx; S.z0 += dz; S.z1 += dz; S.x += dx; S.z += dz; }
+  }
+  function buildSite(S) { {
       if (S.t === 'military') {
         pad(S.x0 + 1, S.z0 + 1, S.x1 - 1, S.z1 - 1, 0x8e8a7c);
         // cerca com portão (lado norte, z0) e guaritas + cancela
@@ -664,14 +693,16 @@
   try {
     const C = CITY, AREAS = TOWNS.concat(typeof SITES !== 'undefined' ? SITES : []); for (let i = CARS.length - 1; i >= 0; i--) { const c = CARS[i]; if (c.heli) continue; if (AREAS.some(A => c.x > A.x0 - 6 && c.x < A.x1 + 6 && c.z > A.z0 - 6 && c.z < A.z1 + 6) || FP.some(b => c.x > b.x0 - 3 && c.x < b.x1 + 3 && c.z > b.z0 - 3 && c.z < b.z1 + 3)) { sc.remove(c.g); CARS.splice(i, 1); } }
     if (typeof addCar === 'function') for (const [x, z, r] of [[C.XL[1] + 2, (C.ZL[1] + C.ZL[2]) / 2 + 3, 0]]) addCar(x, z, r);
-    { const keep = FP.splice(0); try { for (const [x, z, r] of [[-87.5, 63, 0], [66, 30, Math.PI / 2], [160, 80, Math.PI / 2]]) addCar(x, z, r); } finally { FP.push(...keep); } }
+    { const keep = FP.splice(0); try { const B_ = SITEBY.base, F_ = SITEBY.fazenda; for (const [x, z, r] of [[-87.5 + B_.dx, 63 + B_.dz, 0], [66 + F_.dx, 30 + F_.dz, Math.PI / 2]]) addCar(x, z, r); } finally { FP.push(...keep); } }
+    // carros e buggies estacionados ao longo das estradas (o mapa é grande: precisa de veículo)
+    { let sd2 = 4711; const r2 = () => (sd2 = (sd2 * 16807) % 2147483647) / 2147483647; for (const R of (window.ROADS || [])) { const p = R.pts; for (let k = 40; k < p.length - 40; k += 160 + Math.floor(r2() * 120)) { if (p[k][3]) continue; const a = p[k - 2], b = p[k + 2], dx = b[0] - a[0], dz = b[1] - a[1], l = Math.hypot(dx, dz) || 1, s_ = r2() < .5 ? -1 : 1; addCar(p[k][0] - dz / l * 6 * s_, p[k][1] + dx / l * 6 * s_, Math.atan2(dx, dz)); } } }
     // um buggy dentro de cada garagem, de frente para a rua (addCar recusa ponto dentro de construção: põe direto)
     for (const G of GAR) { const keep = FP.splice(0); try { addCar(G.x, G.z + (G.rot ? 1 : -1) * .4, G.rot ? Math.PI : 0); } finally { FP.push(...keep); } }
   } catch (e) { console.warn('cidade: buggies', e); }
   // ---------- PONTOS DE LOOT (combat/loot.js espalha os itens) ----------
   // um ponto por andar em cada prédio (às vezes dois), barracões/hangares e locais abertos; a Ilha Zênite tem loot melhor
   { let sd = 97531; const rr = () => { sd = (sd * 16807) % 2147483647; return (sd - 1) / 2147483646; };
-    const inZ = (x, z) => x < -350;
+    const ZT = TOWNS.find(t => t.tag === 'zn'), inZ = (x, z) => ZT && x > ZT.x0 - 140 && x < ZT.x1 + 140 && z > ZT.z0 - 140 && z < ZT.z1 + 140;
     for (const S of (window.DZSTR || [])) { if (!S.spots) continue; const rich = inZ(S.x, S.z);
       S.spots.forEach((p, i) => { if (i % 2 === 1 && (rich ? rr() < .5 : rr() < .6)) return; LS.push({ x: p[0], z: p[1], y: p[2], rich }); }); }
     // arranha-céu: saguão e topo com loot forte
@@ -679,12 +710,13 @@
       for (const [dx, dz] of [[-8, -3], [8, 3], [-4, 6], [5, -6]]) LS.push({ x: TOWER.x + dx, z: TOWER.z + dz, y: y0 + .2, rich: 1 });
       for (const [dx, dz] of [[-9, -4], [-9, 4], [10, 9], [10, -9]]) LS.push({ x: TOWER.x + dx, z: TOWER.z + dz, y: yt, rich: 1 }); }
     // locais especiais: dentro de barracões/hangares e no pátio
-    const site = (x, z, n, r) => { for (let i = 0; i < n; i++) LS.push({ x: x + (rr() - .5) * r, z: z + (rr() - .5) * r, y: null, rich: inZ(x, z) }); };
-    site(-125, 45, 2, 10); site(-125, 78, 2, 10); site(-62, 55, 2, 8); site(-35, 62, 1, 6); site(-80, 30, 2, 20);   // base militar
-    site(-200, 8, 2, 12); site(-170, 21, 1, 8); site(-168, -4, 1, 8);                                       // galpões
-    site(48, 205, 2, 8); site(95, 205, 2, 14);                                                           // cais
-    site(-201, -78, 1, 8); site(-172, -66, 1, 6); site(78, 38, 2, 10);                                    // pedreira, fazenda
-    site(30, 135, 1, 10); site(-50, 210, 2, 40); site(200, -15, 2, 16);                                  // quadra, praia, usina
+    let SO = [0, 0]; const at = id => { const q = SITEBY[id]; SO = q ? [q.dx, q.dz] : [0, 0]; };
+    const site = (x, z, n, r) => { x += SO[0]; z += SO[1]; for (let i = 0; i < n; i++) LS.push({ x: x + (rr() - .5) * r, z: z + (rr() - .5) * r, y: null, rich: inZ(x, z) }); };
+    at('base'); site(-125, 45, 2, 10); site(-125, 78, 2, 10); site(-62, 55, 2, 8); site(-35, 62, 1, 6); site(-80, 30, 2, 20);   // base militar
+    at('galpoes'); site(-200, 8, 2, 12); site(-170, 21, 1, 8); site(-168, -4, 1, 8);                                       // galpões
+    at('cais'); site(48, 205, 2, 8); site(95, 205, 2, 14);                                                           // cais
+    at('pedreira'); site(-201, -78, 1, 8); site(-172, -66, 1, 6); at('fazenda'); site(78, 38, 2, 10);                                    // pedreira, fazenda
+    at('escola'); site(30, 135, 1, 10); at('praia'); site(-50, 210, 2, 40); at('usina'); site(200, -15, 2, 16);                                  // quadra, praia, usina
     for (const G of GAR) LS.push({ x: G.x + 1.6, z: G.z, y: null, rich: 0 });                                // garagens
     window.DZLS = LS; }
   // fim da montagem do mapa: para de registrar o que entra na cena

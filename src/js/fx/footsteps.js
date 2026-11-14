@@ -9,7 +9,7 @@
   // ---------- tipo de chão ----------
   function surf(x, y, z, inside) {
     try {
-      if (x > 3500) return y > (TERH(x, z) + .4) ? 'metal' : 'conc';
+      if (x > 9000) return y > (TERH(x, z) + .4) ? 'metal' : 'conc';
       const th = TERH(x, z);
       if (y < .15 && th < .25) return 'water';
       if (inside) return 'wood';

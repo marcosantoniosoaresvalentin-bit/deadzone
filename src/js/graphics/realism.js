@@ -1053,7 +1053,7 @@
     if (typeof P === 'undefined' || typeof mode === 'undefined' || typeof FP === 'undefined') return;
     const q = (typeof CFG !== 'undefined' && CFG.q != null) ? CFG.q : (window.DZ_DEFQ != null ? DZ_DEFQ : 2);
     if (!GF) { const m = new T.InstancedMesh(DZR.grassGeo(), mats().grass, 3200); m.instanceColor = new T.InstancedBufferAttribute(new Float32Array(3200 * 3).fill(1), 3); m.count = 0; m.frustumCulled = false; m.receiveShadow = true; m.castShadow = false; m.instanceMatrix.setUsage(T.DynamicDrawUsage); sc.add(m); GF = { m, cx: 1e9, cz: 1e9, q: -1 }; }
-    const on = (mode === 'ground' || mode === 'chute' || mode === 'drive') && q > 0 && Math.abs(P.x) < 1200 && Math.abs(P.z) < 1200 && P.y < 30;
+    const on = (mode === 'ground' || mode === 'chute' || mode === 'drive') && q > 0 && P.x > MAPB.x0 && P.x < MAPB.x1 && P.z > MAPB.z0 && P.z < MAPB.z1 && P.y < 140;
     GF.m.visible = on; if (!on) return;
     const cx = Math.round(P.x / 10) * 10, cz = Math.round(P.z / 10) * 10; if (cx === GF.cx && cz === GF.cz && q === GF.q) return; GF.cx = cx; GF.cz = cz; GF.q = q;
     const Rr = q >= 2 ? 30 : 18, M = GF.m, o = new T.Object3D(), col = new T.Color();

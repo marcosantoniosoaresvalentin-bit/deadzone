@@ -12,6 +12,7 @@ window.__dzWorldAdds = []; window.__dzScAdd = sc.add; sc.add = function () { for
   const FH = 3.2, T_ = .25, SLAB = .22, STEP_L = 5.2, LANE = 1.25, LAND = 1.3;
   const FLR = window.DZFLR = [], FG = new Map(), fk = (i, j) => i * 4096 + j;
   FLR.add = f => { FLR.push(f); for (let i = Math.floor(f.x0 / 16); i <= Math.floor(f.x1 / 16); i++) for (let j = Math.floor(f.z0 / 16); j <= Math.floor(f.z1 / 16); j++) { const k = fk(i, j); let a = FG.get(k); if (!a) FG.set(k, a = []); a.push(f); } };
+  FLR.move = (f, dx, dz) => { for (let i = Math.floor(f.x0 / 16); i <= Math.floor(f.x1 / 16); i++) for (let j = Math.floor(f.z0 / 16); j <= Math.floor(f.z1 / 16); j++) { const L = FG.get(fk(i, j)); if (L) { const q = L.indexOf(f); if (q >= 0) L.splice(q, 1); } } f.x0 += dx; f.x1 += dx; f.z0 += dz; f.z1 += dz; if (f.a0 != null) { const d = f.ax === 'x' ? dx : dz; f.a0 += d; f.a1 += d; } for (let i = Math.floor(f.x0 / 16); i <= Math.floor(f.x1 / 16); i++) for (let j = Math.floor(f.z0 / 16); j <= Math.floor(f.z1 / 16); j++) { const k = fk(i, j); let L = FG.get(k); if (!L) FG.set(k, L = []); L.push(f); } };
   const CEIL = window.DZCEIL = [];  // fundo das lajes (a câmera não passa para o andar de cima)   // pisos: {x0,x1,z0,z1,y} ou rampa {.., ax:'x'|'z', a0,a1,y0,y1}
 
   // ---------- a física passa a reconhecer pisos, escadas e terraços ----------

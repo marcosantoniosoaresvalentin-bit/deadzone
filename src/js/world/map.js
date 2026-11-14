@@ -5,10 +5,22 @@
  * Tamanho: MAPH é a metade do lado (MAPH=250 -> ilha de 500 x 500 m).
  * Tudo que depende do tamanho do mapa (limites, zona, rota do avião, mapa grande) lê MAPH.
  */
-const MAPH=250;          // metade do lado do mapa, em metros
-const PLV=30;            // velocidade do avião (m/s)
-// LIMITES do mapa (ilha principal no centro + Ilha Zênite a oeste, ligada por uma ponte)
-const MAPB={x0:-630,x1:265,z0:-265,z1:265},MCX=(MAPB.x0+MAPB.x1)/2,MCZ=(MAPB.z0+MAPB.z1)/2,MAPR=Math.max(MAPB.x1-MCX,MAPB.z1-MCZ);
+const MAPH=3800;         // metade do lado da ilha principal, em metros (ilha de ~7,6 x 7,6 km + Ilha Zênite)
+const PLV=62;            // velocidade do avião (m/s)
+// ---------- LITORAL da ilha principal (o terreno usa a mesma função) ----------
+const DZN=(()=>{const hh=(x,z)=>{const v=Math.sin(x*127.1+z*311.7)*43758.5453;return v-Math.floor(v)};
+ const vn=(x,z)=>{const xi=Math.floor(x),zi=Math.floor(z),xf=x-xi,zf=z-zi,u=xf*xf*(3-2*xf),w=zf*zf*(3-2*zf);return(hh(xi,zi)*(1-u)+hh(xi+1,zi)*u)*(1-w)+(hh(xi,zi+1)*(1-u)+hh(xi+1,zi+1)*u)*w};
+ const fbm=(x,z)=>vn(x,z)*.5+vn(x*2.03+5.2,z*2.03+1.3)*.27+vn(x*4.1+9.1,z*4.1+3.7)*.15+vn(x*8.3+2.7,z*8.3+8.1)*.08;return{hh,vn,fbm}})();
+function coastMain(x,z){const p=8,d=Math.pow(Math.pow(Math.abs(x),p)+Math.pow(Math.abs(z),p),1/p),a=Math.atan2(z,x);
+ const cn=DZN.fbm(Math.cos(a)*2.2+7,Math.sin(a)*2.2+3)*.75+DZN.fbm(Math.cos(a)*6+1,Math.sin(a)*6+9)*.25;
+ return MAPH+90-cn*260-d}                                     // >0 dentro da ilha (m até a costa); baías de até ~260 m
+// ponto da costa: andando do centro na direção (ux,uz) até a água
+function coastAt(ux,uz,ax,az){ax=ax||0;az=az||0;let lo=0,hi=MAPH+600;for(let i=0;i<40;i++){const m=(lo+hi)/2;if(coastMain(ax+ux*m,az+uz*m)>0)lo=m;else hi=m}return [ax+ux*lo,az+uz*lo]}
+// ---------- posições dos locais (o desenho de cada local é o mesmo; aqui só muda ONDE ele fica) ----------
+// ZÊNITE + PONTE: a ponte sai da costa oeste e chega na Ilha Zênite
+const ZEN_Z=1500,ZEN_DZ=ZEN_Z-(-60),ZEN_CW=coastAt(-1,0,0,-78+ZEN_DZ)[0],ZEN_DX=ZEN_CW+246;
+// LIMITES do mapa (ilha principal + Ilha Zênite a oeste)
+const MAPB={x0:Math.min(-MAPH-300,-490+ZEN_DX-170),x1:MAPH+300,z0:-MAPH-300,z1:MAPH+300},MCX=(MAPB.x0+MAPB.x1)/2,MCZ=(MAPB.z0+MAPB.z1)/2,MAPR=Math.max(MAPB.x1-MCX,MAPB.z1-MCZ);
 /* nas arenas (mapas separados, longe da ilha) não prende nos limites da ilha principal */
 const MCLX=(v,m)=>window.DZAR_ON?v:Math.max(MAPB.x0+m,Math.min(MAPB.x1-m,v)),MCLZ=(v,m)=>window.DZAR_ON?v:Math.max(MAPB.z0+m,Math.min(MAPB.z1-m,v));
 const PLT=(2*(MAPR+60))/PLV; // tempo até o avião atravessar o mapa (s)
@@ -62,13 +74,25 @@ function genTown(cfg){
    });
   }}
  C.rnd=rnd;return C}
-// cidades (bem longe uma da outra): a grande no norte e duas vilas no sul
-const CITY=genTown({n:'Nova Esperança',tag:'pv',seed:7331,x0:-36,x1:176,z0:-196,z1:-8,XL:[-28,22,72,122,168],ZL:[-188,-128,-72,-16],stadium:1});
+// desloca a configuração de uma cidade (mesmo desenho, outro lugar)
+const mvT=(c,dx,dz)=>Object.assign({},c,{x0:c.x0+dx,x1:c.x1+dx,z0:c.z0+dz,z1:c.z1+dz,XL:c.XL.map(v=>v+dx),ZL:c.ZL.map(v=>v+dz)});
+const atT=(c,X,Z)=>mvT(c,X-(c.x0+c.x1)/2,Z-(c.z0+c.z1)/2);
+// cidade nova em grade: nx x nz quarteirões de 'b' metros, centrada em (X,Z)
+const gridT=(n,tag,seed,X,Z,nx,nz,b,o)=>{const XL=[],ZL=[];for(let i=0;i<=nx;i++)XL.push(Math.round(X-nx*b/2+i*b));for(let j=0;j<=nz;j++)ZL.push(Math.round(Z-nz*b/2+j*b));return Object.assign({n,tag,seed,x0:XL[0]-8,x1:XL[nx]+8,z0:ZL[0]-8,z1:ZL[nz]+8,XL,ZL,bl:30},o||{})};
+// cidades (bem longe uma da outra, como num mapa grande de battle royale)
+const CITY=genTown(atT({n:'Nova Esperança',tag:'pv',seed:7331,x0:-36,x1:176,z0:-196,z1:-8,XL:[-28,22,72,122,168],ZL:[-188,-128,-72,-16],stadium:1},400,-1100));
 const TOWNS=[CITY,
- genTown({n:'Vila Rubra',tag:'vs',seed:4242,x0:-218,x1:-102,z0:112,z1:188,XL:[-210,-160,-110],ZL:[120,180],bl:20}),
- genTown({n:'Cerro Azul',tag:'mv',seed:9119,x0:133,x1:207,z0:143,z1:217,XL:[145,195],ZL:[155,205],bl:20}),
- genTown({n:'Zênite',tag:'zn',seed:2468,x0:-571,x1:-409,z0:-141,z1:21,XL:[-565,-515,-465,-415],ZL:[-135,-85,-35,15],bl:20,hFix:6,tower:1}),
- genTown({n:'Monte Alto',tag:'as',seed:5150,x0:52,x1:114,z0:58,z1:120,XL:[58,108],ZL:[64,114],bl:26,hFix:8.5})];
+ genTown(atT({n:'Vila Rubra',tag:'vs',seed:4242,x0:-218,x1:-102,z0:112,z1:188,XL:[-210,-160,-110],ZL:[120,180],bl:20},-2150,1650)),
+ genTown(atT({n:'Cerro Azul',tag:'mv',seed:9119,x0:133,x1:207,z0:143,z1:217,XL:[145,195],ZL:[155,205],bl:20},2350,2050)),
+ genTown(mvT({n:'Zênite',tag:'zn',seed:2468,x0:-571,x1:-409,z0:-141,z1:21,XL:[-565,-515,-465,-415],ZL:[-135,-85,-35,15],bl:20,hFix:6,tower:1},ZEN_DX,ZEN_DZ)),
+ genTown(atT({n:'Monte Alto',tag:'as',seed:5150,x0:52,x1:114,z0:58,z1:120,XL:[58,108],ZL:[64,114],bl:26},1650,350)),
+ genTown(gridT('São Jorge','sj',3301,-1700,-1950,3,2,52)),
+ genTown(gridT('Lagoa Seca','ls',3302,2850,-2250,3,2,50)),
+ genTown(gridT('Vila Nova','vn',3303,-250,2750,3,2,50)),
+ genTown(gridT('Campo Belo','cb',3304,-2900,-450,2,2,50)),
+ genTown(gridT('Pinheiral','ph',3305,3050,-150,2,2,50)),
+ genTown(gridT('Rio Claro','rc',3306,-550,550,3,3,52)),
+ genTown(gridT('Santa Luz','sl',3307,1100,-2900,2,2,50))];
 // LOCAIS ESPECIAIS (world/city.js monta): base militar, escola, porto e galpões
 const SITES=[
  {id:'base',t:'military',n:'Base Militar',x0:-148,x1:-22,z0:15,z1:108,bl:22},
@@ -80,7 +104,15 @@ const SITES=[
  {id:'pedreira',t:'quarry',n:'Pedreira',x0:-212,x1:-165,z0:-100,z1:-55,bl:30,hFix:8.5},
  {id:'praia',t:'beach',n:'Praia',x0:-95,x1:10,z0:200,z1:222,bl:8},
  {id:'usina',t:'power',n:'Usina',x0:180,x1:222,z0:-40,z1:10,bl:16}];
+// novo lugar de cada local (centro). Porto e praia ficam na costa sul (o píer avança para o mar, +z)
+{const S_SHIFT={base:[-650,-2650],escola:[900,1250],galpoes:[-2550,700],posto:[1150,-450],fazenda:[-1250,2250],pedreira:[-2400,-1450],usina:[3150,1150]};
+ for(const S_ of SITES)S_.h=undefined;
+ for(const S_ of SITES){const cx=(S_.x0+S_.x1)/2,cz=(S_.z0+S_.z1)/2;let tx,tz;
+  if(S_.id==='cais'||S_.id==='praia'){const X=S_.id==='cais'?700:-950,cz2=coastAt(0,1,X,0)[1];tx=X;tz=cz2-28-(S_.z1-cz)}
+  else{[tx,tz]=S_SHIFT[S_.id]}
+  S_.dx=Math.round(tx-cx);S_.dz=Math.round(tz-cz);S_.x0+=S_.dx;S_.x1+=S_.dx;S_.z0+=S_.dz;S_.z1+=S_.dz;delete S_.hFix}}
 for(const S_ of SITES){S_.x=(S_.x0+S_.x1)/2;S_.z=(S_.z0+S_.z1)/2}
+const SITEBY=Object.fromEntries(SITES.map(S_=>[S_.id,S_]));
 // prédios com interior dos locais (entram na lista STRS: dá para entrar, subir, pular janela...)
 const SITE_STRS=[
  {id:'base_aloj1',x:-100,z:75,w:16,d:9,floors:2,rot:0,style:'panel',color:0x8f9479,band:1,mg:'base',city:1},
@@ -94,28 +126,30 @@ const SITE_STRS=[
  {id:'escola1',x:15,z:111.5,w:24,d:11,floors:2,rot:Math.PI,style:'plaster',color:0xe8dcb8,band:1,balcony:1,mg:'escola',city:1},
  {id:'escola2',x:-5,z:139,w:12,d:9,floors:1,rot:0,style:'plaster',color:0xe8dcb8,band:1,mg:'escola',city:1},
  {id:'cais_cap',x:30,z:203,w:11,d:9,floors:2,rot:0,style:'plaster',color:0x9fb6c4,band:1,balcony:1,mg:'cais',city:1}];
-// ESTRADAS ligando cidades e locais (curvas suaves passando por estes pontos; o terreno fica plano embaixo)
-const ROADLINES=[
- [[22,-12],[22,18],[16,55],[15,99]],                               // Zonária -> colégio
- [[22,10],[-20,6],[-80,8],[-148,7]],                               // -> base militar -> galpões
- [[-80,8],[-80,15]],                                               // portão da base
- [[-182,31],[-182,62],[-162,96],[-160,116]],                       // galpões -> Vila Rubra
- [[-106,180],[-50,184],[15,187],[64,191]],                         // Vila Rubra -> cais
- [[78,191],[108,182],[141,171]],                                    // cais -> Cerraluz (sobe em diagonal: o cais é 3 m mais baixo)                                            // cais -> Cerraluz
- [[145,151],[152,105],[172,45],[168,-12]],                         // Cerraluz -> Zonária
- [[22,26],[40,30],[55,30]],                                        // -> fazenda
- [[54,64],[34,63],[19,62]],                                        // Altamorra -> estrada do colégio
- [[-182,-16],[-186,-36],[-190,-54]],                               // galpões -> pedreira
- [[170,-5],[181,-5]],                                              // -> usina
- [[-226,-78],[-222,-60],[-205,-42],[-188,-36]],                    // pedreira -> ponte
- [[-384,-78],[-398,-82],[-411,-85]]];                              // ponte -> Zênite                                           // -> praia
+for(const b of SITE_STRS){const S_=SITEBY[b.mg];if(S_){b.x+=S_.dx;b.z+=S_.dz}}
+// ESTRADAS ligando cidades e locais: rede gerada (árvore mínima + atalhos), curvas suaves, sem passar pelo mar
+const ROADLINES=(()=>{const L=[];let sd=777;const r=()=>{sd=(sd*16807)%2147483647;return (sd-1)/2147483646};
+ const P=TOWNS.filter(t=>t.tag!=='zn').map(t=>({x:(t.x0+t.x1)/2,z:(t.z0+t.z1)/2,id:t.tag})).concat(SITES.filter(S_=>S_.id!=='praia').map(S_=>({x:S_.x,z:S_.z,id:S_.id})));
+ const n=P.length,used=[0],E=[];const D=(a,b)=>Math.hypot(P[a].x-P[b].x,P[a].z-P[b].z);
+ while(used.length<n){let ba=-1,bb=-1,bd=1e9;for(const a of used)for(let b=0;b<n;b++){if(used.includes(b))continue;const d=D(a,b);if(d<bd){bd=d;ba=a;bb=b}}used.push(bb);E.push([ba,bb])}
+ // atalhos: cada local também liga ao 2º vizinho mais perto (se ainda não ligado)
+ for(let a=0;a<n;a++){const o=[...Array(n).keys()].filter(b=>b!==a).sort((p,q)=>D(a,p)-D(a,q));const b=o[1];if(!E.some(e=>(e[0]===a&&e[1]===b)||(e[0]===b&&e[1]===a))&&D(a,b)<2600)E.push([a,b])}
+ const inland=(x,z,m)=>coastMain(x,z)>m;
+ for(const [a,b] of E){const A=P[a],B=P[b],len=D(a,b),k=Math.max(2,Math.round(len/450)),pts=[[A.x,A.z]];const nx=-(B.z-A.z)/len,nz=(B.x-A.x)/len;
+  for(let i=1;i<k;i++){const t=i/k;let x=A.x+(B.x-A.x)*t,z=A.z+(B.z-A.z)*t;const off=(r()-.5)*Math.min(260,len*.12);x+=nx*off;z+=nz*off;let g=0;while(!inland(x,z,80)&&g++<30){x*=.96;z*=.96}pts.push([x,z])}
+  pts.push([B.x,B.z]);L.push(pts)}
+ return L})();
 // cabeceiras da ponte (chão plano na altura do tabuleiro) — a ponte liga a pedreira à Ilha Zênite
-const BRIDGE={z:-78,x0:-238,x1:-372,y:6};
-const BRIDGE_FLATS=[{id:'pontA',x0:-250,x1:-226,z0:-90,z1:-66,bl:16,hFix:6},{id:'pontB',x0:-384,x1:-360,z0:-90,z1:-66,bl:16,hFix:6}];
+const BRIDGE={z:-78+ZEN_DZ,x0:-238+ZEN_DX,x1:-372+ZEN_DX,y:6};
+const BRIDGE_FLATS=[{id:'pontA',x0:-250+ZEN_DX,x1:-226+ZEN_DX,z0:-90+ZEN_DZ,z1:-66+ZEN_DZ,bl:16,hFix:6},{id:'pontB',x0:-384+ZEN_DX,x1:-360+ZEN_DX,z0:-90+ZEN_DZ,z1:-66+ZEN_DZ,bl:16,hFix:6}];
+// ruas da ponte: Zênite -> ponte -> local mais perto na ilha principal
+{const za=[-411+ZEN_DX,-85+ZEN_DZ],pb=[-372+ZEN_DX-12,-78+ZEN_DZ],pa=[-238+ZEN_DX+12,-78+ZEN_DZ];ROADLINES.push([za,[-398+ZEN_DX,-82+ZEN_DZ],pb]);
+ const P_=TOWNS.filter(t=>t.tag!=='zn').map(t=>[(t.x0+t.x1)/2,(t.z0+t.z1)/2]).concat(SITES.map(S_=>[S_.x,S_.z]));let b=P_[0];for(const q of P_)if(Math.hypot(q[0]-pa[0],q[1]-pa[1])<Math.hypot(b[0]-pa[0],b[1]-pa[1]))b=q;
+ ROADLINES.push([pa,[pa[0]+60,pa[1]],[(pa[0]+60+b[0])/2,(pa[1]+b[1])/2],b])}
 // tudo que precisa de chão plano (o terreno lê esta lista)
 // ARENAS = MAPAS SEPARADOS (cada um numa ilha própria, a 5 km da ilha principal, fora do alcance da vista e do mapa)
 // Duelo = Pátio de Containers · Mata-mata em Equipe = Armazéns do Porto
-const ARENAS={duel:{id:'arDuel',n:'Pátio de Containers',x:5000,z:0,hw:14,hd:34,RX:40,RZ:62,h:3},tdm:{id:'arTdm',n:'Armazéns do Porto',x:5000,z:3000,hw:62,hd:62,RX:86,RZ:86,h:3},train:{id:'arTrain',n:'Campo de Treino',x:5000,z:-3000,hw:40,hd:122,RX:66,RZ:150,h:3}};
+const ARENAS={duel:{id:'arDuel',n:'Pátio de Containers',x:14000,z:0,hw:14,hd:34,RX:40,RZ:62,h:3},tdm:{id:'arTdm',n:'Armazéns do Porto',x:14000,z:3000,hw:62,hd:62,RX:86,RZ:86,h:3},train:{id:'arTrain',n:'Campo de Treino',x:14000,z:-3000,hw:40,hd:122,RX:66,RZ:150,h:3}};
 const ARENA_FLATS=Object.values(ARENAS).map(a=>({id:a.id,x0:a.x-a.hw-4,x1:a.x+a.hw+4,z0:a.z-a.hd-4,z1:a.z+a.hd+4,bl:14,hFix:a.h,arena:1}));
 const FLATS=TOWNS.concat(SITES,BRIDGE_FLATS);
 // nomes no mapa grande (como no mapa antigo)
@@ -124,7 +158,7 @@ const MAPNAMES=TOWNS.map(t=>({n:t.n,x:t.x,z:t.z})).concat(SITES.map(t=>({n:t.n,x
 // heliportos (o terreno fica plano em volta deles); o do norte fica no meio do campo do estádio
 // [nome, x, z, sem a marca H no chão]: no estádio fica só o helicóptero no meio do campo; a base militar tem heliponto
 // [nome, x, z, sem a marca H, altura]: o ÚNICO helicóptero fica no topo do arranha-céu da Ilha Zênite
-const TOWER={x:-490,z:-60,w:26,h:78,y0:6};   // y0 = chão da Zênite (hFix)
+const TOWER={x:-490+ZEN_DX,z:-60+ZEN_DZ,w:26,h:78,y0:6};   // y0 = chão da Zênite (hFix)
 const HPS=[['Torre Zênite',TOWER.x+4,TOWER.z,0,TOWER.y0+TOWER.h+.06]];
 // o terreno (relevo, praia e mar) fica em world/terrain.js
 // construções com modelo pronto (world/buildings.js): nenhuma — todas as construções têm porta e interior

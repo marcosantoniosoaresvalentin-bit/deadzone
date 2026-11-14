@@ -1,5 +1,16 @@
 # Histórico de versões
 
+## 3.39.0 — mapa grande (8 x 8 km), primeira versão
+- **Mapa de ~7,6 x 7,6 km** (antes ~0,9 km): ilha principal com serra, morros e vale, mais a Ilha Zênite ligada por uma ponte.
+- **12 cidades e vilas** bem distantes (Nova Esperança, São Jorge, Lagoa Seca, Vila Nova, Campo Belo, Pinheiral, Rio Claro,
+  Santa Luz, Vila Rubra, Cerro Azul, Monte Alto, Zênite) e os locais especiais (base militar, escola, porto, galpões, posto,
+  fazenda, pedreira, praia, usina) espalhados pelo mapa.
+- **Renderização por proximidade**: o terreno é dividido em 289 blocos que ficam detalhados só perto de você e simples
+  longe; prédios, árvores, estradas e luzes somem quando estão longe.
+- **24 estradas** ligando os locais, **104 veículos** pelas estradas, 55 mil árvores/arbustos/pedras, avião mais rápido,
+  zona e mapa grande refeitos para o tamanho novo (zoom de até 40x).
+- As arenas (duelo, mata-mata e treino) continuam iguais, em ilhas separadas.
+
 ## 3.38.0 — lunetas, miras de ferro e escudo destrutível
 - **Lunetas (2x e 8x)**: como nos battle royales — o tubo da luneta aparece e a imagem ampliada fica só dentro da lente
   (antes a 8x deixava a tela preta em volta).
