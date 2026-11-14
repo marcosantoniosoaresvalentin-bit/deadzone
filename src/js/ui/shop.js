@@ -111,7 +111,7 @@
   }
 
   // ---------- moedas (clássico) ----------
-  let coins = 0, lk = 0, lt = 0;
+  let coins = 0, lk = 0, lt = 0; window.DZCOINS = () => coins;
   window.dzCoins = () => coins;
   const _sg = window.startGame; if (typeof _sg === 'function') window.startGame = function () { coins = 25; lk = 0; lt = 0; return _sg.apply(this, arguments); };
   setInterval(() => {

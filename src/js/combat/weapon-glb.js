@@ -193,6 +193,8 @@
         ey = [0, ax, zc - .35];
       }
     }
+    // escopeta: o olho fica logo ACIMA do topo da arma (antes ficava dentro do corpo e a arma tapava a mira)
+    if (t === 'shotgun') { try { g.updateMatrixWorld(true); const bb = new T.Box3().setFromObject(inner); if (isFinite(bb.max.y)) ey = [0, bb.max.y + .02, Math.min(ey[2], bb.min.z - .06)]; } catch (e) { } }
     u.ey = ey;
     if (vm) { // luvas e mangas na tela de mira
       for (let k = 0; k < 2; k++) { const p = u.hg[k]; add(new T.BoxGeometry(.07, .08, .1), MAT.Black_Lighter, p[0], p[1], p[2]); add(new T.BoxGeometry(.075, .075, .5), Mt(0x55663f, 0, .9), p[0] + (k ? -.02 : .02), p[1] - .06, p[2] - .3, -.25); }
