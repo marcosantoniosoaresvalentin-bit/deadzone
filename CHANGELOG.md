@@ -1,5 +1,13 @@
 # Histórico de versões
 
+## 3.34.0 — personagem próprio do Deadzone e mais ossos
+- **Personagem próprio**: rosto remodelado (nariz mais largo, queixo e mandíbula mais fortes, maçãs do rosto e
+  sobrancelhas mais marcadas, crânio mais largo), cabelo e sobrancelhas escuros, barba mais cheia, olhos castanhos,
+  pele mais bronzeada, ombros mais largos, cintura e barriga mais secas com abdômen marcado e tatuagem de mira no braço.
+- **Mais ossos em movimento**: os 30 ossos dos dedos agora mexem (a mão fecha na arma, relaxa parada, abre e espalma
+  ao apoiar no obstáculo, segura o paraquedas), os punhos dobram, as clavículas sobem ao alcançar, os pés apontam no
+  salto e no ar, e o personagem pisca os olhos.
+
 ## 3.33.0 — personagem novo realista
 - **Personagem novo** no lugar do antigo (que era um avatar de desenho): homem realista do pacote Microsoft
   Rocketbox (licença MIT) — rosto, pele, olhos, barba e cabelo de foto, 1,80 m, corpo atlético — começando

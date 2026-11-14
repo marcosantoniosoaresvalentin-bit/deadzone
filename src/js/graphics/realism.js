@@ -600,6 +600,12 @@
     wrap.updateMatrixWorld(true);
     const D = { s, ry: wrap.rotation.y, oy: wrap.position.y, Q0: {}, L0: {}, hips0: wp(B.Hips), hipsParentInv: new T.Matrix4().copy(B.Hips.parent.matrixWorld).invert(), hipsParentQ: wq(B.Hips.parent), B, wrap };
     for (const k in B) { D.Q0[k] = wq(B[k]); D.L0[k] = B[k].quaternion.clone(); }
+    // eixos locais para os ossos secundários (dedos, punho, ombro, pé) — "mundo" = pose de referência
+    D.AX = {}; const ax = (k, w) => { if (B[k]) D.AX[k] = w.clone().applyQuaternion(D.Q0[k].clone().invert()).normalize(); };
+    for (const s_ of ['Left', 'Right']) {
+      for (const f of ['Index', 'Middle', 'Ring', 'Pinky', 'Thumb']) for (let k = 1; k <= 3; k++) ax(s_ + 'Hand' + f + k, V(0, 0, 1));
+      ax(s_ + 'Hand', V(0, 0, 1)); ax(s_ + 'Shoulder', V(0, 0, 1)); ax(s_ + 'Foot', V(1, 0, 0)); ax(s_ + 'ToeBase', V(1, 0, 0));
+    }
     D.armLen = {};
     for (const s_ of ['Left', 'Right']) if (B[s_ + 'Arm']) D.armLen[s_] = [wp(B[s_ + 'ForeArm']).distanceTo(wp(B[s_ + 'Arm'])), wp(B[s_ + 'Hand']).distanceTo(wp(B[s_ + 'ForeArm']))];
     return D;
@@ -817,7 +823,7 @@
     if (!arm || !fa || !hd || !D.armLen[side]) return;
     // peso do IK: mão à frente do tronco = segurando algo
     const gl = _e.set(0, -.31, 0).applyMatrix4(j.el.matrixWorld); rig.tor.worldToLocal(gl);
-    const w = Math.max(0, Math.min(1, (gl.z - .06) / .14)); if (w <= .01) return;
+    const w = Math.max(0, Math.min(1, (gl.z - .06) / .14)); rig.ikw = rig.ikw || {}; rig.ikw[side] = w; if (w <= .01) return;
     const grip = jp(rig, j.el, 0, -.31, 0, _a), elb = jp(rig, j.el, 0, 0, 0, _b);
     const dir = _c.copy(grip).sub(elb); const dl = dir.length(); if (dl > 1e-4) dir.multiplyScalar(1 / dl);
     const T_ = grip.addScaledVector(dir, -.07);
@@ -868,6 +874,61 @@
     sv.hp = h; return sv;
   }
 
+  /* ---------- OSSOS SECUNDÁRIOS: dedos, punhos, clavículas, pés e piscar ----------
+     Cada mão tem 15 ossos de dedo. A mão fecha na arma, abre e espalma ao apoiar no obstáculo,
+     relaxa parada e abre no ar; o punho dobra para trás ao apoiar; os ombros sobem ao alcançar;
+     os pés apontam no salto e no ar; os olhos piscam. */
+  const _qx = new T.Quaternion(), XA = new T.Vector3(1, 0, 0);
+  const FING = ['Index', 'Middle', 'Ring', 'Pinky'], BLK = window.DZBLK || 1;
+  function qrot(b, D, k, ang) { const a = D.AX[k]; if (!b || !a) return; b.quaternion.copy(D.L0[k]).multiply(_qx.setFromAxisAngle(a, ang)); }
+  function secState(rig, dt, sv) {
+    const av = rig.av, F = av.fs || (av.fs = { g: [.5, .5], wr: [0, 0], sh: [0, 0], ft: 0, bl: 0, bt: 1 + Math.random() * 3, t: Math.random() * 9 });
+    F.t += dt;
+    const isP = typeof pl !== 'undefined' && rig.pl === pl, md = typeof mode !== 'undefined' ? mode : '';
+    const vlt = isP && typeof VLT !== 'undefined' && VLT, rope = isP && typeof RIDE !== 'undefined' && RIDE;
+    let air = false; try { air = isP ? (md === 'sky' || md === 'chute' || (md === 'ground' && !vlt && !rope && P.y > GY(P.x, P.z, P.y) + .35)) : !!rig.air; } catch (e) { }
+    const L = rig.loco, armed = !!(L && L.arm), ik = rig.ikw || {};
+    let gR, gL, wR = 0, wL = 0, sh = 0, ft = 0;
+    if (vlt) { const u = vlt.t, hold = u < .55 ? 1 : 0; gR = gL = hold ? .08 : .45; wR = wL = hold ? -1 * Math.min(1, u / .12) : 0; sh = hold ? .28 : .05; ft = .55 * vltTuck(u); }
+    else if (rope) { gR = gL = 1.05; sh = .35; ft = .25; }
+    else if (md === 'chute' && isP) { gR = gL = .95; sh = .2; ft = .3; }
+    else if (air) { gR = gL = .22 + .06 * Math.sin(F.t * 7); wR = wL = .12 * Math.sin(F.t * 5.3); ft = .5; }
+    else if (armed) { gR = (ik.Right || 0) > .3 ? 1 : .7; gL = (ik.Left || 0) > .3 ? .95 : .6; }
+    else { const br = .04 * Math.sin(F.t * 1.6); gR = .5 + br; gL = .48 + br; wR = wL = .1; }
+    const lw = sv ? sv.w : 0; ft *= 1 - lw;
+    const k = Math.min(1, dt * 12), kk = Math.min(1, dt * 8);
+    F.g[0] += (gR - F.g[0]) * k; F.g[1] += (gL - F.g[1]) * k; F.wr[0] += (wR - F.wr[0]) * k; F.wr[1] += (wL - F.wr[1]) * k;
+    F.sh[0] += (sh - F.sh[0]) * kk; F.ft += (ft - F.ft) * kk;
+    // piscar: a cada 2–5 s, ~0,14 s
+    F.bt -= dt; if (F.bt <= 0) { F.bl = .14; F.bt = 2 + Math.random() * 3.2; } F.blo = F.bl > 0; F.bl = Math.max(0, F.bl - dt);
+    return F;
+  }
+  function shoulders(rig, F) {
+    const B = rig.av.B, D = TPL.D;
+    for (const s_ of ['Left', 'Right']) {
+      const k = s_ + 'Shoulder', b = B[k], a = D.AX[k]; if (!b || !a || F.sh[0] < .005) continue;
+      const E = _qx.setFromAxisAngle(a, (s_ === 'Left' ? 1 : -1) * F.sh[0]); b.quaternion.multiply(E);
+      if (QW[s_ + 'ArmP']) { QW[s_ + 'ArmP'].multiply(E); const arm = B[s_ + 'Arm'], fa = B[s_ + 'ForeArm']; if (arm) QA[s_ + 'Arm'] = QW[s_ + 'ArmP'].clone().multiply(arm.quaternion); if (fa && QA[s_ + 'Arm']) QA[s_ + 'ForeArm'] = QA[s_ + 'Arm'].clone().multiply(fa.quaternion); }
+    }
+  }
+  function secondary(rig, F) {
+    const B = rig.av.B, D = TPL.D;
+    for (const [i, s_] of [[0, 'Right'], [1, 'Left']]) {
+      const sg = s_ === 'Right' ? 1 : -1, g = F.g[i];
+      for (const f of FING) for (let k = 1; k <= 3; k++) {
+        const n = s_ + 'Hand' + f + k; // L0 = mão fechada (curva .7/.8 por falange); abre proporcionalmente
+        let a = sg * (k === 1 ? .7 : .8) * (g - 1);
+        if (g < .3 && k === 1) a += 0; qrot(B[n], D, n, a);
+      }
+      for (let k = 1; k <= 3; k++) { const n = s_ + 'HandThumb' + k; qrot(B[n], D, n, sg * .25 * (g - 1) * (k === 1 ? .6 : 1) + (g > .9 ? sg * .25 * (k - 1) * .5 : 0)); }
+      const hn = s_ + 'Hand'; if (Math.abs(F.wr[i]) > .003 && B[hn] && D.AX[hn]) B[hn].quaternion.multiply(_qx.setFromAxisAngle(D.AX[hn], sg * F.wr[i]));
+      for (const fn of [s_ + 'Foot']) if (F.ft > .005 && B[fn] && D.AX[fn]) B[fn].quaternion.multiply(_qx.setFromAxisAngle(D.AX[fn], F.ft));
+      // pálpebras
+      const e1 = 'Bip01_' + s_[0] + 'EyeBlinkTop', e2 = 'Bip01_' + s_[0] + 'EyeBlinkBottom', bl = F.bl > 0 ? Math.sin((1 - F.bl / .14) * Math.PI) : 0;
+      if (bl > 0 || F.blo) for (const [e, a] of [[e1, -1.05], [e2, .22]]) if (B[e] && D.L0[e]) B[e].quaternion.setFromAxisAngle(XA, a * bl * BLK).multiply(D.L0[e]); // eixo X do pai (como no Max)
+    }
+  }
+
   function pose(rig, dt) {
     const av = rig.av, B = av.B, D = TPL.D;
     const sv = loco(rig, dt || .016);
@@ -897,8 +958,12 @@
     if (sv) pos.lerp(D.hips0.clone().add(sv.hp), sv.w);
     B.Hips.position.copy(pos.applyMatrix4(D.hipsParentInv));
     walk(B.Hips, D.hipsParentQ);
+    const near_ = rig._dist < 22, F = near_ ? secState(rig, dt || .016, sv) : null;
+    if (F) shoulders(rig, F);
     rig.ainv = (rig.ainv || new T.Matrix4()).copy(av.root.matrixWorld).invert();
+    if (rig.ikw) rig.ikw.Right = rig.ikw.Left = 0;
     if (rig._dist < 30 && !(sv && !rig.loco.arm && sv.w > .5)) { av.inner.updateMatrixWorld(true); ikArm(rig, 'Right', rig.aR); ikArm(rig, 'Left', rig.aL); }
+    if (F) secondary(rig, F);
   }
 
   function effVisible(o) { while (o) { if (!o.visible) return false; if (o.isScene) return true; o = o.parent; } return false; }
