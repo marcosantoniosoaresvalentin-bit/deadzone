@@ -1,5 +1,9 @@
 # Histórico de versões
 
+## 3.44.0 — desempenho em celulares fracos
+- Celulares com pouca memória (4 GB ou menos) ou poucos núcleos passam automaticamente para a qualidade **Baixa** (uma vez; dá para mudar nas configurações). Os demais ficam no **Médio**. Todos com 30 FPS.
+- Resolução interna menor nas qualidades Baixa e Média; distância de visão menor (Baixa 150 m, Média 210 m); o ajuste automático de distância agora pode baixar mais quando o FPS cai.
+
 ## 3.43.1 — menos ruas nas cidades
 - Dentro das cidades fica só a estrada principal (a que dá acesso à cidade); as travessas e rotatórias de asfalto foram removidas. As casas continuam espalhadas.
 

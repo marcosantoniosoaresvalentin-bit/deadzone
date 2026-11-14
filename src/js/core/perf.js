@@ -14,12 +14,14 @@
   if (!CFG.shM) { CFG.shM = 1; if (touch) CFG.sh = 0; try { saveCfg(); } catch (e) { } } // 3.37.1: no celular as sombras começam desligadas (pesavam e tremiam)
   if (CFG.fps == null) CFG.fps = touch ? 1 : 0;   // 0 = 60 FPS, 1 = 30 FPS (economiza bateria e não esquenta)
   if (CFG.showFps == null) CFG.showFps = 0;
+  // 3.44: celulares fracos (pouca memória / poucos núcleos) começam e ficam no preset mais leve; os demais, no Médio (uma vez só)
+  if (!CFG.pf) { CFG.pf = 1; if (touch) { const mem = navigator.deviceMemory || 4, cores = navigator.hardwareConcurrency || 4; if (mem <= 4 || cores <= 6) CFG.q = 0; else if ((CFG.q | 0) > 1) CFG.q = 1; CFG.fps = 1; } try { saveCfg(); } catch (e) { } }
   const q = () => Math.max(0, Math.min(3, CFG.q | 0));
-  window.DZRD = () => Math.round([200, 280, 380, 480][q()] * (window.__rdK || 1));
+  window.DZRD = () => Math.round([150, 210, 320, 480][q()] * (window.__rdK || 1));
 
   // ---------- qualidade ----------
   window.applyQ = function () {
-    const Q = q(), dpr = devicePixelRatio || 1, pr = [Math.min(dpr, .8), Math.min(dpr, 1.1), Math.min(dpr, 1.4), Math.min(dpr, 2)][Q];
+    const Q = q(), dpr = devicePixelRatio || 1, pr = [Math.min(dpr, .65), Math.min(dpr, .95), Math.min(dpr, 1.3), Math.min(dpr, 2)][Q];
     try { if (typeof DYN !== 'undefined') { DYN.base = pr; DYN.k = 1; } } catch (e) { }
     ren.setPixelRatio(pr); try { rs(); } catch (e) { }
     sun.castShadow = !!CFG.sh;
@@ -58,7 +60,7 @@
   const _loop = window.loop;
   if (typeof _loop === 'function') window.loop = function (t) {
     if (CFG.fps && lastF && t - lastF < 30.5) { requestAnimationFrame(window.loop); return; }  // 30 FPS: pula quadros
-    lastF = t; fN++; if (t - fT > 1000) { { /* distância automática: FPS baixo -> enxerga menos; FPS bom -> volta */ const fps = fN * 1000 / (t - fT), alvo = CFG.fps ? 27 : 50, k0 = window.__rdK || 1; let k = k0; if (fps < alvo * .8) k = Math.max(.6, k - .1); else if (fps > alvo * .95) k = Math.min(1, k + .05); if (k !== k0 && mode !== 'lobby') { window.__rdK = k; applyRD(); } } if (CFG.showFps) fpsEl.textContent = Math.round(fN * 1000 / (t - fT)) + ' FPS · ' + (ren.info.render.calls | 0) + ' desenhos'; fN = 0; fT = t; }
+    lastF = t; fN++; if (t - fT > 1000) { { /* distância automática: FPS baixo -> enxerga menos; FPS bom -> volta */ const fps = fN * 1000 / (t - fT), alvo = CFG.fps ? 27 : 50, k0 = window.__rdK || 1; let k = k0; if (fps < alvo * .8) k = Math.max(.5, k - .1); else if (fps > alvo * .95) k = Math.min(1, k + .05); if (k !== k0 && mode !== 'lobby') { window.__rdK = k; applyRD(); } } if (CFG.showFps) fpsEl.textContent = Math.round(fN * 1000 / (t - fT)) + ' FPS · ' + (ren.info.render.calls | 0) + ' desenhos'; fN = 0; fT = t; }
     _loop(t);
   };
 
