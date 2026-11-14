@@ -1,5 +1,8 @@
 # Histórico de versões
 
+## 3.45.0 — atualização na tela de carregamento
+- O jogo confere a versão assim que abre (por cima da tela de carregamento, como o PUBG Mobile). Se houver versão nova, aparece "Atualização disponível" com o botão Atualizar, a barra de progresso e Reiniciar; não dá para pular a atualização.
+
 ## 3.44.1 — menos desenhos por quadro
 - A munição e outros itens no chão tinham ~49 peças cada (49 desenhos por caixa); agora são poucas. Perto das cidades, os desenhos por quadro caíram de ~690 para ~420 (medido no jogo).
 - As árvores agora também juntam as peças por material.

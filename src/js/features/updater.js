@@ -1,12 +1,12 @@
 /* Deadzone · features/updater.js
- * ATUALIZAÇÃO DENTRO DO JOGO (só no app Android): no lobby o jogo confere se há versão nova.
+ * ATUALIZAÇÃO DENTRO DO JOGO (só no app Android): ao abrir o jogo (tela de carregamento) confere se há versão nova.
  * Se houver, aparece a janela "Atualização disponível" -> Atualizar (baixa com barra de progresso)
  * -> Reiniciar (abre o jogo já atualizado). Não precisa instalar outro APK.
  */
 (function () {
   if (!window.DZApp) return;
   const css = document.createElement('style'); css.textContent = `
-#dzUp{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);font-family:Bahnschrift,"Roboto Condensed",system-ui,sans-serif;color:#fff}
+#dzUp{position:fixed;inset:0;z-index:2147483647;display:none;align-items:center;justify-content:center;background:rgba(5,7,10,.78);font-family:Bahnschrift,"Roboto Condensed",system-ui,sans-serif;color:#fff}
 #dzUp .bx{width:min(420px,86vw);background:linear-gradient(180deg,#1d2329,#12161a);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:18px 20px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
 #dzUp h3{margin:0 0 6px;font:italic 900 22px/1.1 Impact,Haettenschweiler,"Arial Black",sans-serif;letter-spacing:.5px}#dzUp h3 span{color:#ffc933}
 #dzUp p{margin:0 0 14px;color:#c9cfd6;font-size:14px;line-height:1.35}
@@ -34,17 +34,19 @@
   let av = null;
   window.dzUpd = function (m) {
     if (!m) return;
-    if (m.st === 'avail') { av = m; if (later || shown) return; if (typeof mode !== 'undefined' && mode !== 'lobby') return;
-      show('ATUALIZAÇÃO <span>DISPONÍVEL</span>', 'Versão ' + m.v + mb(m.size) + '. Baixe agora e reinicie para jogar a versão nova.', [['Depois', 'no', () => { later = true; hide(); }], ['Atualizar', 'go', start]]); }
+    if (m.st === 'avail') { av = m; if (shown) return;
+      show('ATUALIZAÇÃO <span>DISPONÍVEL</span>', 'Versão ' + m.v + mb(m.size) + '. Baixe a atualização para continuar.', [['Atualizar', 'go', start]]); }
     else if (m.st === 'prog') { q('.ubr u').style.width = m.p + '%'; q('.upc').textContent = 'Baixando... ' + m.p + '%'; }
     else if (m.st === 'unzip') { q('.ubr u').style.width = '100%'; q('.upc').textContent = 'Instalando...'; }
     else if (m.st === 'ready') show('ATUALIZAÇÃO <span>PRONTA</span>', 'A versão ' + (av ? av.v : 'nova') + ' foi instalada. Reinicie para abrir o jogo atualizado.', [['Reiniciar', 'go', () => { hide(); DZApp.restart(); }]]);
-    else if (m.st === 'err') show('ERRO NA <span>ATUALIZAÇÃO</span>', 'Não foi possível atualizar (' + (m.m || 'sem conexão') + '). Verifique a internet e tente de novo.', [['Fechar', 'no', hide], ['Tentar de novo', 'go', start]]);
+    else if (m.st === 'err') show('ERRO NA <span>ATUALIZAÇÃO</span>', 'Não foi possível atualizar (' + (m.m || 'sem conexão') + '). Verifique a internet e tente de novo.', [['Continuar', 'no', hide], ['Tentar de novo', 'go', start]]);
   };
   function start() { show('ATUALIZANDO', 'Não feche o jogo enquanto baixa.', [], true); q('.ubr u').style.width = '0%'; q('.upc').textContent = 'Baixando... 0%'; DZApp.download(); }
   // confere ao abrir e depois a cada 20 minutos (só no lobby)
-  const check = () => { try { if (typeof mode === 'undefined' || mode === 'lobby') DZApp.check(); } catch (e) { } };
-  setTimeout(check, 4000); setInterval(check, 20 * 60 * 1000);
+  // confere logo ao abrir o jogo (tela de carregamento), como PUBG Mobile; depois, a cada 20 min só se estiver no lobby
+  const check = () => { try { DZApp.check(); } catch (e) { } };
+  check(); setTimeout(() => { if (!av && !shown) check(); }, 2500);
+  setInterval(() => { try { if (!shown && (typeof mode === 'undefined' || mode === 'lobby')) DZApp.check(); } catch (e) { } }, 20 * 60 * 1000);
   // versão atual no canto das configurações
   window.DZVER = info;
 })();
