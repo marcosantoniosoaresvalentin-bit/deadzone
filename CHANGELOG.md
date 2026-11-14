@@ -1,5 +1,13 @@
 # Histórico de versões
 
+## 3.39.1 — ilha realista
+- **Costa de ilha de verdade**: penínsulas, baías e pontas (não é mais um quadrado); praias largas de areia em alguns
+  trechos, falésias de pedra em outros e praia normal no resto.
+- **Relevo**: serra principal e mais 5 serras isoladas, morros, planaltos e 3 lagoas.
+- **21 cidades e vilas** (maiores e menores, de 4 a 12 quarteirões) + 9 locais especiais, todos em terra firme e bem
+  distantes; 39 estradas desviando de lagoas e serras; 146 veículos.
+- A grama não nasce mais dentro d'água.
+
 ## 3.39.0 — mapa grande (8 x 8 km), primeira versão
 - **Mapa de ~7,6 x 7,6 km** (antes ~0,9 km): ilha principal com serra, morros e vale, mais a Ilha Zênite ligada por uma ponte.
 - **12 cidades e vilas** bem distantes (Nova Esperança, São Jorge, Lagoa Seca, Vila Nova, Campo Belo, Pinheiral, Rio Claro,

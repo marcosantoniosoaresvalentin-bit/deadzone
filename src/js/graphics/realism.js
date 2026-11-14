@@ -1072,7 +1072,7 @@
       if (fp.some(b => x > b.x0 - .8 && x < b.x1 + .8 && z > b.z0 - .8 && z < b.z1 + .8)) continue;
       if (lk.some(l => Math.hypot(x - l.x, z - l.z) < l.r + 7.5)) continue;
       if (hp.some(h => Math.hypot(x - h.x, z - h.z) < 9.5)) continue;
-      let gy = 0; const th = TERH(x, z); try { gy = GY(x, z, th + .5); } catch (e) { } if (gy > th + .05) continue;
+      let gy = 0; const th = TERH(x, z); if (th < .3) continue; try { gy = GY(x, z, th + .5); } catch (e) { } if (gy > th + .05) continue;
       const fade = Math.min(1, (Rr - d) / 6), sc_ = (.75 + h3 * .7) * fade;
       o.position.set(x, TERH(x, z), z); o.rotation.set(0, h1 * 6.283, 0); o.scale.set(sc_ * (1 + h2 * .4), sc_ * (.8 + h1 * .6), sc_); o.updateMatrix();
       M.setMatrixAt(n, o.matrix); const k = .8 + h2 * .3; col.setRGB(k, k * (.95 + h1 * .1), k * (.75 + h3 * .2)); M.setColorAt(n, col); n++;

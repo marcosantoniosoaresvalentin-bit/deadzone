@@ -23,8 +23,16 @@ const TER=(()=>{
  const coastDist=coastMain;
  window.DZCOAST=coastDist;
  // ---------- relevo em terra ----------
+const PLC=(typeof FLATS!=='undefined'?FLATS:[]).map(A=>[(A.x0+A.x1)/2,(A.z0+A.z1)/2]);
+ const farPts=(n,minCoast,minD)=>{const out=[];for(let k=0;k<n;k++){let best=null,bd=0;for(let x=-MAPH;x<=MAPH;x+=200)for(let z=-MAPH;z<=MAPH;z+=200){if(coastMain(x,z)<minCoast)continue;let d=1e9;for(const q of PLC)d=Math.min(d,Math.hypot(q[0]-x,q[1]-z));for(const q of out)d=Math.min(d,Math.hypot(q[0]-x,q[1]-z)*.9);if(d>bd){bd=d;best=[x,z]}}if(!best||bd<minD)break;out.push(best)}return out};
+ const FAR=farPts(8,500,380),PEAKS=FAR.slice(0,5).map((q,i)=>({x:q[0],z:q[1],r:520+(i%3)*160,h:75+(i*37%50)})),LAKES=FAR.slice(5).map((q,i)=>({x:q[0],z:q[1],r:210+(i%2)*90}));
+ window.DZLAKES=LAKES;window.DZPEAKS=PEAKS;
+ // estradas desviam das lagoas
+ for(const L_ of (typeof ROADLINES!=='undefined'?ROADLINES:[]))for(const q of L_)for(const K of LAKES){const dx=q[0]-K.x,dz=q[1]-K.z,d=Math.hypot(dx,dz)||1,lim=K.r*2.1;if(d<lim){q[0]=K.x+dx/d*lim;q[1]=K.z+dz/d*lim}}
  const M=MAPH/250;                     // escala (posições pensadas para a ilha antiga de 500 m)
  const MTX=-135*M,MTZ=-115*M,MTR=72*M;
+ // serras isoladas nos lugares vazios
+ const peaks=(x,z)=>{let h=0;for(const P of PEAKS)h+=gau(x,z,P.x,P.z,P.r)*(P.h+ridge(x/360+P.x*.01,z/360+P.z*.01)*P.h*.45);return h};
  function landH(x,z){
   let h=1.6+Math.pow(fbm(x/1400+3.1,z/1400+7.7),1.4)*34+(fbm(x/260+1.3,z/260+4.4)-.5)*10+(fbm(x/55,z/55)-.5)*2.4;
   // serra a noroeste com cristas rochosas
@@ -34,13 +42,14 @@ const TER=(()=>{
   h+=gau(x,z,-70*M,150*M,46*M)*30;
   h+=gau(x,z,40*M,-40*M,50*M)*15;
   h+=gau(x,z,175*M,-20*M,40*M)*22;
+  h+=peaks(x,z);
   // vale largo cruzando a ilha
   const vy=z-(x*.35+20*M)+Math.sin(x/900)*270;h-=gau(0,vy,0,0,22*M)*8*(1-mt);
   return h;
  }
  // ILHA ZÊNITE (oeste): quadrado arredondado com metade do lado da ilha principal, relevo baixo com um morro
  const Z2={x:-490+ZEN_DX,z:-60+ZEN_DZ,R:125};
- function coast2(x,z){const dx=x-Z2.x,dz=z-Z2.z,p=6,d=Math.pow(Math.pow(Math.abs(dx),p)+Math.pow(Math.abs(dz),p),1/p),a=Math.atan2(dz,dx);
+ function coast2(x,z){const dx=x-Z2.x,dz=z-Z2.z,p=2.6,d=Math.pow(Math.pow(Math.abs(dx),p)+Math.pow(Math.abs(dz),p),1/p),a=Math.atan2(dz,dx);
   const cn=fbm(Math.cos(a)*2.4+3,Math.sin(a)*2.4+11)*.7+fbm(Math.cos(a)*7+5,Math.sin(a)*7+2)*.3;return Z2.R+8-cn*26-d}
  function landH2(x,z){return 2+Math.pow(fbm(x/120+9.3,z/120+1.7),1.3)*6+gau(x,z,Z2.x-70,Z2.z+70,40)*14+(fbm(x/40,z/40)-.5)*2}
  // ILHAS DAS ARENAS: retângulo arredondado (comprido no Duelo), chão baixo e plano
@@ -53,9 +62,13 @@ const TER=(()=>{
   if(t2>t1){const t=t2;if(t<=0)return Math.max(-14,.35+t*.09-Math.max(0,-t-30)*.05);const beach=.35+Math.min(t,22)*.085,k=ss(12,40,t);return beach+Math.max(0,landH2(x,z)-beach)*k}
   const t=t1;
   if(t<=0)return Math.max(-14,.35+t*.09-Math.max(0,-t-30)*.05);           // fundo do mar (segue o litoral)
-  if(t>48)return landH(x,z);
-  const beach=.35+Math.min(t,22)*.085;                                    // praia sobe devagar
-  const k=ss(12,48,t);return beach+Math.max(0,landH(x,z)-beach)*k;
+  const ck=coastKind(x,z),W=ck<0?78:ck>0?7:24,K0=ck<0?70:ck>0?3:12,K1=ck<0?190:ck>0?22:48; // praia larga / falésia / normal
+  let h;
+  if(t>K1)h=landH(x,z);
+  else{const beach=.35+Math.min(t,W)*(ck<0?.022:ck>0?.28:.085),k=ss(K0,K1,t);h=beach+Math.max(0,landH(x,z)-beach)*k}
+  // lagoas
+  for(const L of LAKES){const wx=(fbm(x/150+L.x,z/150)-.5)*L.r*1.1,wz=(fbm(x/150,z/150+L.z)-.5)*L.r*1.1,d=Math.hypot((x-L.x+wx)*.75,(z-L.z+wz)*1.2);if(d<L.r*2.2){const k=1-ss(L.r*.4,L.r*2.2,d);h=h*(1-k)+(-1.8)*k}}
+  return h;
  }
  // ---------- grade de alturas ----------
  const H=new Float32Array(NX*NZ);
@@ -126,6 +139,7 @@ const TER=(()=>{
   let rock=ss(.07,.17,sl)+ss(70,95,y)*.6;
   const mt=gau(x,z,MTX,MTZ,MTR);rock+=mt*ss(.55,.75,ridge(x/420+4,z/420+2))*.8;
   let sand=1-ss(1.1,2.1,y);
+  { const ct=coastDist(x,z),ck=coastKind(x,z);if(ct>0&&ct<60){if(ck>0)rock+=ss(60,6,ct)*.9;if(ck<0)sand=Math.max(sand,ss(150,60,ct))} }
   let dirt=ss(.55,.72,fbm(x/55+20,z/55+5))*.85+ss(.035,.07,sl)*.35+ss(2.4,3.2,y)*(1-ss(3.2,5,y))*.35;
   rock=Math.min(1,rock);sand=Math.min(1,sand);dirt=Math.min(1,dirt)*(1-rock)*(1-sand);rock*=(1-sand);
   const grass=Math.max(0,1-rock-sand-dirt),t=grass+dirt+rock+sand||1;

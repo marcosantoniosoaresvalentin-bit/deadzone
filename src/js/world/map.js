@@ -11,16 +11,20 @@ const PLV=62;            // velocidade do avião (m/s)
 const DZN=(()=>{const hh=(x,z)=>{const v=Math.sin(x*127.1+z*311.7)*43758.5453;return v-Math.floor(v)};
  const vn=(x,z)=>{const xi=Math.floor(x),zi=Math.floor(z),xf=x-xi,zf=z-zi,u=xf*xf*(3-2*xf),w=zf*zf*(3-2*zf);return(hh(xi,zi)*(1-u)+hh(xi+1,zi)*u)*(1-w)+(hh(xi,zi+1)*(1-u)+hh(xi+1,zi+1)*u)*w};
  const fbm=(x,z)=>vn(x,z)*.5+vn(x*2.03+5.2,z*2.03+1.3)*.27+vn(x*4.1+9.1,z*4.1+3.7)*.15+vn(x*8.3+2.7,z*8.3+8.1)*.08;return{hh,vn,fbm}})();
-function coastMain(x,z){const p=8,d=Math.pow(Math.pow(Math.abs(x),p)+Math.pow(Math.abs(z),p),1/p),a=Math.atan2(z,x);
- const cn=DZN.fbm(Math.cos(a)*2.2+7,Math.sin(a)*2.2+3)*.75+DZN.fbm(Math.cos(a)*6+1,Math.sin(a)*6+9)*.25;
- return MAPH+90-cn*260-d}                                     // >0 dentro da ilha (m até a costa); baías de até ~260 m
+function coastMain(x,z){const p=2.3,d=Math.pow(Math.pow(Math.abs(x),p)+Math.pow(Math.abs(z),p),1/p),a=Math.atan2(z,x),ca=Math.cos(a),sa=Math.sin(a);
+ const cn=DZN.fbm(ca*1.7+7,sa*1.7+3)*.42+DZN.fbm(ca*4.6+1,sa*4.6+9)*.30+DZN.fbm(ca*11+4,sa*11+2)*.18+DZN.fbm(ca*26+2,sa*26+8)*.10;
+ // lóbulos grandes (penínsulas e golfos) + recortes menores
+ const R=MAPH-120+Math.sin(a*3+1.3)*330+Math.sin(a*5+.4)*210+Math.sin(a*2-.6)*230+Math.sin(a*7+2.2)*120+(cn-.5)*1250+Math.sin(a*9+2.1)*70;
+ return R-d}                                                   // >0 dentro da ilha (m até a costa)
+// tipo de trecho da costa: <0 praia larga de areia · 0 normal · >0 falésia de pedra
+function coastKind(x,z){const a=Math.atan2(z,x),n=DZN.fbm(Math.cos(a)*2.6+11,Math.sin(a)*2.6+5);return n>.6?1:n<.4?-1:0}
 // ponto da costa: andando do centro na direção (ux,uz) até a água
-function coastAt(ux,uz,ax,az){ax=ax||0;az=az||0;let lo=0,hi=MAPH+600;for(let i=0;i<40;i++){const m=(lo+hi)/2;if(coastMain(ax+ux*m,az+uz*m)>0)lo=m;else hi=m}return [ax+ux*lo,az+uz*lo]}
+function coastAt(ux,uz,ax,az){ax=ax||0;az=az||0;let lo=0,hi=MAPH+1200;for(let i=0;i<44;i++){const m=(lo+hi)/2;if(coastMain(ax+ux*m,az+uz*m)>0)lo=m;else hi=m}return [ax+ux*lo,az+uz*lo]}
 // ---------- posições dos locais (o desenho de cada local é o mesmo; aqui só muda ONDE ele fica) ----------
 // ZÊNITE + PONTE: a ponte sai da costa oeste e chega na Ilha Zênite
 const ZEN_Z=1500,ZEN_DZ=ZEN_Z-(-60),ZEN_CW=coastAt(-1,0,0,-78+ZEN_DZ)[0],ZEN_DX=ZEN_CW+246;
 // LIMITES do mapa (ilha principal + Ilha Zênite a oeste)
-const MAPB={x0:Math.min(-MAPH-300,-490+ZEN_DX-170),x1:MAPH+300,z0:-MAPH-300,z1:MAPH+300},MCX=(MAPB.x0+MAPB.x1)/2,MCZ=(MAPB.z0+MAPB.z1)/2,MAPR=Math.max(MAPB.x1-MCX,MAPB.z1-MCZ);
+const MAPB={x0:Math.min(-MAPH-700,-490+ZEN_DX-200),x1:MAPH+700,z0:-MAPH-700,z1:MAPH+700},MCX=(MAPB.x0+MAPB.x1)/2,MCZ=(MAPB.z0+MAPB.z1)/2,MAPR=Math.max(MAPB.x1-MCX,MAPB.z1-MCZ);
 /* nas arenas (mapas separados, longe da ilha) não prende nos limites da ilha principal */
 const MCLX=(v,m)=>window.DZAR_ON?v:Math.max(MAPB.x0+m,Math.min(MAPB.x1-m,v)),MCLZ=(v,m)=>window.DZAR_ON?v:Math.max(MAPB.z0+m,Math.min(MAPB.z1-m,v));
 const PLT=(2*(MAPR+60))/PLV; // tempo até o avião atravessar o mapa (s)
@@ -74,11 +78,12 @@ function genTown(cfg){
    });
   }}
  C.rnd=rnd;return C}
+const onLand=(x,z,m)=>{let k=0;while(coastMain(x,z)<m&&k++<80){x*=.97;z*=.97}return [Math.round(x),Math.round(z)]};
 // desloca a configuração de uma cidade (mesmo desenho, outro lugar)
 const mvT=(c,dx,dz)=>Object.assign({},c,{x0:c.x0+dx,x1:c.x1+dx,z0:c.z0+dz,z1:c.z1+dz,XL:c.XL.map(v=>v+dx),ZL:c.ZL.map(v=>v+dz)});
-const atT=(c,X,Z)=>mvT(c,X-(c.x0+c.x1)/2,Z-(c.z0+c.z1)/2);
+const atT=(c,X,Z)=>{[X,Z]=onLand(X,Z,330);return mvT(c,X-(c.x0+c.x1)/2,Z-(c.z0+c.z1)/2)};
 // cidade nova em grade: nx x nz quarteirões de 'b' metros, centrada em (X,Z)
-const gridT=(n,tag,seed,X,Z,nx,nz,b,o)=>{const XL=[],ZL=[];for(let i=0;i<=nx;i++)XL.push(Math.round(X-nx*b/2+i*b));for(let j=0;j<=nz;j++)ZL.push(Math.round(Z-nz*b/2+j*b));return Object.assign({n,tag,seed,x0:XL[0]-8,x1:XL[nx]+8,z0:ZL[0]-8,z1:ZL[nz]+8,XL,ZL,bl:30},o||{})};
+const gridT=(n,tag,seed,X,Z,nx,nz,b,o)=>{[X,Z]=onLand(X,Z,330+Math.max(nx,nz)*b/2);const XL=[],ZL=[];for(let i=0;i<=nx;i++)XL.push(Math.round(X-nx*b/2+i*b));for(let j=0;j<=nz;j++)ZL.push(Math.round(Z-nz*b/2+j*b));return Object.assign({n,tag,seed,x0:XL[0]-8,x1:XL[nx]+8,z0:ZL[0]-8,z1:ZL[nz]+8,XL,ZL,bl:30},o||{})};
 // cidades (bem longe uma da outra, como num mapa grande de battle royale)
 const CITY=genTown(atT({n:'Nova Esperança',tag:'pv',seed:7331,x0:-36,x1:176,z0:-196,z1:-8,XL:[-28,22,72,122,168],ZL:[-188,-128,-72,-16],stadium:1},400,-1100));
 const TOWNS=[CITY,
@@ -86,13 +91,22 @@ const TOWNS=[CITY,
  genTown(atT({n:'Cerro Azul',tag:'mv',seed:9119,x0:133,x1:207,z0:143,z1:217,XL:[145,195],ZL:[155,205],bl:20},2350,2050)),
  genTown(mvT({n:'Zênite',tag:'zn',seed:2468,x0:-571,x1:-409,z0:-141,z1:21,XL:[-565,-515,-465,-415],ZL:[-135,-85,-35,15],bl:20,hFix:6,tower:1},ZEN_DX,ZEN_DZ)),
  genTown(atT({n:'Monte Alto',tag:'as',seed:5150,x0:52,x1:114,z0:58,z1:120,XL:[58,108],ZL:[64,114],bl:26},1650,350)),
- genTown(gridT('São Jorge','sj',3301,-1700,-1950,3,2,52)),
- genTown(gridT('Lagoa Seca','ls',3302,2850,-2250,3,2,50)),
- genTown(gridT('Vila Nova','vn',3303,-250,2750,3,2,50)),
- genTown(gridT('Campo Belo','cb',3304,-2900,-450,2,2,50)),
+ genTown(gridT('São Jorge','sj',3301,-1700,-1950,4,3,52)),
+ genTown(gridT('Lagoa Seca','ls',3302,2850,-2250,3,3,50)),
+ genTown(gridT('Vila Nova','vn',3303,-250,2750,4,2,50)),
+ genTown(gridT('Campo Belo','cb',3304,-2900,-450,3,2,50)),
  genTown(gridT('Pinheiral','ph',3305,3050,-150,2,2,50)),
- genTown(gridT('Rio Claro','rc',3306,-550,550,3,3,52)),
- genTown(gridT('Santa Luz','sl',3307,1100,-2900,2,2,50))];
+ genTown(gridT('Rio Claro','rc',3306,-550,550,4,3,52)),
+ genTown(gridT('Santa Luz','sl',3307,1100,-2900,3,2,50)),
+ genTown(gridT('Bela Vista','bv',3308,-1100,-1000,3,2,50)),
+ genTown(gridT('Água Branca','ab',3309,2200,-900,3,2,50)),
+ genTown(gridT('Terra Alta','ta',3310,-1300,3000,2,2,50)),
+ genTown(gridT('Ponta Norte','pn',3311,500,-3300,2,2,50)),
+ genTown(gridT('Alto Verde','av',3312,-3300,-1900,2,2,50)),
+ genTown(gridT('Boa Vista','bo',3313,1450,-1450,3,2,50)),
+ genTown(gridT('Santa Rita','sr',3314,-3050,1100,2,2,50)),
+ genTown(gridT('Esperança','es',3315,3300,1900,2,2,50)),
+ genTown(gridT('Nova Aurora','na',3316,-2200,2800,3,2,50))];
 // LOCAIS ESPECIAIS (world/city.js monta): base militar, escola, porto e galpões
 const SITES=[
  {id:'base',t:'military',n:'Base Militar',x0:-148,x1:-22,z0:15,z1:108,bl:22},
@@ -108,8 +122,8 @@ const SITES=[
 {const S_SHIFT={base:[-650,-2650],escola:[900,1250],galpoes:[-2550,700],posto:[1150,-450],fazenda:[-1250,2250],pedreira:[-2400,-1450],usina:[3150,1150]};
  for(const S_ of SITES)S_.h=undefined;
  for(const S_ of SITES){const cx=(S_.x0+S_.x1)/2,cz=(S_.z0+S_.z1)/2;let tx,tz;
-  if(S_.id==='cais'||S_.id==='praia'){const X=S_.id==='cais'?700:-950,cz2=coastAt(0,1,X,0)[1];tx=X;tz=cz2-28-(S_.z1-cz)}
-  else{[tx,tz]=S_SHIFT[S_.id]}
+  if(S_.id==='cais'||S_.id==='praia'){const X=S_.id==='cais'?700:-950,cz2=coastAt(0,1,X,-900)[1];tx=X;tz=cz2-28-(S_.z1-cz)}
+  else{[tx,tz]=onLand(S_SHIFT[S_.id][0],S_SHIFT[S_.id][1],420)}
   S_.dx=Math.round(tx-cx);S_.dz=Math.round(tz-cz);S_.x0+=S_.dx;S_.x1+=S_.dx;S_.z0+=S_.dz;S_.z1+=S_.dz;delete S_.hFix}}
 for(const S_ of SITES){S_.x=(S_.x0+S_.x1)/2;S_.z=(S_.z0+S_.z1)/2}
 const SITEBY=Object.fromEntries(SITES.map(S_=>[S_.id,S_]));
